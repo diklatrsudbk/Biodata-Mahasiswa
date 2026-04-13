@@ -1,0 +1,659 @@
+<!DOCTYPE html> 
+<html lang="id"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Daftar Peserta (Edit/Hapus)</title> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"> 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+    
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> 
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> 
+    
+    <style> 
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f4f4f9; 
+        } 
+        .container { max-width: 1200px; margin: 0 auto; } 
+        h1 { color: #333; text-align: center; } 
+        .data-section { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        } 
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; } 
+        table, th, td { border: 1px solid #ddd; } 
+        th, td { padding: 10px; text-align: left; font-size: 0.9em; } 
+        th { background-color: #e9ecef; cursor: pointer; } 
+        .back-link { display: block; text-align: center; margin-bottom: 20px; color: #007bff; text-decoration: none; } 
+        .action-cell { width: 1%; white-space: nowrap; } 
+        
+        .loading { text-align: center; padding: 50px; font-size: 1.2em; color: #555; } 
+        
+        /* Buttons */ 
+
+        .btn-green { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; } 
+
+        .btn-edit { background-color: #ffc107; color: black; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;} 
+        .btn-edit:hover { background-color: #e0a800; } 
+
+        .btn-delete { background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;} 
+        .btn-delete:hover { background-color: #c82333; } 
+
+        /* Filter/Search Bar */ 
+        #searchBar { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 1em; 
+        } 
+
+        /* Modal Styles */ 
+        #editModalOverlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.7); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; 
+            overflow-y: auto; 
+        } 
+        #editModalContent { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 10px; 
+            width: 90%; 
+            max-width: 600px; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        } 
+        .form-group label { display: block; margin-top: 10px; font-weight: 600; } 
+        .form-group input, .form-group select, .form-group textarea, .select2-container--default .select2-selection--single { 
+            font-family: 'Poppins', sans-serif; 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 5px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        } 
+        .select2-container .select2-selection--single { height: 40px !important; } 
+        .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 20px !important; } 
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px !important; } 
+    </style> 
+</head> 
+<body> 
+    <div class="container"> 
+        <h1>📝 Daftar Peserta (Edit/Hapus)</h1> 
+        <a href="index.html" class="back-link">← Kembali ke Menu</a> 
+
+        <div class="data-section"> 
+            <input type="text" id="searchBar" placeholder="Cari berdasarkan Nama atau NIM..."> 
+            
+            <h2>Total Peserta: <span id="totalCount">...</span></h2> 
+
+            <div id="loadingIndicator" class="loading"> 
+                Memuat data dari Google Sheet... 
+            </div> 
+
+            <div id="dataTableContainer" style="overflow-x:auto; display:none;"> 
+                <table id="participantTable"> 
+                    <thead> 
+                        <tr> 
+                            <th>#</th> 
+                            <th>Nama Institusi</th> 
+                            <th>Nama Lengkap</th> 
+                            <th>NIM</th> 
+                            <th>Tgl Lahir</th> 
+                            <th>Start Date</th> 
+                            <th>End Date</th> 
+                            <th class="action-cell">Aksi</th> 
+                        </tr> 
+                    </thead> 
+                    <tbody id="participantTableBody"> 
+                    </tbody> 
+                </table> 
+            </div> 
+            <div id="noDataMessage" class="loading" style="display:none;"> 
+                Tidak ada data peserta yang ditemukan. 
+            </div> 
+        </div> 
+    </div> 
+    
+    <div id="editModalOverlay"> 
+        <div id="editModalContent"> 
+
+            <h3>Edit Data Peserta <span id="editRowId" style="font-size: 0.8em; color: #555;"></span></h3> 
+            <form id="editForm"> 
+                <input type="hidden" id="edit_rowId"> 
+                <input type="hidden" id="edit_no"> 
+
+
+                <p><strong>Institusi:</strong> <span id="edit_institusiDisplay"></span></p> 
+                <p><strong>Jurusan:</strong> <span id="edit_jurusanDisplay"></span></p> 
+
+                <h4>Data Diri</h4> 
+                <div class="form-group"> 
+                    <label for="edit_namaLengkap">Nama Lengkap:</label> 
+                    <input type="text" id="edit_namaLengkap" required> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_nim">NIM:</label> 
+                    <input type="number" id="edit_nim" required> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_agama">Agama:</label> 
+                    <select id="edit_agama" required> 
+                        <option value="Islam">Islam</option> 
+                        <option value="Kristen">Kristen</option> 
+                        <option value="Katolik">Katolik</option> 
+                        <option value="Hindu">Hindu</option> 
+                        <option value="Buddha">Buddha</option> 
+                        <option value="Lainnya">Lainnya</option> 
+                    </select> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_jenisKelamin">Jenis Kelamin:</label> 
+                    <select id="edit_jenisKelamin" required> 
+                        <option value="Laki-laki">Laki-laki</option> 
+                        <option value="Perempuan">Perempuan</option> 
+                    </select> 
+                </div> 
+
+                <h4>TTL</h4> 
+                <div class="form-group"> 
+                    <label for="edit_tempatLahir">Tempat/Kota Lahir:</label> 
+                    <select id="edit_tempatLahirSelect" required></select> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_tanggalLahir">Tanggal Lahir:</label> 
+                    <input type="date" id="edit_tanggalLahir" required> 
+                </div> 
+                
+                <div class="form-group"> 
+                    <label for="edit_noKTP">No. KTP:</label> 
+                    <input type="number" id="edit_noKTP"> 
+                </div> 
+                
+                <h4>Data Alamat</h4> 
+                <div class="form-group"> 
+                    <label for="edit_jalan">Jalan:</label> 
+                    <input type="text" id="edit_jalan" required> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_kotaAlamat">Kota Alamat:</label> 
+                    <select id="edit_kotaAlamatSelect" required></select> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_kelurahan">Kelurahan:</label> 
+                    <input type="text" id="edit_kelurahan" required> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_kecamatan">Kecamatan:</label> 
+                    <input type="text" id="edit_kecamatan" required> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_kodePos">Kode Pos:</label> 
+                    <input type="number" id="edit_kodePos" required> 
+                </div> 
+
+                <div class="form-group"> 
+                    <label for="edit_noTelp">No. Telp:</label> 
+                    <input type="text" id="edit_noTelp" required> 
+                </div> 
+                
+                <h4>Periode Kegiatan</h4> 
+                <div class="form-group"> 
+                    <label for="edit_startDate">Start Date:</label> 
+                    <input type="date" id="edit_startDate" required> 
+                </div> 
+                <div class="form-group"> 
+                    <label for="edit_endDate">End Date:</label> 
+                    <input type="date" id="edit_endDate" required> 
+                </div> 
+                
+
+                <button type="submit" class="btn-green" style="width: 100%; margin-top: 10px;">Simpan Perubahan</button> 
+
+                <button type="button" class="btn-delete" id="btnCancelEdit" style="width: 100%; margin-top: 10px;">Batal</button> 
+            </form> 
+        </div> 
+    </div> 
+    
+    <script> 
+
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzyePp9jiDTMJ-qCWQqknQ0EhOaFE0M-xCD_Y3s4YMYtY-pOuil50B0QIwZgngi0GyAHQ/exec"; 
+        
+        let allData = []; 
+        let masterWilayah = []; 
+
+        const cleanDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    // Menggunakan regex untuk mencocokkan hanya bagian YYYY-MM-DD
+    // Regex: ^(\d{4}-\d{2}-\d{2}) mencocokkan 4 angka, strip, 2 angka, strip, 2 angka
+    const match = dateString.toString().match(/^(\d{4}-\d{2}-\d{2})/);
+    return match ? match[1] : dateString.toString().split('T')[0].split(' ')[0];
+};
+
+        const loadingIndicator = document.getElementById('loadingIndicator'); 
+        const dataTableContainer = document.getElementById('dataTableContainer'); 
+        const participantTableBody = document.getElementById('participantTableBody'); 
+        const noDataMessage = document.getElementById('noDataMessage'); 
+        const totalCount = document.getElementById('totalCount'); 
+        const searchBar = document.getElementById('searchBar'); 
+        
+        const editModalOverlay = document.getElementById('editModalOverlay'); 
+        const editForm = document.getElementById('editForm'); 
+        const tempatLahirSelect = document.getElementById('edit_tempatLahirSelect'); 
+        const kotaAlamatSelect = document.getElementById('edit_kotaAlamatSelect'); 
+
+
+        // =================================== 
+        // UTILITIES 
+        // =================================== 
+
+        function createJsonResponse(data) { 
+            return JSON.stringify(data); 
+        } 
+
+        function createUrlParam(action, rowId) { 
+            return `${WEB_APP_URL}?action=${action}${rowId ? '&rowId=' + rowId : ''}`; 
+        } 
+        
+        // Di file list.html 
+
+        function fillWilayahDropdown(element, dataList) { 
+            // 1. Pastikan elemen ditemukan di DOM 
+            if (!element) return; 
+            
+            // 2. Pastikan jQuery sudah dimuat sebelum menggunakan '$' 
+            if (typeof jQuery === 'undefined') { 
+                console.error("jQuery is not loaded."); 
+                return; 
+            } 
+            
+            // *Koreksi:* Hanya destroy jika Select2 sudah diinisialisasi sebelumnya. 
+            // Ini adalah pengecekan yang lebih aman. 
+            if ($(element).data('select2')) { 
+                $(element).select2('destroy'); 
+            } 
+            
+            element.innerHTML = `<option value="">-- Pilih Kota/Kabupaten --</option>`; 
+
+            dataList.forEach(item => { 
+                const option = document.createElement('option'); 
+                option.value = item; 
+                option.textContent = item; 
+                element.appendChild(option); 
+            }); 
+            
+            // 3. Inisialisasi Select2 setelah data terisi 
+            $(element).select2({ 
+                width: '100%', 
+                placeholder: '-- Pilih Kota/Kabupaten --', 
+                allowClear: true, 
+                // Pastikan dropdownParent menunjuk ke ID modal Anda 
+                dropdownParent: $('#editModalContent') 
+            }); 
+        } 
+
+
+        // =================================== 
+        // 1. LOAD MASTER DATA (Wilayah) UNTUK MODAL EDIT 
+        // =================================== 
+        // Di file list.html 
+
+        async function loadMasterDataForEdit() { 
+            try { 
+                // Panggil doGet DENGAN action=getMasterData 
+                const response = await fetch(WEB_APP_URL + '?action=getMasterData', { method: 'GET' }); // <--- BARIS INI DIUBAH 
+                
+                if (!response.ok) { 
+                    // Ini akan menangkap Failed to Fetch jika ada masalah URL 
+                    throw new Error(`Gagal Fetch Master Data. Status: ${response.status}.`); 
+                } 
+                
+                const data = await response.json(); 
+                
+                // Cek jika Apps Script mengembalikan error (misal: "Sheet tidak ditemukan") 
+                if (data.error) { 
+                    throw new Error(`Apps Script Error: ${data.error}`); 
+                } 
+
+                masterWilayah = data.wilayah || []; 
+                
+                // Isi dropdown Select2 di modal 
+                fillWilayahDropdown(tempatLahirSelect, masterWilayah); 
+                fillWilayahDropdown(kotaAlamatSelect, masterWilayah); 
+                
+            } catch (error) { 
+                console.error('Gagal memuat data master wilayah:', error); 
+                // Alert sekarang akan menunjukkan pesan error yang lebih detail 
+                alert('Gagal memuat data wilayah untuk form edit. Detail Error: ' + error.message); 
+            } 
+        } 
+
+
+        // =================================== 
+        // 2. LOAD & RENDER DATA PESERTA (Admin) 
+        // =================================== 
+        async function loadAllParticipants() { 
+            loadingIndicator.style.display = 'block'; 
+            dataTableContainer.style.display = 'none'; 
+            noDataMessage.style.display = 'none'; 
+            totalCount.textContent = '...'; 
+            
+            await loadMasterDataForEdit(); // Pastikan wilayah dimuat sebelum membuka edit modal 
+
+            try { 
+                const response = await fetch(createUrlParam('getAllData'), { method: 'GET' }); 
+
+                if (!response.ok) throw new Error('Network response was not ok'); 
+                
+                const data = await response.json(); 
+                
+                if (data.status === 'success' && data.records && data.records.length > 0) { 
+                    allData = data.records; 
+                    renderTable(allData); 
+                } else { 
+                    allData = []; 
+                    renderTable([]); 
+                    noDataMessage.style.display = 'block'; 
+                } 
+
+            } catch (error) { 
+                console.error('Error loading data:', error); 
+                alert('Gagal memuat data peserta. Cek Google Apps Script Anda.'); 
+                noDataMessage.textContent = 'Gagal memuat data.'; 
+                noDataMessage.style.display = 'block'; 
+                dataTableContainer.style.display = 'none'; 
+            } finally { 
+                loadingIndicator.style.display = 'none'; 
+            } 
+        } 
+
+        // list.html - Di bagian <script> 
+
+        function formatDateToInput(dateValue) { 
+            if (!dateValue) return ''; 
+            
+            // Pastikan dateValue dikonversi ke Date Object 
+            let date = (dateValue instanceof Date) ? dateValue : new Date(dateValue); 
+            
+            // Cek jika parsing gagal (Invalid Date) 
+            if (isNaN(date.getTime())) { 
+                return ''; 
+            } 
+
+            // Ambil komponen tanggal dan format ke YYYY-MM-DD 
+            const year = date.getFullYear(); 
+            // getMonth() dimulai dari 0, jadi perlu +1. padStart(2, '0') untuk 01, 02, dst. 
+            const month = String(date.getMonth() + 1).padStart(2, '0'); 
+            const day = String(date.getDate()).padStart(2, '0'); 
+            
+            return `${year}-${month}-${day}`; 
+        } 
+
+        
+        function renderTable(dataToRender) { 
+    participantTableBody.innerHTML = ''; 
+    totalCount.textContent = dataToRender.length; 
+
+    if (dataToRender.length === 0) { 
+        dataTableContainer.style.display = 'none'; 
+        return; 
+    } 
+
+    dataToRender.forEach((record, index) => { 
+        const row = participantTableBody.insertRow(); 
+        // TTL format: "Tempat, Tanggal" 
+        // Note: tglLahir di sini kemungkinan sudah string YYYY-MM-DD jika Apps Script sudah dikoreksi
+        const tglLahir = record.ttl ? record.ttl.split(', ')[1] : 'N/A'; 
+        
+        row.innerHTML = ` 
+            <td>${record.no}</td> 
+            <td>${record.namaInstitusi}</td> 
+            <td>${record.namaLengkap}</td> 
+            <td>${record.nim}</td> 
+            <td>${tglLahir}</td> 
+            
+            <td>${cleanDate(record.startDate)}</td> 
+            <td>${cleanDate(record.endDate)}</td> 
+            
+            <td class="action-cell"> 
+                <button class="btn-edit" onclick="editParticipant('${record.rowId}')">Edit</button> 
+                <button class="btn-delete" onclick="deleteParticipant('${record.rowId}', '${record.namaLengkap}')">Hapus</button> 
+            </td> 
+        `; 
+    }); 
+    dataTableContainer.style.display = 'block'; 
+}
+
+
+        // =================================== 
+        // 3. LOGIKA HAPUS (DELETE) 
+        // =================================== 
+        async function deleteParticipant(rowId, name) { 
+            if (!confirm(`Yakin ingin menghapus peserta ${name} (Baris ${rowId}) secara permanen?`)) { 
+                return; 
+            } 
+            
+            loadingIndicator.style.display = 'block'; 
+            dataTableContainer.style.opacity = 0.5; 
+
+            try { 
+                // Permintaan DELETE menggunakan Form Data / URLSearchParams
+                const formData = new URLSearchParams(); 
+                formData.append('action', 'deleteRecord'); 
+                formData.append('rowId', parseInt(rowId)); 
+
+                const response = await fetch(WEB_APP_URL, { 
+                    method: 'POST', 
+                    body: formData, // Mengirim Form Data
+                    // Hapus header Content-Type JSON (sesuai Form Data)
+                }); 
+
+                const result = await response.json(); 
+                
+                if (result.status === 'success') { 
+                    alert(`✅ ${result.message}`); 
+                    await loadAllParticipants(); // Muat ulang data 
+                } else { 
+                    throw new Error(result.message || 'Gagal menghapus data.'); 
+                } 
+            } catch (error) { 
+                alert(`❌ Error Hapus Data: ${error.message}`); 
+            } finally { 
+                loadingIndicator.style.display = 'none'; 
+                dataTableContainer.style.opacity = 1; 
+            } 
+        } 
+
+
+        // =================================== 
+        // 4. LOGIKA EDIT (LOAD DATA) 
+        // =================================== 
+        async function editParticipant(rowId) { 
+            loadingIndicator.style.display = 'block'; 
+            dataTableContainer.style.opacity = 0.5; 
+            
+            try { 
+                // Permintaan LOAD DETAIL menggunakan Form Data / URLSearchParams
+                const formData = new URLSearchParams(); 
+                formData.append('action', 'getRecordDetail'); 
+                formData.append('rowId', parseInt(rowId)); 
+
+                // Panggil Apps Script untuk mendapatkan detail data 
+                const response = await fetch(WEB_APP_URL, { 
+                    method: 'POST', 
+                    body: formData, // Mengirim Form Data
+                    // Hapus header Content-Type JSON (sesuai Form Data)
+                }); 
+
+                // 🚨 KOREKSI KRUSIAL: Menangani HTTP Error (misalnya 500 Internal Server Error) 
+                if (!response.ok) { 
+                    const errorText = await response.text(); 
+                    throw new Error(`Koneksi Gagal (Status: ${response.status}). Cek Apps Script. Detail: ${errorText.substring(0, 150)}...`); 
+                } 
+                
+                const result = await response.json(); 
+                
+                // Menangani error yang dikembalikan Apps Script dalam format JSON 
+                if (result.status !== 'success') { 
+                    throw new Error(result.message || 'Gagal memuat detail data.'); 
+                } 
+                
+                const data = result.record; 
+
+                // Parsing TTL dan Alamat 
+                const [tempatLahir = '', tanggalLahir = ''] = (data.ttl || ', ').split(', '); 
+                
+                // Alamat format: "Jalan, Kelurahan, Kecamatan, Kota (Kodepos)" 
+                const alamatParts = (data.alamat || ', , , , ').split(', '); 
+                
+                const kotaAlamat = alamatParts[3] ? alamatParts[3].replace(/\([^)]*\)/g, '').trim() : ''; 
+                const kodePosMatch = alamatParts[3] ? alamatParts[3].match(/\(([^)]+)\)/) : null; 
+                const kodePos = kodePosMatch ? kodePosMatch[1] : ''; 
+                
+                // 1. Isi Hidden Input & Display 
+                document.getElementById('edit_rowId').value = data.rowId; 
+                document.getElementById('edit_no').value = data.no; 
+                document.getElementById('editRowId').textContent = `(Baris: ${data.rowId})`; 
+                document.getElementById('edit_institusiDisplay').textContent = data.namaInstitusi; 
+                document.getElementById('edit_jurusanDisplay').textContent = data.jurusanProdi; 
+                
+                // 2. Isi Data Diri 
+                document.getElementById('edit_namaLengkap').value = data.namaLengkap; 
+                document.getElementById('edit_nim').value = data.nim; 
+                document.getElementById('edit_agama').value = data.agama; 
+                document.getElementById('edit_jenisKelamin').value = data.jenisKelamin; 
+                
+                // 3. Isi TTL 
+                $(tempatLahirSelect).val(tempatLahir).trigger('change'); 
+                document.getElementById('edit_tanggalLahir').value = tanggalLahir; 
+                document.getElementById('edit_noKTP').value = data.noKTP === 'N/A' ? '' : data.noKTP; 
+                
+                // 4. Isi Alamat 
+                document.getElementById('edit_jalan').value = alamatParts[0] || ''; 
+                document.getElementById('edit_kelurahan').value = alamatParts[1] || ''; 
+                document.getElementById('edit_kecamatan').value = alamatParts[2] || ''; 
+                $(kotaAlamatSelect).val(kotaAlamat).trigger('change'); 
+                document.getElementById('edit_kodePos').value = kodePos; 
+                document.getElementById('edit_noTelp').value = data.noTelp; 
+                
+                // 5. Isi Periode Kegiatan 
+                document.getElementById('edit_startDate').value = formatDateToInput(data.startDate); 
+                document.getElementById('edit_endDate').value = formatDateToInput(data.endDate); 
+
+                editModalOverlay.style.display = 'flex'; 
+
+                editModalOverlay.style.display = 'flex'; 
+
+            } catch (error) { 
+                console.error('Error fetching record detail:', error); 
+                alert(`❌ Error Edit Data: ${error.message}`); 
+            } finally { 
+                loadingIndicator.style.display = 'none'; 
+                dataTableContainer.style.opacity = 1; 
+            } 
+        } 
+
+
+        // =================================== 
+        // 5. LOGIKA SUBMIT EDIT (FINAL FORM DATA/URLSearchParams)
+        // =================================== 
+        editForm.addEventListener('submit', async function(e) { 
+            e.preventDefault(); 
+            
+            loadingIndicator.style.display = 'block'; 
+            editModalOverlay.style.display = 'none'; 
+            
+            const rowId = document.getElementById('edit_rowId').value; 
+            const namaLengkap = document.getElementById('edit_namaLengkap').value; 
+
+            // --- PERUBAHAN DI SINI: Menggunakan URLSearchParams (Form Data) ---
+            const formData = new URLSearchParams();
+            formData.append('action', 'updateRecord');
+            formData.append('rowId', parseInt(rowId)); 
+
+            // Mengumpulkan data dari form ke objek Form Data
+            formData.append('no', document.getElementById('edit_no').value);
+            formData.append('namaInstitusi', document.getElementById('edit_institusiDisplay').textContent);
+            formData.append('jurusanProdi', document.getElementById('edit_jurusanDisplay').textContent);
+            formData.append('namaLengkap', namaLengkap);
+            formData.append('nim', document.getElementById('edit_nim').value);
+            formData.append('agama', document.getElementById('edit_agama').value);
+            formData.append('jenisKelamin', document.getElementById('edit_jenisKelamin').value);
+            
+            // Menggabungkan kembali TTL dan Alamat
+            formData.append('ttl', `${$(tempatLahirSelect).val()}, ${document.getElementById('edit_tanggalLahir').value}`);
+            formData.append('alamat', `${document.getElementById('edit_jalan').value}, ${document.getElementById('edit_kelurahan').value}, ${document.getElementById('edit_kecamatan').value}, ${$(kotaAlamatSelect).val()} (${document.getElementById('edit_kodePos').value})`);
+            
+            formData.append('noTelp', document.getElementById('edit_noTelp').value);
+            formData.append('noKTP', document.getElementById('edit_noKTP').value || 'N/A');
+            formData.append('startDate', document.getElementById('edit_startDate').value);
+            formData.append('endDate', document.getElementById('edit_endDate').value);
+            // -------------------------------------------------------------------
+
+            try { 
+                // Mengirim Form Data
+                const response = await fetch(WEB_APP_URL, { 
+                    method: 'POST', 
+                    body: formData, // Menggunakan Form Data
+                    // TIDAK perlu header 'Content-Type': 'application/json' 
+                }); 
+
+                const result = await response.json(); 
+                
+                if (result.status === 'success') { 
+                    alert(`✅ Data peserta ${namaLengkap} berhasil diupdate.`); 
+                    await loadAllParticipants(); // Muat ulang data 
+                } else { 
+                    throw new Error(result.message || 'Gagal mengupdate data.'); 
+                } 
+            } catch (error) { 
+                alert(`❌ Error Update Data: ${error.message}`); 
+            } finally { 
+                loadingIndicator.style.display = 'none'; 
+            } 
+        }); 
+
+        // Batal Edit 
+        document.getElementById('btnCancelEdit').addEventListener('click', function() { 
+            editModalOverlay.style.display = 'none'; 
+        }); 
+
+        // =================================== 
+        // INITIAL LOAD & SEARCH 
+        // =================================== 
+        searchBar.addEventListener('keyup', function() { 
+            const searchTerm = this.value.toLowerCase(); 
+            
+            const filteredData = allData.filter(record => { 
+                const nameMatch = record.namaLengkap.toLowerCase().includes(searchTerm); 
+                const nimMatch = record.nim.toString().includes(searchTerm); 
+                const institusiMatch = record.namaInstitusi.toLowerCase().includes(searchTerm); 
+                return nameMatch || nimMatch || institusiMatch; 
+            }); 
+
+            renderTable(filteredData); 
+        }); 
+
+        document.addEventListener('DOMContentLoaded', loadAllParticipants); 
+    </script> 
+</body> 
+</html>

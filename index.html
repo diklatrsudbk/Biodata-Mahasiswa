@@ -2,65 +2,49 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Form Biodata Mahasiswa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Utama - Data Mahasiswa</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .container { max-width: 400px; margin: auto; }
-        input, textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; }
-        button { background: #28a745; color: white; border: none; padding: 10px; width: 100%; cursor: pointer; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 400px; /* Batasi lebar untuk tampilan HP */
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 40px;
+        }
+        .menu-item {
+            display: block;
+            background-color: #AFEEEE;
+            color: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: background-color 0.3s;
+        }
+        .menu-item:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h2>Form Biodata Mahasiswa</h2>
-    <form id="formBiodata">
-        <label>Nama Lengkap</label>
-        <input type="text" name="nama" required>
-
-        <label>Nama Institusi</label>
-        <input type="text" name="institusi" required>
-
-        <label>Nama Jurusan</label>
-        <input type="text" name="jurusan" required>
-
-        <label>NIM</label>
-        <input type="text" name="nim" required>
-
-        <label>Alamat</label>
-        <textarea name="alamat" required></textarea>
-
-        <label>No. HP</label>
-        <input type="tel" name="nohp" required>
-
-        <button type="submit" id="btnKirim">Kirim Data</button>
-    </form>
-</div>
-
-<script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzHAqRmQtXcT5TUfOJNg9GbVFgRMXFbzCImUgamI8tdwfqkBxI4w9xadem9ngcghBGO/exec'; // Ganti dengan URL dari Langkah 2
-    const form = document.getElementById('formBiodata');
-    const btnKirim = document.getElementById('btnKirim');
-
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        btnKirim.disabled = true;
-        btnKirim.innerHTML = "Sedang Mengirim...";
-
-        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-            .then(response => {
-                alert("Data berhasil tersimpan!");
-                btnKirim.disabled = false;
-                btnKirim.innerHTML = "Kirim Data";
-                form.reset();
-            })
-            .catch(error => {
-                console.error('Error!', error.message);
-                alert("Terjadi kesalahan, coba lagi.");
-                btnKirim.disabled = false;
-            });
-    });
-</script>
-
+    <div class="container">
+        <h1>🎓 Menu Data Mahasiswa</h1>
+        <a href="input.html" class="menu-item">
+            1. Input Data Baru
+        </a>
+        <a href="list.html" class="menu-item">
+            2. Edit / Delete Data
+        </a>
+    </div>
 </body>
 </html>

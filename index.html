@@ -175,6 +175,38 @@
             alert("Terjadi kesalahan: " + error.message)
         })
     })
+
+    // Fungsi Menghitung Umur (Tahun & Bulan)
+function hitungUmur() {
+    const tglLahir = new Date(document.getElementById('tgl_lahir').value);
+    const hariIni = new Date();
+    
+    if (isNaN(tglLahir)) return;
+
+    let tahun = hariIni.getFullYear() - tglLahir.getFullYear();
+    let bulan = hariIni.getMonth() - tglLahir.getMonth();
+
+    if (bulan < 0 || (bulan === 0 && hariIni.getDate() < tglLahir.getDate())) {
+        tahun--;
+        bulan = 12 + bulan;
+    }
+
+    document.getElementById('umur').value = tahun + " Tahun " + bulan + " Bulan";
+}
+
+// Fungsi Validasi End Date tidak boleh kurang dari Start Date
+function validasiTanggal() {
+    const start = document.getElementById('start_date').value;
+    const end = document.getElementById('end_date').value;
+    const btn = document.getElementById('submitBtn');
+
+    if (start && end) {
+        if (new Date(end) < new Date(start)) {
+            alert("Peringatan: End Date tidak boleh lebih awal dari Start Date!");
+            document.getElementById('end_date').value = "";
+        }
+    }
+}
 </script>
 
 </body>

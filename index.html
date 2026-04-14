@@ -52,13 +52,13 @@
                         <input type="text" name="tempat_lahir" class="form-control" required>
                     </div>
                     <div class="col-md-4 mb-3">
-        <label class="form-label">Tanggal Lahir</label>
-        <input type="date" name="tgl_lahir" id="tgl_lahir" class="form-control" required onchange="hitungUmur()">
-    </div>
-    <div class="col-md-8 mb-3">
-        <label class="form-label">Umur</label>
-        <input type="text" name="umur" id="umur" class="form-control" readonly placeholder="Otomatis terisi...">
-    </div>
+                        <label class="form-label">Tanggal Lahir</label>
+                        <input type="date" name="tgl_lahir" id="tgl_lahir" class="form-control" required onchange="hitungUmur()">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Umur</label>
+                        <input type="text" name="umur" id="umur" class="form-control" readonly placeholder="Otomatis...">
+                    </div>
                 </div>
 
                 <div class="row">
@@ -68,7 +68,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Jenis Kelamin</label>
-                        <select name="jk" class="form-control" required>
+                        <select name="jk" class="form-select" required>
                             <option value="">Pilih...</option>
                             <option value="Laki-laki">Laki-laki</option>
                             <option value="Perempuan">Perempuan</option>
@@ -78,42 +78,43 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-        <label class="form-label">Agama</label>
-        <select name="agama" class="form-select" required>
-            <option value="">Pilih Agama...</option>
-            <option value="Islam">Islam</option>
-            <option value="Kristen Protestan">Kristen Protestan</option>
-            <option value="Katolik">Katolik</option>
-            <option value="Hindu">Hindu</option>
-            <option value="Buddha">Buddha</option>
-            <option value="Konghucu">Konghucu</option>
-        </select>
-    </div>
-                   <div class="col-md-6 mb-3">
-        <label class="form-label">Jenis</label>
-        <select name="jenis" class="form-select" required>
-            <option value="">Pilih Jenis...</option>
-            <option value="Penelitian">Penelitian</option>
-            <option value="Magang">Magang</option>
-            <option value="PKL">PKL</option>
-            <option value="Studi Banding">Studi Banding</option>
-            <option value="Orientasi Program">Orientasi Program</option>
-        </select>
-    </div>
+                        <label class="form-label">Agama</label>
+                        <select name="agama" class="form-select" required>
+                            <option value="">Pilih Agama...</option>
+                            <option value="Islam">Islam</option>
+                            <option value="Kristen Protestan">Kristen Protestan</option>
+                            <option value="Katolik">Katolik</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Buddha">Buddha</option>
+                            <option value="Konghucu">Konghucu</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Jenis</label>
+                        <select name="jenis" class="form-select" required>
+                            <option value="">Pilih Jenis...</option>
+                            <option value="Penelitian">Penelitian</option>
+                            <option value="Magang">Magang</option>
+                            <option value="PKL">PKL</option>
+                            <option value="Studi Banding">Studi Banding</option>
+                            <option value="Orientasi Program">Orientasi Program</option>
+                        </select>
+                    </div>
                 </div>
 
                 <hr>
                 <h5 class="mb-3">Data Pendidikan</h5>
                 <div class="row">
                     <div class="col-md-4 mb-3">
+                        <label class="form-label">Jenjang</label>
                         <select name="jenjang" class="form-select" required>
-        <option value="">Pilih Jenjang...</option>
-        <option value="SMK/SMA">SMK/SMA</option>
-        <option value="D3">D3</option>
-        <option value="S1">S1</option>
-        <option value="S2">S2</option>
-        <option value="S3">S3</option>
-    </select>
+                            <option value="">Pilih Jenjang...</option>
+                            <option value="SMK/SMA">SMK/SMA</option>
+                            <option value="D3">D3</option>
+                            <option value="S1">S1</option>
+                            <option value="S2">S2</option>
+                            <option value="S3">S3</option>
+                        </select>
                     </div>
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Nama Sekolah / Universitas</label>
@@ -133,15 +134,15 @@
                 </div>
 
                 <div class="row">
-    <div class="col-md-6 mb-3">
-        <label class="form-label">Start Date</label>
-        <input type="date" name="start_date" id="start_date" class="form-control" required onchange="validasiTanggal()">
-    </div>
-    <div class="col-md-6 mb-3">
-        <label class="form-label">End Date</label>
-        <input type="date" name="end_date" id="end_date" class="form-control" required onchange="validasiTanggal()">
-    </div>
-</div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" required onchange="validasiTanggal()">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" required onchange="validasiTanggal()">
+                    </div>
+                </div>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary w-100 p-3" id="submitBtn">Simpan Biodata</button>
@@ -152,82 +153,69 @@
 </div>
 
 <script>
-// Ganti bagian SCRIPT lama Anda dengan ini
-const scriptURL = 'https://script.google.com/macros/s/AKfycbw9n6o_e35BYRSmFT3i9JiXdQBsBDVXTLwV0XBBtJpi4R955o_Xh5LdTYy7gaNC2xgK/exec'
-const form = document.getElementById('biodataForm')
-const btn = document.getElementById('submitBtn')
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbw9n6o_e35BYRSmFT3i9JiXdQBsBDVXTLwV0XBBtJpi4R955o_Xh5LdTYy7gaNC2xgK/exec'
+    const form = document.getElementById('biodataForm')
+    const btn = document.getElementById('submitBtn')
 
-form.addEventListener('submit', e => {
-    e.preventDefault()
-    
-    // Validasi tambahan sebelum kirim
-    const start = new Date(document.getElementById('start_date').value);
-    const end = new Date(document.getElementById('end_date').value);
-    
-    if (end < start) {
-        alert("Kesalahan: End Date tetap lebih kecil dari Start Date. Silakan perbaiki.");
-        return; // Berhenti di sini, tidak jadi kirim data
-    }
-
-    btn.disabled = true
-    btn.innerHTML = "Sedang Mengirim..."
-
-    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-    .then(response => {
-        btn.disabled = false
-        btn.innerHTML = "Simpan Biodata"
-        alert("Terima kasih! Data biodata berhasil tersimpan.")
-        form.reset()
-        document.getElementById('umur').value = ""; // Reset manual kolom umur
-    })
-    .catch(error => {
-        btn.disabled = false
-        btn.innerHTML = "Simpan Biodata"
-        alert("Terjadi kesalahan: " + error.message)
-    })
-})
-
-// Fungsi Menghitung Umur
-function hitungUmur() {
-    const inputTgl = document.getElementById('tgl_lahir').value;
-    if (!inputTgl) return;
-
-    const tglLahir = new Date(inputTgl);
-    const hariIni = new Date();
-    
-    let tahun = hariIni.getFullYear() - tglLahir.getFullYear();
-    let bulan = hariIni.getMonth() - tglLahir.getMonth();
-    let hari = hariIni.getDate() - tglLahir.getDate();
-
-    // Koreksi jika belum ulang tahun di bulan ini
-    if (bulan < 0 || (bulan === 0 && hari < 0)) {
-        tahun--;
-        bulan = (bulan < 0) ? 12 + bulan : 11;
-    }
-    
-    // Pastikan hasil tidak negatif jika tgl lahir di masa depan
-    if (tahun < 0) {
-        document.getElementById('umur').value = "Tanggal tidak valid";
-    } else {
-        document.getElementById('umur').value = tahun + " Tahun " + bulan + " Bulan";
-    }
-}
-
-// Fungsi Validasi Tanggal
-function validasiTanggal() {
-    const startVal = document.getElementById('start_date').value;
-    const endVal = document.getElementById('end_date').value;
-
-    if (startVal && endVal) {
-        const start = new Date(startVal);
-        const end = new Date(endVal);
-
+    form.addEventListener('submit', e => {
+        e.preventDefault()
+        
+        // Proteksi ganda untuk tanggal
+        const start = new Date(document.getElementById('start_date').value);
+        const end = new Date(document.getElementById('end_date').value);
         if (end < start) {
-            alert("Peringatan: End Date tidak boleh lebih awal dari Start Date!");
-            document.getElementById('end_date').value = ""; // Kosongkan input
+            alert("Kesalahan: End Date tidak boleh lebih kecil dari Start Date.");
+            return;
+        }
+
+        btn.disabled = true
+        btn.innerHTML = "Sedang Mengirim..."
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+        .then(response => {
+            btn.disabled = false
+            btn.innerHTML = "Simpan Biodata"
+            alert("Terima kasih! Data biodata berhasil tersimpan.")
+            form.reset()
+            document.getElementById('umur').value = ""; 
+        })
+        .catch(error => {
+            btn.disabled = false
+            btn.innerHTML = "Simpan Biodata"
+            alert("Terjadi kesalahan: " + error.message)
+        })
+    })
+
+    function hitungUmur() {
+        const inputTgl = document.getElementById('tgl_lahir').value;
+        if (!inputTgl) return;
+
+        const tglLahir = new Date(inputTgl);
+        const hariIni = new Date();
+        
+        let tahun = hariIni.getFullYear() - tglLahir.getFullYear();
+        let bulan = hariIni.getMonth() - tglLahir.getMonth();
+        let hari = hariIni.getDate() - tglLahir.getDate();
+
+        if (bulan < 0 || (bulan === 0 && hari < 0)) {
+            tahun--;
+            bulan = (bulan < 0) ? 12 + bulan : 11;
+        }
+        
+        document.getElementById('umur').value = (tahun < 0) ? "Tanggal tidak valid" : tahun + " Tahun " + bulan + " Bulan";
+    }
+
+    function validasiTanggal() {
+        const startVal = document.getElementById('start_date').value;
+        const endVal = document.getElementById('end_date').value;
+
+        if (startVal && endVal) {
+            if (new Date(endVal) < new Date(startVal)) {
+                alert("Peringatan: End Date tidak boleh lebih awal dari Start Date!");
+                document.getElementById('end_date').value = ""; 
+            }
         }
     }
-}
 </script>
 
 </body>

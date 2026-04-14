@@ -152,58 +152,79 @@
 </div>
 
 <script>
-    // MASUKKAN URL ANDA DI SINI
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbw9n6o_e35BYRSmFT3i9JiXdQBsBDVXTLwV0XBBtJpi4R955o_Xh5LdTYy7gaNC2xgK/exec'
-    const form = document.getElementById('biodataForm')
-    const btn = document.getElementById('submitBtn')
+// Ganti bagian SCRIPT lama Anda dengan ini
+const scriptURL = 'https://script.google.com/macros/s/AKfycbw9n6o_e35BYRSmFT3i9JiXdQBsBDVXTLwV0XBBtJpi4R955o_Xh5LdTYy7gaNC2xgK/exec'
+const form = document.getElementById('biodataForm')
+const btn = document.getElementById('submitBtn')
 
-    form.addEventListener('submit', e => {
-        e.preventDefault()
-        btn.disabled = true
-        btn.innerHTML = "Sedang Mengirim..."
-
-        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-        .then(response => {
-            btn.disabled = false
-            btn.innerHTML = "Simpan Biodata"
-            alert("Terima kasih! Data biodata berhasil tersimpan di Google Sheet.")
-            form.reset()
-        })
-        .catch(error => {
-            btn.disabled = false
-            btn.innerHTML = "Simpan Biodata"
-            alert("Terjadi kesalahan: " + error.message)
-        })
-    })
-
-    // Fungsi Menghitung Umur (Tahun & Bulan)
-function hitungUmur() {
-    const tglLahir = new Date(document.getElementById('tgl_lahir').value);
-    const hariIni = new Date();
+form.addEventListener('submit', e => {
+    e.preventDefault()
     
-    if (isNaN(tglLahir)) return;
-
-    let tahun = hariIni.getFullYear() - tglLahir.getFullYear();
-    let bulan = hariIni.getMonth() - tglLahir.getMonth();
-
-    if (bulan < 0 || (bulan === 0 && hariIni.getDate() < tglLahir.getDate())) {
-        tahun--;
-        bulan = 12 + bulan;
+    // Validasi tambahan sebelum kirim
+    const start = new Date(document.getElementById('start_date').value);
+    const end = new Date(document.getElementById('end_date').value);
+    
+    if (end < start) {
+        alert("Kesalahan: End Date tetap lebih kecil dari Start Date. Silakan perbaiki.");
+        return; // Berhenti di sini, tidak jadi kirim data
     }
 
-    document.getElementById('umur').value = tahun + " Tahun " + bulan + " Bulan";
+    btn.disabled = true
+    btn.innerHTML = "Sedang Mengirim..."
+
+    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+    .then(response => {
+        btn.disabled = false
+        btn.innerHTML = "Simpan Biodata"
+        alert("Terima kasih! Data biodata berhasil tersimpan.")
+        form.reset()
+        document.getElementById('umur').value = ""; // Reset manual kolom umur
+    })
+    .catch(error => {
+        btn.disabled = false
+        btn.innerHTML = "Simpan Biodata"
+        alert("Terjadi kesalahan: " + error.message)
+    })
+})
+
+// Fungsi Menghitung Umur
+function hitungUmur() {
+    const inputTgl = document.getElementById('tgl_lahir').value;
+    if (!inputTgl) return;
+
+    const tglLahir = new Date(inputTgl);
+    const hariIni = new Date();
+    
+    let tahun = hariIni.getFullYear() - tglLahir.getFullYear();
+    let bulan = hariIni.getMonth() - tglLahir.getMonth();
+    let hari = hariIni.getDate() - tglLahir.getDate();
+
+    // Koreksi jika belum ulang tahun di bulan ini
+    if (bulan < 0 || (bulan === 0 && hari < 0)) {
+        tahun--;
+        bulan = (bulan < 0) ? 12 + bulan : 11;
+    }
+    
+    // Pastikan hasil tidak negatif jika tgl lahir di masa depan
+    if (tahun < 0) {
+        document.getElementById('umur').value = "Tanggal tidak valid";
+    } else {
+        document.getElementById('umur').value = tahun + " Tahun " + bulan + " Bulan";
+    }
 }
 
-// Fungsi Validasi End Date tidak boleh kurang dari Start Date
+// Fungsi Validasi Tanggal
 function validasiTanggal() {
-    const start = document.getElementById('start_date').value;
-    const end = document.getElementById('end_date').value;
-    const btn = document.getElementById('submitBtn');
+    const startVal = document.getElementById('start_date').value;
+    const endVal = document.getElementById('end_date').value;
 
-    if (start && end) {
-        if (new Date(end) < new Date(start)) {
+    if (startVal && endVal) {
+        const start = new Date(startVal);
+        const end = new Date(endVal);
+
+        if (end < start) {
             alert("Peringatan: End Date tidak boleh lebih awal dari Start Date!");
-            document.getElementById('end_date').value = "";
+            document.getElementById('end_date').value = ""; // Kosongkan input
         }
     }
 }

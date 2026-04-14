@@ -52,13 +52,13 @@
                         <input type="text" name="tempat_lahir" class="form-control" required>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Tanggal Lahir</label>
-                        <input type="date" name="tgl_lahir" class="form-control" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Umur</label>
-                        <input type="number" name="umur" class="form-control" required>
-                    </div>
+        <label class="form-label">Tanggal Lahir</label>
+        <input type="date" name="tgl_lahir" id="tgl_lahir" class="form-control" required onchange="hitungUmur()">
+    </div>
+    <div class="col-md-8 mb-3">
+        <label class="form-label">Umur</label>
+        <input type="text" name="umur" id="umur" class="form-control" readonly placeholder="Otomatis terisi...">
+    </div>
                 </div>
 
                 <div class="row">
@@ -78,21 +78,42 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Agama</label>
-                        <input type="text" name="agama" class="form-control" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Jenis (Reguler/Karyawan)</label>
-                        <input type="text" name="jenis" class="form-control" required>
-                    </div>
+        <label class="form-label">Agama</label>
+        <select name="agama" class="form-select" required>
+            <option value="">Pilih Agama...</option>
+            <option value="Islam">Islam</option>
+            <option value="Kristen Protestan">Kristen Protestan</option>
+            <option value="Katolik">Katolik</option>
+            <option value="Hindu">Hindu</option>
+            <option value="Buddha">Buddha</option>
+            <option value="Konghucu">Konghucu</option>
+        </select>
+    </div>
+                   <div class="col-md-6 mb-3">
+        <label class="form-label">Jenis</label>
+        <select name="jenis" class="form-select" required>
+            <option value="">Pilih Jenis...</option>
+            <option value="Penelitian">Penelitian</option>
+            <option value="Magang">Magang</option>
+            <option value="PKL">PKL</option>
+            <option value="Studi Banding">Studi Banding</option>
+            <option value="Orientasi Program">Orientasi Program</option>
+        </select>
+    </div>
                 </div>
 
                 <hr>
                 <h5 class="mb-3">Data Pendidikan</h5>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label">Jenjang</label>
-                        <input type="text" name="jenjang" class="form-control" placeholder="SMA/D3/S1" required>
+                        <select name="jenjang" class="form-select" required>
+        <option value="">Pilih Jenjang...</option>
+        <option value="SMK/SMA">SMK/SMA</option>
+        <option value="D3">D3</option>
+        <option value="S1">S1</option>
+        <option value="S2">S2</option>
+        <option value="S3">S3</option>
+    </select>
                     </div>
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Nama Sekolah / Universitas</label>
@@ -112,15 +133,15 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Start Date</label>
-                        <input type="date" name="start_date" class="form-control" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">End Date</label>
-                        <input type="date" name="end_date" class="form-control" required>
-                    </div>
-                </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label">Start Date</label>
+        <input type="date" name="start_date" id="start_date" class="form-control" required onchange="validasiTanggal()">
+    </div>
+    <div class="col-md-6 mb-3">
+        <label class="form-label">End Date</label>
+        <input type="date" name="end_date" id="end_date" class="form-control" required onchange="validasiTanggal()">
+    </div>
+</div>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary w-100 p-3" id="submitBtn">Simpan Biodata</button>

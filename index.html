@@ -3,273 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Data Peserta Didik 2026</title>
+    <title>Sistem Manajemen Peserta Didik 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f0f2f5; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container-main { max-width: 850px; margin: auto; }
-        .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .container-main { max-width: 900px; margin: 30px auto; }
+        .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none; }
         .hidden { display: none; }
-        .btn-menu { height: 150px; font-size: 1.3rem; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; border-radius: 15px; }
-        .btn-menu:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .section-title { border-bottom: 3px solid #0d6efd; padding-bottom: 10px; margin-bottom: 25px; color: #0d6efd; font-weight: bold; }
-        .badge-step { font-size: 0.9rem; background: #0d6efd; color: white; padding: 5px 15px; border-radius: 20px; margin-bottom: 10px; display: inline-block; }
+        .section-title { border-left: 5px solid #0d6efd; padding-left: 15px; margin-bottom: 25px; color: #0d6efd; font-weight: bold; }
+        .btn-menu { height: 180px; font-size: 1.4rem; font-weight: bold; border-radius: 15px; transition: 0.3s; }
+        .btn-menu:hover { transform: translateY(-8px); box-shadow: 0 12px 20px rgba(0,0,0,0.1); }
+        .table-wrapper { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 20px; border: 1px solid #dee2e6; }
     </style>
 </head>
 <body>
 
 <div class="container container-main">
-    
-    <div id="menuUtama" class="card-custom text-center">
-        <h2 class="mb-4 fw-bold">Form Menu Data Peserta Didik<br><span class="text-primary">Tahun 2026</span></h2>
-        <hr>
-        <div class="row g-4 mt-2">
+
+    <div id="pageHome" class="card-custom text-center">
+        <h1 class="fw-bold mb-2">Sistem Informasi Peserta Didik</h1>
+        <p class="text-muted mb-5">Ruang Diklat Lt. 6 - Tahun 2026</p>
+        <div class="row g-4">
             <div class="col-md-6">
-                <button class="btn btn-primary w-100 btn-menu" onclick="showSection('step1')">
-                    <span class="mb-2">📝</span>
-                    Input Data Peserta Didik Baru
+                <button class="btn btn-primary w-100 btn-menu" onclick="showPage('pageInput')">
+                    <span class="d-block mb-3" style="font-size: 3rem;">📥</span>
+                    Input Data Baru
                 </button>
             </div>
             <div class="col-md-6">
-                <button class="btn btn-outline-secondary w-100 btn-menu" onclick="alert('Fitur Edit/Delete dalam pengembangan')">
-                    <span>🔍</span>
-                    Edit / Delete Peserta Didik
+                <button class="btn btn-outline-dark w-100 btn-menu" onclick="showPage('pageEdit')">
+                    <span class="d-block mb-3" style="font-size: 3rem;">⚙️</span>
+                    Edit / Delete Data
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="step1" class="card-custom hidden">
-        <span class="badge-step">Langkah 1 dari 2</span>
-        <h3 class="section-title">Data Pendaftaran & Institusi</h3>
-        <form id="formStep1">
-            <div class="row">
-                <div class="col-md-12 mb-3">
+    <div id="pageInput" class="card-custom hidden">
+        <h3 class="section-title">Form Registrasi Peserta Didik</h3>
+        
+        <form id="masterForm">
+            <div class="row g-3">
+                <div class="col-md-4">
                     <label class="form-label fw-bold">Tipe Pendaftaran</label>
-                    <select id="tipe" name="tipe" class="form-select form-select-lg border-primary" required>
-                        <option value="">-- Pilih Tipe --</option>
+                    <select name="tipe" id="tipe" class="form-select border-primary" onchange="toggleModeKelompok()">
                         <option value="Perorangan/Mandiri">Perorangan/Mandiri</option>
                         <option value="Kelompok">Kelompok</option>
                     </select>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-8">
                     <label class="form-label">Nama Institusi / Sekolah</label>
-                    <input type="text" name="sekolah" id="sekolah" class="form-control" placeholder="Contoh: UNPAD / SMK N 1" required>
+                    <input type="text" name="sekolah" id="sekolah" class="form-control" required>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Jurusan / Prodi</label>
+                <div class="col-md-4">
+                    <label class="form-label">Jurusan</label>
                     <input type="text" name="jurusan" id="jurusan" class="form-control" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4">
                     <label class="form-label">Start Date</label>
                     <input type="date" name="start_date" id="start_date" class="form-control" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4">
                     <label class="form-label">End Date</label>
                     <input type="date" name="end_date" id="end_date" class="form-control" required>
                 </div>
             </div>
-            <div class="d-flex justify-content-between mt-4">
-                <button type="button" class="btn btn-light" onclick="showSection('menuUtama')">Kembali ke Menu</button>
-                <button type="button" class="btn btn-primary px-5 fw-bold" onclick="validasiLanjutStep2()">Lanjut ke Biodata ➔</button>
-            </div>
         </form>
-    </div>
 
-    <div id="step2" class="card-custom hidden">
-        <span class="badge-step">Langkah 2 dari 2</span>
-        <h3 class="section-title">Isian Biodata Peserta</h3>
+        <hr class="my-4">
 
-        <div id="infoKelompok" class="alert alert-info hidden">
-            <strong>Mode Kelompok Aktif:</strong> Silakan masukkan biodata anggota satu per satu. Klik tombol simpan untuk setiap anggota.
+        <h5 class="mb-3 text-secondary">Input Biodata Peserta</h5>
+        <div class="row g-3" id="tempBiodataForm">
+            <div class="col-md-6"><input type="text" id="tNama" class="form-control" placeholder="Nama Lengkap"></div>
+            <div class="col-md-3"><input type="text" id="tNim" class="form-control" placeholder="NIM"></div>
+            <div class="col-md-3"><input type="number" id="tKtp" class="form-control" placeholder="No. KTP"></div>
+            <div class="col-md-3"><input type="tel" id="tHp" class="form-control" placeholder="No. WA"></div>
+            <div class="col-md-3"><input type="date" id="tLahir" class="form-control" title="Tgl Lahir"></div>
+            <div class="col-md-6">
+                <button type="button" id="btnAddOrang" class="btn btn-info w-100 fw-bold text-white" onclick="tambahKeDaftar()">
+                    + Tambah Ke Daftar
+                </button>
+            </div>
         </div>
 
-        <form id="biodataForm">
-            <div class="row">
-                <div class="col-md-8 mb-3">
-                    <label class="form-label">Nama Lengkap</label>
-                    <input type="text" name="nama" id="nama" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">NIM</label>
-                    <input type="text" name="nim" id="nim" class="form-control" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">No. KTP</label>
-                    <input type="number" name="ktp" id="ktp" class="form-control" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Handphone (WA)</label>
-                    <input type="tel" name="hp" id="hp" class="form-control" placeholder="08..." required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Tempat Lahir</label>
-                    <input type="text" name="tempat_lahir" id="tempat_lahir" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Tanggal Lahir</label>
-                    <input type="date" name="tgl_lahir" id="tgl_lahir" class="form-control" required onchange="hitungUmur()">
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Umur</label>
-                    <input type="text" name="umur" id="umur" class="form-control" readonly>
-                </div>
-                <div class="col-md-12 mb-3">
-                    <label class="form-label">Alamat Lengkap</label>
-                    <textarea name="alamat" id="alamat" class="form-control" rows="2" required></textarea>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Kelurahan/Kecamatan</label>
-                    <input type="text" name="kec_kel" id="kec_kel" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Kota</label>
-                    <input type="text" name="kota" id="kota" class="form-control" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Jenis Kelamin</label>
-                    <select name="jk" id="jk" class="form-select" required>
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Agama</label>
-                    <select name="agama" id="agama" class="form-select" required>
-                        <option value="Islam">Islam</option>
-                        <option value="Kristen Protestan">Kristen Protestan</option>
-                        <option value="Katolik">Katolik</option>
-                        <option value="Hindu">Hindu</option>
-                        <option value="Buddha">Buddha</option>
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Jenjang Pendidikan</label>
-                    <select name="jenjang" id="jenjang" class="form-select" required>
-                        <option value="SMK/SMA">SMK/SMA</option>
-                        <option value="D3">D3</option>
-                        <option value="S1">S1</option>
-                    </select>
-                </div>
-                <div class="col-md-12 mb-3">
-                    <label class="form-label">Jenis Kegiatan</label>
-                    <select name="jenis" id="jenis" class="form-select" required>
-                        <option value="Magang">Magang</option>
-                        <option value="Penelitian">Penelitian</option>
-                        <option value="PKL">PKL</option>
-                        <option value="Studi Banding">Studi Banding</option>
-                    </select>
-                </div>
-            </div>
+        <div id="wrapperTabel" class="table-wrapper hidden">
+            <table class="table table-sm table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Nama</th>
+                        <th>NIM</th>
+                        <th>KTP</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="listPesertaBody"></tbody>
+            </table>
+        </div>
 
-            <div class="d-flex justify-content-between mt-4">
-                <button type="button" class="btn btn-outline-secondary" onclick="showSection('step1')">⬅ Kembali</button>
-                <button type="submit" id="submitBtn" class="btn btn-success px-5 fw-bold">✓ Simpan & Kirim Data</button>
-            </div>
-        </form>
+        <div class="mt-5 d-flex justify-content-between">
+            <button class="btn btn-light" onclick="showPage('pageHome')">Kembali ke Menu</button>
+            <button id="btnSubmitAll" class="btn btn-success px-5 fw-bold" onclick="kirimSemuaData()">
+                🚀 Kirim Semua Data
+            </button>
+        </div>
+    </div>
+
+    <div id="pageEdit" class="card-custom hidden text-center">
+        <h3 class="section-title">Database Peserta Didik</h3>
+        <p>Fitur ini akan dihubungkan dengan database Spreadsheet Anda.</p>
+        <div class="alert alert-warning">Sedang dalam tahap pengembangan API...</div>
+        <button class="btn btn-secondary mt-3" onclick="showPage('pageHome')">Kembali</button>
     </div>
 
 </div>
 
 <script>
-    // URL Web App Anda
-    const scriptURL = 'https://script.google.com/macros/s/AKfycby_9Y1FzLWJ52QBPUb-GBUypwdU_ddbFLMQOpsq8hJnuzuyLGEZeRc1kjkO0y8_TrqT/exec';
-    
-    // Fungsi Navigasi Antar Halaman
-    function showSection(sectionId) {
-        document.getElementById('menuUtama').classList.add('hidden');
-        document.getElementById('step1').classList.add('hidden');
-        document.getElementById('step2').classList.add('hidden');
-        document.getElementById(sectionId).classList.remove('hidden');
+    const scriptURL = 'MASUKKAN_URL_BARU_DI_SINI';
+    let daftarPeserta = []; // Array untuk menampung data kelompok
+
+    function showPage(pageId) {
+        document.getElementById('pageHome').classList.add('hidden');
+        document.getElementById('pageInput').classList.add('hidden');
+        document.getElementById('pageEdit').classList.add('hidden');
+        document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    function toggleModeKelompok() {
+        const tipe = document.getElementById('tipe').value;
+        const wrapper = document.getElementById('wrapperTabel');
+        const btnAdd = document.getElementById('btnAddOrang');
         
-        // Logika Tampilan Kelompok
-        if(sectionId === 'step2') {
-            const tipe = document.getElementById('tipe').value;
-            const info = document.getElementById('infoKelompok');
-            if(tipe === 'Kelompok') {
-                info.classList.remove('hidden');
-            } else {
-                info.classList.add('hidden');
-            }
+        if (tipe === 'Kelompok') {
+            wrapper.classList.remove('hidden');
+            btnAdd.innerHTML = "+ Tambah Anggota Kelompok";
+        } else {
+            wrapper.classList.add('hidden');
+            btnAdd.innerHTML = "+ Masukkan Data";
         }
     }
 
-    // Validasi Step 1 sebelum lanjut
-    function validasiLanjutStep2() {
-        const form1 = document.getElementById('formStep1');
-        const start = new Date(document.getElementById('start_date').value);
-        const end = new Date(document.getElementById('end_date').value);
+    function tambahKeDaftar() {
+        const nama = document.getElementById('tNama').value;
+        const nim = document.getElementById('tNim').value;
+        const ktp = document.getElementById('tKtp').value;
+        const hp = document.getElementById('tHp').value;
+        const tgl = document.getElementById('tLahir').value;
 
-        if (!form1.checkValidity()) {
-            form1.reportValidity();
-            return;
-        }
+        if (!nama || !nim) { alert("Nama dan NIM wajib diisi!"); return; }
 
-        if (end < start) {
-            alert("Kesalahan: Tanggal Selesai tidak boleh mendahului Tanggal Mulai.");
-            return;
-        }
-
-        showSection('step2');
+        // Simpan ke Array
+        daftarPeserta.push({ nama, nim, ktp, hp, tgl });
+        updateTabel();
+        
+        // Reset form biodata saja
+        document.getElementById('tNama').value = "";
+        document.getElementById('tNim').value = "";
+        document.getElementById('tKtp').value = "";
     }
 
-    // Proses Submit Final
-    document.getElementById('biodataForm').addEventListener('submit', e => {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
+    function updateTabel() {
+        const tbody = document.getElementById('listPesertaBody');
+        tbody.innerHTML = "";
+        daftarPeserta.forEach((p, index) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.nama}</td>
+                    <td>${p.nim}</td>
+                    <td>${p.ktp}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="hapusOrang(${index})">Hapus</button></td>
+                </tr>`;
+        });
+    }
+
+    function hapusOrang(index) {
+        daftarPeserta.splice(index, 1);
+        updateTabel();
+    }
+
+    async function kirimSemuaData() {
+        const tipe = document.getElementById('tipe').value;
+        const btn = document.getElementById('btnSubmitAll');
+
+        // Jika Mandiri, ambil data dari field input biodata saat ini jika daftarPeserta kosong
+        if (tipe === 'Perorangan/Mandiri' && daftarPeserta.length === 0) {
+            tambahKeDaftar();
+        }
+
+        if (daftarPeserta.length === 0) {
+            alert("Belum ada data peserta yang dimasukkan!");
+            return;
+        }
+
         btn.disabled = true;
         btn.innerHTML = "Sedang Mengirim...";
 
-        // Gabungkan Data Step 1 dan Step 2 ke dalam satu paket FormData
-        const finalData = new FormData();
-        
-        // Ambil dari Form Step 1
-        const data1 = new FormData(document.getElementById('formStep1'));
-        for (let [key, value] of data1.entries()) { finalData.append(key, value); }
-        
-        // Ambil dari Form Step 2
-        const data2 = new FormData(document.getElementById('biodataForm'));
-        for (let [key, value] of data2.entries()) { finalData.append(key, value); }
+        // Loop untuk mengirim data satu per satu ke Apps Script
+        // Karena Apps Script standar menerima satu POST per satu baris
+        for (let i = 0; i < daftarPeserta.length; i++) {
+            const finalData = new FormData(document.getElementById('masterForm'));
+            finalData.append('nama', daftarPeserta[i].nama);
+            finalData.append('nim', daftarPeserta[i].nim);
+            finalData.append('ktp', daftarPeserta[i].ktp);
+            finalData.append('hp', daftarPeserta[i].hp);
+            finalData.append('tgl_lahir', daftarPeserta[i].tgl);
 
-        fetch(scriptURL, { method: 'POST', body: finalData })
-        .then(response => {
-            btn.disabled = false;
-            btn.innerHTML = "✓ Simpan & Kirim Data";
-            alert("Data Berhasil Tersimpan ke Database!");
-            
-            const tipe = document.getElementById('tipe').value;
-            if(tipe === 'Kelompok') {
-                // Jika kelompok, reset form biodata saja untuk input anggota berikutnya
-                document.getElementById('biodataForm').reset();
-                document.getElementById('umur').value = "";
-                alert("Silakan isi biodata anggota kelompok berikutnya.");
-            } else {
-                // Jika mandiri, reset total dan kembali ke menu
-                location.reload(); 
+            try {
+                await fetch(scriptURL, { method: 'POST', body: finalData });
+            } catch (e) {
+                console.error("Gagal mengirim baris ke-" + (i+1));
             }
-        })
-        .catch(error => {
-            btn.disabled = false;
-            btn.innerHTML = "✓ Simpan & Kirim Data";
-            alert("Terjadi kesalahan sistem: " + error.message);
-        });
-    });
-
-    // Fungsi Hitung Umur Otomatis
-    function hitungUmur() {
-        const tglInput = document.getElementById('tgl_lahir').value;
-        if (!tglInput) return;
-
-        const lahir = new Date(tglInput);
-        const sekarang = new Date();
-        let thn = sekarang.getFullYear() - lahir.getFullYear();
-        let bln = sekarang.getMonth() - lahir.getMonth();
-
-        if (bln < 0 || (bln === 0 && sekarang.getDate() < lahir.getDate())) {
-            thn--;
-            bln = (bln < 0) ? 12 + bln : 11;
         }
-        document.getElementById('umur').value = thn + " Thn " + bln + " Bln";
+
+        alert("Semua data berhasil terkirim!");
+        location.reload();
     }
 </script>
 

@@ -143,6 +143,14 @@
                         <input type="date" name="end_date" id="end_date" class="form-control" required onchange="validasiTanggal()">
                     </div>
                 </div>
+                <div class="mb-3">
+    <label class="form-label">Tipe Pendaftaran</label>
+    <select name="tipe" class="form-select" required>
+        <option value="">Pilih Tipe...</option>
+        <option value="Perorangan/Mandiri">Perorangan/Mandiri</option>
+        <option value="Kelompok">Kelompok</option>
+    </select>
+</div>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary w-100 p-3" id="submitBtn">Simpan Biodata</button>

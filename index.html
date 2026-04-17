@@ -46,6 +46,7 @@
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Nama Sekolah / Universitas</label>
                         <input type="text" id="sekolah" name="sekolah" class="form-control" required>
+                        <datalist id="list-sekolah"></datalist>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Jenjang</label>
@@ -63,6 +64,7 @@
                     <div class="col-md-8 mb-3">
                         <label class="form-label">Jurusan</label>
                         <input type="text" id="jurusan" name="jurusan" class="form-control" required>
+                        <datalist id="list-jurusan"></datalist>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Jenis Kegiatan</label>
@@ -135,6 +137,7 @@
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Tempat Lahir</label>
                         <input type="text" id="tempat_lahir" class="form-control" required>
+                        <datalist id="list-kota"></datalist>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Tanggal Lahir</label>
@@ -175,6 +178,7 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Kota</label>
                         <input type="text" id="kota" class="form-control" required>
+                        <datalist id="list-kota"></datalist>
                     </div>
                 </div>
             </fieldset>
@@ -400,6 +404,73 @@ const scriptURL = 'https://script.google.com/macros/s/AKfycby7XHVd3UOPlaA8EFkAVJ
         alert("Berhasil! Semua data tersimpan.");
         location.reload();
     }
+    // --- DATA SUGGESTION ---
+const dataSekolah = [
+    "Universitas Indonesia", "Institut Teknologi Bandung", "Universitas Gadjah Mada", 
+    "Universitas Padjadjaran", "Universitas Diponegoro", "Universitas Airlangga", 
+    "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani", "Universitas Bhakti Kencana",
+    "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia",
+    "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)",
+    "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu",
+    "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam",
+    "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha",
+    "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom"
+];
+
+const dataJurusan = [
+    "Teknik Informatika", "Sistem Informasi", "Teknik Elektro", "Teknik Sipil", "Keperawatan", "Kebidanan", "Kedokteran", "Farmasi", "Gizi", "Fisioterapi",
+    "Manajemen", "Akuntansi", "Ilmu Komunikasi", "Psikologi", "Hukum", "Kedokteran Gigi", "Teknik Radiologi", "Laboratorium Medis", "Dietisien", "Analis Kesehatan",
+    "Rekayasa Perangkat Lunak (RPL)", "Multimedia", "Teknik Komputer Jaringan (TKJ)", "Rekam Medik", "Terapi Wicara", "Terapi Okupasi", "Fisika", "Biologi",
+    "Management Informasi Kesehatan", "Anestesi RPL", "Anestesi regular", "Elektromedis", "PPDS Anak", "PPDS Anestesi", "PPDS Bedah", "PPDS Obsgyn", "PPDS KFR",
+    "PPDS THT-KL", "PPDS Neurologi"
+];
+
+const dataKotaIndonesia = [
+    "Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", 
+    "Bandung", "Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", 
+    "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", 
+    "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", 
+    "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", 
+    "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", 
+    "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", 
+    "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", 
+    "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", 
+    "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", 
+    "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", 
+    "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", 
+    "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"
+];
+
+// --- FUNGSI PENGISI DATALIST ---
+function inisialisasiSuggestions() {
+    // Isi Datalist Sekolah
+    const dlSekolah = document.getElementById('list-sekolah');
+    dataSekolah.sort().forEach(item => {
+        let opt = document.createElement('option');
+        opt.value = item;
+        dlSekolah.appendChild(opt);
+    });
+
+    // Isi Datalist Jurusan
+    const dlJurusan = document.getElementById('list-jurusan');
+    dataJurusan.sort().forEach(item => {
+        let opt = document.createElement('option');
+        opt.value = item;
+        dlJurusan.appendChild(opt);
+    });
+
+    // Isi Datalist Kota (Dipakai untuk Tempat Lahir & Kota Domisili)
+    const dlKota = document.getElementById('list-kota');
+    dataKotaIndonesia.sort().forEach(item => {
+        let opt = document.createElement('option');
+        opt.value = item;
+        dlKota.appendChild(opt);
+    });
+}
+
+// Jalankan fungsi pengisian saat script selesai dibaca
+inisialisasiSuggestions();
+
 </script>
 
 </body>

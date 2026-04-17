@@ -160,6 +160,7 @@
                             <option value="">Pilih...</option>
                             <option value="Islam">Islam</option>
                             <option value="Kristen">Kristen</option>
+                            <option value="Protestan">Protestan</option>
                             <option value="Katolik">Katolik</option>
                             <option value="Hindu">Hindu</option>
                             <option value="Buddha">Buddha</option>
@@ -405,15 +406,18 @@ const scriptURL = 'https://script.google.com/macros/s/AKfycby7XHVd3UOPlaA8EFkAVJ
     }
     // --- DATA SUGGESTION ---
 const dataSekolah = [
-    "Universitas Indonesia", "Institut Teknologi Bandung", "Universitas Gadjah Mada", 
-    "Universitas Padjadjaran", "Universitas Diponegoro", "Universitas Airlangga", 
-    "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani", "Universitas Bhakti Kencana",
+    "Universitas Indonesia (UI)", "Institut Teknologi Bandung (ITB)", "Universitas Gadjah Mada (UGM)", 
+    "Universitas Padjadjaran (UNPAD)", "Universitas Diponegoro", "Universitas Airlangga", 
+    "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani (UNJANI)", "Universitas Bhakti Kencana (UBK)",
     "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia",
     "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)",
     "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu",
     "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam",
     "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha",
-    "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom"
+    "Akademik Teknik Radiodiagnostik dan Radioterapi Persada Nusantara Bekasi", "Politkenik Al-Islam Bandung", "Sekolah Tinggi Farmasi Indonesia (STFI)",
+    "Universitas Muhammadiyah Bandung", "Universitas Wahid Hasyim Semarang", "Universitas Islam Negeri Sunan Gunung Djati Bandung", "Poltekkes Kemenkes Semarang",
+    "Poltekkes Kemenkes Tasikmalaya", "Universitas Maranatha", "Universitas Sriwijaya", "Universitas Logistik dan Bisnis Internasional (ULBI)",
+    "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom", "SMKN 7 Bandung", "SMK Nusa Bhakti Bandung"
 ];
 
 const dataJurusan = [
@@ -421,12 +425,13 @@ const dataJurusan = [
     "Manajemen", "Akuntansi", "Ilmu Komunikasi", "Psikologi", "Hukum", "Kedokteran Gigi", "Teknik Radiologi", "Laboratorium Medis", "Dietisien", "Analis Kesehatan",
     "Rekayasa Perangkat Lunak (RPL)", "Multimedia", "Teknik Komputer Jaringan (TKJ)", "Rekam Medik", "Terapi Wicara", "Terapi Okupasi", "Fisika", "Biologi",
     "Management Informasi Kesehatan", "Anestesi RPL", "Anestesi regular", "Elektromedis", "PPDS Anak", "PPDS Anestesi", "PPDS Bedah", "PPDS Obsgyn", "PPDS KFR",
-    "PPDS THT-KL", "PPDS Neurologi"
+    "PPDS THT-KL", "PPDS Neurologi", "Administrasi Logistik", "PPDS IPD", "Apoteker", "Keperawatan Regular", "Keperawatan Non-Regular", "Kebidanan Regular",
+    "Kebidanan Non-Regular", "PSPD"
 ];
 
 const dataKotaIndonesia = [
     "Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", 
-    "Bandung", "Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", 
+    "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", 
     "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", 
     "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", 
     "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", 

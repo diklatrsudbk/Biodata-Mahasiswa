@@ -187,9 +187,9 @@
 
 </div>
 
-<script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycby_9Y1FzLWJ52QBPUb-GBUypwdU_ddbFLMQOpsq8hJnuzuyLGEZeRc1kjkO0y8_TrqT/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycby_9Y1FzLWJ52QBPUb-GBUypwdU_ddbFLMQOpsq8hJnuzuyLGEZeRc1kjkO0y8_TrqT/exec';
     let databaseSementara = [];
+    let editIndex = -1; // -1 berarti mode Input Baru, jika >= 0 berarti sedang Edit
 
     function showPage(pageId) {
         document.querySelectorAll('.card-custom').forEach(c => c.classList.add('hidden'));
@@ -201,7 +201,7 @@
         document.getElementById('btnSubmitAll').disabled = isLoading;
         document.getElementById('btnBackHome').disabled = isLoading;
         if(document.getElementById('btnAddMain')) document.getElementById('btnAddMain').disabled = isLoading;
-        document.querySelectorAll('.btn-danger').forEach(btn => btn.disabled = isLoading);
+        document.querySelectorAll('.btn-danger, .btn-warning').forEach(btn => btn.disabled = isLoading);
     }
 
     function handleTipeChange() {
@@ -209,18 +209,17 @@
         const areaAdd = document.getElementById('areaBtnAdd');
         const btnSubmit = document.getElementById('btnSubmitAll');
         
-        // Reset data jika ganti tipe
         databaseSementara = [];
         updateTabel();
 
         if (tipe === 'Kelompok') {
             areaAdd.classList.remove('hidden');
-            btnSubmit.classList.add('hidden'); // Sembunyikan sampai min 2 orang
+            btnSubmit.classList.add('hidden');
             btnSubmit.innerHTML = "🚀 Simpan & Kirim Kelompok";
         } else {
             areaAdd.classList.add('hidden');
             btnSubmit.classList.remove('hidden');
-            btnSubmit.innerHTML = "Isi Biodata"; // Default Mandiri
+            btnSubmit.innerHTML = "Isi Biodata";
         }
     }
 
@@ -229,6 +228,30 @@
             document.getElementById('masterForm').reportValidity();
             return;
         }
+        editIndex = -1; // Pastikan masuk sebagai input baru
+        document.getElementById('biodataForm').reset();
+        document.getElementById('umur').value = "";
+        showPage('pageBiodata');
+    }
+
+    function editBiodata(index) {
+        editIndex = index;
+        const data = databaseSementara[index];
+        
+        // Isi form biodata dengan data yang akan diedit
+        document.getElementById('nama').value = data.nama;
+        document.getElementById('ktp').value = data.ktp;
+        document.getElementById('nim').value = data.nim;
+        document.getElementById('hp').value = data.hp;
+        document.getElementById('tempat_lahir').value = data.tempat_lahir;
+        document.getElementById('tgl_lahir').value = data.tgl_lahir;
+        document.getElementById('umur').value = data.umur;
+        document.getElementById('jk').value = data.jk;
+        document.getElementById('agama').value = data.agama;
+        document.getElementById('alamat').value = data.alamat;
+        document.getElementById('kec_kel').value = data.kec_kel;
+        document.getElementById('kota').value = data.kota;
+
         showPage('pageBiodata');
     }
 
@@ -274,20 +297,26 @@
             kota: document.getElementById('kota').value
         };
 
-        const tipe = document.getElementById('tipe').value;
-        if(tipe === 'Perorangan/Mandiri') databaseSementara = []; // Hanya 1 orang
+        if (editIndex > -1) {
+            // Jika sedang edit, timpa data lama
+            databaseSementara[editIndex] = data;
+        } else {
+            // Jika baru, tambah ke array
+            const tipe = document.getElementById('tipe').value;
+            if(tipe === 'Perorangan/Mandiri') databaseSementara = []; 
+            databaseSementara.push(data);
+        }
 
-        databaseSementara.push(data);
         updateTabel();
         form.reset();
         showPage('pageInput');
 
-        // Update teks tombol setelah biodata diisi
+        // Update Logika Tombol
         const btnSubmit = document.getElementById('btnSubmitAll');
+        const tipe = document.getElementById('tipe').value;
         if(tipe === 'Perorangan/Mandiri') {
             btnSubmit.innerHTML = "🚀 Simpan & Kirim Data";
         } else {
-            // Cek minimal 2 orang untuk Kelompok
             if(databaseSementara.length >= 2) {
                 btnSubmit.classList.remove('hidden');
             } else {
@@ -301,28 +330,34 @@
         const tbody = document.getElementById('tbodyDaftar');
         const tipe = document.getElementById('tipe').value;
 
-        // Tabel hanya untuk kelompok
         area.classList.toggle('hidden', databaseSementara.length === 0 || tipe === 'Perorangan/Mandiri');
         
         tbody.innerHTML = "";
         databaseSementara.forEach((item, index) => {
-            tbody.innerHTML += `<tr><td>${item.nama}</td><td>${item.nim}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="hapusBaris(${index})">Hapus</button></td></tr>`;
+            tbody.innerHTML += `<tr>
+                <td>${item.nama}</td>
+                <td>${item.nim}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm fw-bold" onclick="editBiodata(${index})">Edit</button>
+                    <button class="btn btn-danger btn-sm" onclick="hapusBaris(${index})">Hapus</button>
+                </td>
+            </tr>`;
         });
     }
 
     function hapusBaris(i) {
-        databaseSementara.splice(i, 1);
-        updateTabel();
-        const btnSubmit = document.getElementById('btnSubmitAll');
-        if(databaseSementara.length < 2) btnSubmit.classList.add('hidden');
+        if(confirm("Hapus peserta ini?")) {
+            databaseSementara.splice(i, 1);
+            updateTabel();
+            const btnSubmit = document.getElementById('btnSubmitAll');
+            if(databaseSementara.length < 2) btnSubmit.classList.add('hidden');
+        }
     }
 
     async function prosesKirimFinal() {
         const btn = document.getElementById('btnSubmitAll');
         const tipe = document.getElementById('tipe').value;
 
-        // Jika teks masih "Isi Biodata", arahkan ke form bio
         if (btn.innerHTML === "Isi Biodata") {
             bukaBiodata();
             return;
@@ -331,12 +366,11 @@
         if (databaseSementara.length === 0) return;
 
         setFormLoading(true);
-        btn.innerHTML = "⌛ Menghubungkan ke Sheet...";
+        btn.innerHTML = "⌛ Menghubungkan...";
 
         for (let i = 0; i < databaseSementara.length; i++) {
             btn.innerHTML = `⌛ Mengirim Data (${i+1}/${databaseSementara.length})...`;
             
-            // PENTING: Mengambil data dari masterForm kembali agar field institusi ikut terbawa
             const fd = new FormData();
             fd.append('tipe', document.getElementById('tipe').value);
             fd.append('sekolah', document.getElementById('sekolah').value);
@@ -346,7 +380,6 @@
             fd.append('start_date', document.getElementById('start_date').value);
             fd.append('end_date', document.getElementById('end_date').value);
 
-            // Tambahkan data biodata dari array
             Object.keys(databaseSementara[i]).forEach(key => {
                 fd.append(key, databaseSementara[i][key]);
             });
@@ -355,7 +388,6 @@
                 await fetch(scriptURL, { method: 'POST', body: fd });
             } catch (e) { 
                 console.error(e);
-                alert("Koneksi gagal pada data ke-" + (i+1));
             }
         }
 

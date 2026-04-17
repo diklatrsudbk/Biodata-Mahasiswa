@@ -12,7 +12,6 @@
         .header-title { color: #0d6efd; font-weight: bold; text-align: center; margin-bottom: 25px; }
         .section-title { border-left: 5px solid #0d6efd; padding-left: 15px; margin-bottom: 20px; color: #0d6efd; font-weight: bold; }
         .table-area { background: #fff; border-radius: 10px; overflow: hidden; margin-top: 20px; border: 1px solid #dee2e6; }
-        /* Style untuk menandakan form sedang terkunci */
         input:disabled, select:disabled, textarea:disabled { background-color: #e9ecef !important; cursor: not-allowed; }
     </style>
 </head>
@@ -35,7 +34,8 @@
     <div id="pageInput" class="card-custom hidden">
         <h3 class="section-title">Data Pendaftaran & Institusi</h3>
         <form id="masterForm">
-            <fieldset id="fieldSetMaster"> <div class="row">
+            <fieldset id="fieldSetMaster">
+                <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Tipe Pendaftaran</label>
                         <select id="tipe" name="tipe" class="form-select border-primary" onchange="handleTipeChange()" required>
@@ -93,7 +93,6 @@
                     <tr>
                         <th>Nama</th>
                         <th>NIM</th>
-                        <th>KTP</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -103,7 +102,7 @@
 
         <div class="mt-5 d-flex justify-content-between">
             <button id="btnBackHome" class="btn btn-light" onclick="showPage('pageHome')">Kembali</button>
-            <button id="btnSubmitAll" class="btn btn-success px-5 fw-bold" onclick="prosesKirimFinal()">🚀 SIMPAN & KIRIM DATA</button>
+            <button id="btnSubmitAll" class="btn btn-success px-5 fw-bold" onclick="prosesKirimFinal()">Isi Biodata</button>
         </div>
     </div>
 
@@ -174,7 +173,7 @@
                 </div>
             </fieldset>
             <div class="mt-4 text-end">
-                <button type="button" id="btnCancelBio" class="btn btn-secondary px-4 me-2" onclick="tutupBiodata()">Batal</button>
+                <button type="button" id="btnCancelBio" class="btn btn-secondary px-4" onclick="tutupBiodata()">Batal</button>
                 <button type="button" id="btnSaveBio" class="btn btn-primary px-4" onclick="simpanBiodata()">SAVE DATA</button>
             </div>
         </form>
@@ -198,20 +197,31 @@
     }
 
     function setFormLoading(isLoading) {
-        // Kunci semua fieldset dan tombol
         document.getElementById('fieldSetMaster').disabled = isLoading;
         document.getElementById('btnSubmitAll').disabled = isLoading;
         document.getElementById('btnBackHome').disabled = isLoading;
         if(document.getElementById('btnAddMain')) document.getElementById('btnAddMain').disabled = isLoading;
-        
-        const deleteButtons = document.querySelectorAll('.btn-danger');
-        deleteButtons.forEach(btn => btn.disabled = isLoading);
+        document.querySelectorAll('.btn-danger').forEach(btn => btn.disabled = isLoading);
     }
 
     function handleTipeChange() {
         const tipe = document.getElementById('tipe').value;
         const areaAdd = document.getElementById('areaBtnAdd');
-        areaAdd.classList.toggle('hidden', tipe !== 'Kelompok');
+        const btnSubmit = document.getElementById('btnSubmitAll');
+        
+        // Reset data jika ganti tipe
+        databaseSementara = [];
+        updateTabel();
+
+        if (tipe === 'Kelompok') {
+            areaAdd.classList.remove('hidden');
+            btnSubmit.classList.add('hidden'); // Sembunyikan sampai min 2 orang
+            btnSubmit.innerHTML = "🚀 Simpan & Kirim Kelompok";
+        } else {
+            areaAdd.classList.add('hidden');
+            btnSubmit.classList.remove('hidden');
+            btnSubmit.innerHTML = "Isi Biodata"; // Default Mandiri
+        }
     }
 
     function bukaBiodata() {
@@ -232,8 +242,7 @@
         const lahir = new Date(tgl);
         const hariIni = new Date();
         let thn = hariIni.getFullYear() - lahir.getFullYear();
-        let bln = hariIni.getMonth() - lahir.getMonth();
-        if (bln < 0 || (bln === 0 && hariIni.getDate() < lahir.getDate())) thn--;
+        if (hariIni.getMonth() < lahir.getMonth() || (hariIni.getMonth() === lahir.getMonth() && hariIni.getDate() < lahir.getDate())) thn--;
         document.getElementById('umur').value = thn + " Tahun";
     }
 
@@ -265,19 +274,39 @@
             kota: document.getElementById('kota').value
         };
 
+        const tipe = document.getElementById('tipe').value;
+        if(tipe === 'Perorangan/Mandiri') databaseSementara = []; // Hanya 1 orang
+
         databaseSementara.push(data);
         updateTabel();
         form.reset();
         showPage('pageInput');
+
+        // Update teks tombol setelah biodata diisi
+        const btnSubmit = document.getElementById('btnSubmitAll');
+        if(tipe === 'Perorangan/Mandiri') {
+            btnSubmit.innerHTML = "🚀 Simpan & Kirim Data";
+        } else {
+            // Cek minimal 2 orang untuk Kelompok
+            if(databaseSementara.length >= 2) {
+                btnSubmit.classList.remove('hidden');
+            } else {
+                btnSubmit.classList.add('hidden');
+            }
+        }
     }
 
     function updateTabel() {
         const area = document.getElementById('areaTabel');
         const tbody = document.getElementById('tbodyDaftar');
-        area.classList.toggle('hidden', databaseSementara.length === 0);
+        const tipe = document.getElementById('tipe').value;
+
+        // Tabel hanya untuk kelompok
+        area.classList.toggle('hidden', databaseSementara.length === 0 || tipe === 'Perorangan/Mandiri');
+        
         tbody.innerHTML = "";
         databaseSementara.forEach((item, index) => {
-            tbody.innerHTML += `<tr><td>${item.nama}</td><td>${item.nim}</td><td>${item.ktp}</td>
+            tbody.innerHTML += `<tr><td>${item.nama}</td><td>${item.nim}</td>
             <td><button class="btn btn-danger btn-sm" onclick="hapusBaris(${index})">Hapus</button></td></tr>`;
         });
     }
@@ -285,26 +314,39 @@
     function hapusBaris(i) {
         databaseSementara.splice(i, 1);
         updateTabel();
+        const btnSubmit = document.getElementById('btnSubmitAll');
+        if(databaseSementara.length < 2) btnSubmit.classList.add('hidden');
     }
 
     async function prosesKirimFinal() {
-        const tipe = document.getElementById('tipe').value;
         const btn = document.getElementById('btnSubmitAll');
+        const tipe = document.getElementById('tipe').value;
 
-        if (tipe === 'Perorangan/Mandiri' && databaseSementara.length === 0) {
+        // Jika teks masih "Isi Biodata", arahkan ke form bio
+        if (btn.innerHTML === "Isi Biodata") {
             bukaBiodata();
             return;
         }
 
-        if (databaseSementara.length === 0) { alert("Data Mahasiswa masih kosong!"); return; }
+        if (databaseSementara.length === 0) return;
 
-        // LOCK FORM
         setFormLoading(true);
-        btn.innerHTML = "⌛ Sedang Mengirim Data...";
+        btn.innerHTML = "⌛ Menghubungkan ke Sheet...";
 
         for (let i = 0; i < databaseSementara.length; i++) {
             btn.innerHTML = `⌛ Mengirim Data (${i+1}/${databaseSementara.length})...`;
-            const fd = new FormData(document.getElementById('masterForm'));
+            
+            // PENTING: Mengambil data dari masterForm kembali agar field institusi ikut terbawa
+            const fd = new FormData();
+            fd.append('tipe', document.getElementById('tipe').value);
+            fd.append('sekolah', document.getElementById('sekolah').value);
+            fd.append('jenjang', document.getElementById('jenjang').value);
+            fd.append('jurusan', document.getElementById('jurusan').value);
+            fd.append('jenis', document.getElementById('jenis').value);
+            fd.append('start_date', document.getElementById('start_date').value);
+            fd.append('end_date', document.getElementById('end_date').value);
+
+            // Tambahkan data biodata dari array
             Object.keys(databaseSementara[i]).forEach(key => {
                 fd.append(key, databaseSementara[i][key]);
             });
@@ -313,11 +355,11 @@
                 await fetch(scriptURL, { method: 'POST', body: fd });
             } catch (e) { 
                 console.error(e);
-                alert("Gagal mengirim data ke-" + (i+1));
+                alert("Koneksi gagal pada data ke-" + (i+1));
             }
         }
 
-        alert("Sukses! Semua data telah tersimpan.");
+        alert("Berhasil! Semua data tersimpan.");
         location.reload();
     }
 </script>

@@ -3,134 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit/Delete Peserta Didik</title>
+    <title>Edit/Delete Data Peserta</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 20px; font-family: 'Segoe UI', sans-serif; }
-        .card-custom { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .filter-box { background: #e9ecef; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        body { background-color: #f8f9fa; padding-top: 20px; }
+        .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" style="max-width: 700px;">
     <div class="card-custom">
-        <h3 class="text-primary fw-bold mb-4">⚙️ Manajemen Data Peserta</h3>
+        <h3 class="text-primary fw-bold mb-4">⚙️ Edit / Delete Data</h3>
         
-        <div class="filter-box">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Institusi</label>
-                    <select id="filterSekolah" class="form-select" onchange="filterData()">
-                        <option value="">Semua Sekolah</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Jurusan</label>
-                    <select id="filterJurusan" class="form-select" onchange="filterData()">
-                        <option value="">Semua Jurusan</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Cari Nama</label>
-                    <input type="text" id="cariNama" class="form-control" placeholder="Ketik nama..." onkeyup="filterData()">
-                </div>
+        <div id="searchArea">
+            <div class="input-group mb-3">
+                <input type="text" id="searchNim" class="form-control" placeholder="Masukkan NIM Peserta...">
+                <button class="btn btn-primary" onclick="cariData()">Cari Data</button>
             </div>
+            <small class="text-muted text-center d-block">Data akan dicari berdasarkan NIM yang terdaftar di Spreadsheet.</small>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Nama</th>
-                        <th>NIM</th>
-                        <th>Institusi</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyData">
-                    <tr><td colspan="4" class="text-center">Memuat data...</td></tr>
-                </tbody>
-            </table>
+        <div id="editFormArea" class="hidden mt-4">
+            <hr>
+            <form id="formEdit">
+                <input type="hidden" id="old_nim"> <div class="mb-3">
+                    <label class="form-label fw-bold">Nama Lengkap</label>
+                    <input type="text" id="edit_nama" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">NIM</label>
+                    <input type="text" id="edit_nim" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sekolah/Universitas</label>
+                    <input type="text" id="edit_sekolah" class="form-control" required>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-danger" onclick="prosesAksi('delete')">🗑️ HAPUS DATA</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary" onclick="location.reload()">Batal</button>
+                        <button type="button" class="btn btn-success fw-bold" onclick="prosesAksi('update')">💾 SIMPAN PERUBAHAN</button>
+                    </div>
+                </div>
+            </form>
         </div>
-
-        <button class="btn btn-secondary mt-3" onclick="window.location.href='index.html'">Kembali</button>
+        
+        <div class="mt-4 text-center">
+            <a href="index.html" class="btn btn-link text-decoration-none">← Kembali ke Beranda</a>
+        </div>
     </div>
 </div>
 
 <script>
-    const scriptURL = 'URL_WEB_APP_ANDA_DISINI'; // Tempel URL Apps Script Anda
-    let masterData = [];
+    // URL Web App GAS Anda (Gunakan URL yang sama dengan index.html)
+    const scriptURL = 'URL_WEB_APP_ANDA_DISINI';
 
-    // 1. Ambil Data dari Google Sheet
-    async function muatData() {
-        const response = await fetch(scriptURL + "?action=read");
-        masterData = await response.json();
-        
-        // Isi pilihan dropdown filter
-        populasiFilter();
-        renderTabel(masterData);
-    }
+    async function cariData() {
+        const nim = document.getElementById('searchNim').value;
+        if(!nim) return alert("Masukkan NIM!");
 
-    function populasiFilter() {
-        const sekolahs = [...new Set(masterData.map(d => d.sekolah))].sort();
-        const jurusans = [...new Set(masterData.map(d => d.jurusan))].sort();
-        
-        const selSekolah = document.getElementById('filterSekolah');
-        const selJurusan = document.getElementById('filterJurusan');
+        // Beri loading sederhana
+        const btn = document.querySelector('#searchArea button');
+        btn.disabled = true; btn.innerText = "Mencari...";
 
-        sekolahs.forEach(s => { if(s) selSekolah.innerHTML += `<option value="${s}">${s}</option>`; });
-        jurusans.forEach(j => { if(j) selJurusan.innerHTML += `<option value="${j}">${j}</option>`; });
-    }
+        try {
+            // Kita kirim request GET ke GAS dengan parameter nim
+            const response = await fetch(`${scriptURL}?action=read&nim=${nim}`);
+            const data = await response.json();
 
-    function filterData() {
-        const fSekolah = document.getElementById('filterSekolah').value;
-        const fJurusan = document.getElementById('filterJurusan').value;
-        const fNama = document.getElementById('cariNama').value.toLowerCase();
-
-        const hasil = masterData.filter(d => {
-            return (fSekolah === "" || d.sekolah === fSekolah) &&
-                   (fJurusan === "" || d.jurusan === fJurusan) &&
-                   (d.nama.toLowerCase().includes(fNama));
-        });
-        renderTabel(hasil);
-    }
-
-    function renderTabel(data) {
-        const tbody = document.getElementById('tbodyData');
-        tbody.innerHTML = "";
-        data.forEach(item => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.nama}</td>
-                    <td>${item.nim}</td>
-                    <td><small>${item.sekolah}</small></td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editData(${item.row})">✏️</button>
-                        <button class="btn btn-danger btn-sm" onclick="hapusData(${item.row})">🗑️</button>
-                    </td>
-                </tr>`;
-        });
-    }
-
-    async function hapusData(row) {
-        if(confirm("Hapus data baris ini?")) {
-            const fd = new FormData();
-            fd.append('action', 'delete');
-            fd.append('row', row);
-            
-            await fetch(scriptURL, { method: 'POST', body: fd });
-            alert("Data terhapus!");
-            muatData(); // Refresh
+            if(data.status === "error") {
+                alert("Data tidak ditemukan!");
+            } else {
+                // Isi form dengan data dari spreadsheet
+                document.getElementById('old_nim').value = data.nim;
+                document.getElementById('edit_nama').value = data.nama;
+                document.getElementById('edit_nim').value = data.nim;
+                document.getElementById('edit_sekolah').value = data.sekolah;
+                
+                document.getElementById('editFormArea').classList.remove('hidden');
+                document.getElementById('searchArea').classList.add('hidden');
+            }
+        } catch (e) {
+            alert("Terjadi kesalahan koneksi.");
+        } finally {
+            btn.disabled = false; btn.innerText = "Cari Data";
         }
     }
 
-    function editData(row) {
-        alert("Fitur edit baris " + row + " akan kita hubungkan ke form pendaftaran.");
-    }
+    async function prosesAksi(tipe) {
+        if(tipe === 'delete' && !confirm("Yakin ingin menghapus data ini?")) return;
 
-    // Jalankan saat pertama kali buka
-    window.onload = muatData;
+        const formData = new FormData();
+        formData.append('action', tipe);
+        formData.append('old_nim', document.getElementById('old_nim').value);
+        formData.append('nama', document.getElementById('edit_nama').value);
+        formData.append('nim', document.getElementById('edit_nim').value);
+        formData.append('sekolah', document.getElementById('edit_sekolah').value);
+
+        try {
+            const response = await fetch(scriptURL, { method: 'POST', body: formData });
+            const result = await response.text();
+            alert(result);
+            location.reload(); // Refresh halaman
+        } catch (e) {
+            alert("Gagal memproses data.");
+        }
+    }
 </script>
 </body>
 </html>

@@ -26,7 +26,7 @@
                 <button class="btn btn-primary w-100 p-4 fw-bold" onclick="showPage('pageInput')">📥 INPUT DATA BARU</button>
             </div>
             <div class="col-md-6">
-                <button class="btn btn-outline-secondary w-100 p-4 fw-bold" onclick="showPage('pageEdit')">⚙️ EDIT / DELETE DATA</button>
+                <button class="btn btn-outline-secondary w-100 p-4 fw-bold" onclick="menujuHalamanEdit()">⚙️ EDIT / DELETE DATA</button>
             </div>
         </div>
     </div>
@@ -197,7 +197,7 @@
 
 </div>
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycby7XHVd3UOPlaA8EFkAVJowZ-a3oxgBlJ1pOG3ZDKr9DLkLWEhEFdW5lxJJm5cxcHvR/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbzskPtlUz0WrqtLEeEQ0X0boYwaLCl6eut_dNNbjGyRmt_o7UG1gnMw50ki6CincEOq/exec';
     let databaseSementara = [];
     let editIndex = -1; // -1 berarti mode Input Baru, jika >= 0 berarti sedang Edit
 
@@ -205,6 +205,10 @@ const scriptURL = 'https://script.google.com/macros/s/AKfycby7XHVd3UOPlaA8EFkAVJ
         document.querySelectorAll('.card-custom').forEach(c => c.classList.add('hidden'));
         document.getElementById(pageId).classList.remove('hidden');
     }
+    // Ganti fungsi showPage('pageEdit') menjadi navigasi file
+function menujuHalamanEdit() {
+    window.location.href = 'edit.html';
+}
 
     function setFormLoading(isLoading) {
         document.getElementById('fieldSetMaster').disabled = isLoading;

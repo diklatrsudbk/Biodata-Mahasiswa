@@ -1,424 +1,962 @@
 <!DOCTYPE html>
+
 <html lang="id">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Sistem Manajemen Peserta Didik 2026</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
+
         body { background-color: #f8f9fa; padding-top: 20px; font-family: 'Segoe UI', sans-serif; }
+
         .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; border: none; }
+
         .hidden { display: none; }
+
         .header-title { color: #0d6efd; font-weight: bold; text-align: center; margin-bottom: 25px; }
+
         .section-title { border-left: 5px solid #0d6efd; padding-left: 15px; margin-bottom: 20px; color: #0d6efd; font-weight: bold; }
+
         .table-area { background: #fff; border-radius: 10px; overflow: hidden; margin-top: 20px; border: 1px solid #dee2e6; }
+
         input:disabled, select:disabled, textarea:disabled { background-color: #e9ecef !important; cursor: not-allowed; }
+
     </style>
+
 </head>
+
 <body>
+
+
 
 <div class="container" style="max-width: 900px;">
 
+
+
     <div id="pageHome" class="card-custom text-center">
+
         <h2 class="header-title">Sistem Informasi Peserta Didik</h2>
+
         <div class="row g-3">
+
             <div class="col-md-6">
+
                 <button class="btn btn-primary w-100 p-4 fw-bold" onclick="showPage('pageInput')">📥 INPUT DATA BARU</button>
+
             </div>
+
             <div class="col-md-6">
-                <button class="btn btn-outline-secondary w-100 p-4 fw-bold" onclick="menujuHalamanEdit()">⚙️ EDIT / DELETE DATA</button>
+
+                <button class="btn btn-outline-secondary w-100 p-4 fw-bold" onclick="showPage('pageEdit')">⚙️ EDIT / DELETE DATA</button>
+
             </div>
+
         </div>
+
     </div>
+
+
 
     <div id="pageInput" class="card-custom hidden">
+
         <h3 class="section-title">Data Pendaftaran & Institusi</h3>
+
         <form id="masterForm">
+
             <fieldset id="fieldSetMaster">
+
                 <div class="row">
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label fw-bold">Tipe Pendaftaran</label>
+
                         <select id="tipe" name="tipe" class="form-select border-primary" onchange="handleTipeChange()" required>
+
                             <option value="Perorangan/Mandiri">Perorangan/Mandiri</option>
+
                             <option value="Kelompok">Kelompok</option>
+
                         </select>
+
                     </div>
+
                     <div class="col-md-8 mb-3">
+
                         <label class="form-label">Nama Sekolah / Universitas</label>
+
                         <input type="text" id="sekolah" name="sekolah" list="list-sekolah" class="form-control" required>
+
                         <datalist id="list-sekolah"></datalist>
+
                     </div>
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label">Jenjang</label>
+
                         <select name="jenjang" id="jenjang" class="form-select" required>
+
                             <option value="">Pilih...</option>
+
                             <option value="SMK/SMA">SMK/SMA</option>
+
                             <option value="D3">D3</option>
+
                             <option value="D4">D4</option>
+
                             <option value="Profesi">Profesi</option>
+
                             <option value="S1">S1</option>
+
                             <option value="S2">S2</option>
+
                             <option value="S3">S3</option>
+
                         </select>
+
                     </div>
+
                     <div class="col-md-8 mb-3">
+
                         <label class="form-label">Jurusan</label>
+
                         <input type="text" id="jurusan" name="jurusan" list="list-jurusan" class="form-control" required>
+
                         <datalist id="list-jurusan"></datalist>
+
                     </div>
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label">Jenis Kegiatan</label>
+
                         <select name="jenis" id="jenis" class="form-select" required>
+
                             <option value="">Pilih...</option>
+
                             <option value="PKL">PKL</option>
+
                             <option value="PBL">PBL</option>
+
                             <option value="Penelitian">Penelitian</option>
+
                             <option value="Magang">Magang</option>
+
                             <option value="Resident">Resident</option>
+
                         </select>
+
                     </div>
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label">Start Date</label>
+
                         <input type="date" id="start_date" name="start_date" class="form-control" required onchange="validasiTanggal()">
+
                     </div>
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label">End Date</label>
+
                         <input type="date" id="end_date" name="end_date" class="form-control" required onchange="validasiTanggal()">
+
                     </div>
+
                 </div>
+
             </fieldset>
+
         </form>
+
+
 
         <div id="areaBtnAdd" class="mt-3 text-center hidden">
+
             <hr>
+
             <button type="button" id="btnAddMain" class="btn btn-info text-white fw-bold px-5" onclick="bukaBiodata()">+ ADD PESERTA DIDIK</button>
+
         </div>
+
+
 
         <div id="areaTabel" class="table-area hidden">
+
             <table class="table table-hover mb-0">
+
                 <thead class="table-dark">
+
                     <tr>
+
                         <th>Nama</th>
+
                         <th>NIM</th>
+
                         <th>Aksi</th>
+
                     </tr>
+
                 </thead>
+
                 <tbody id="tbodyDaftar"></tbody>
+
             </table>
+
         </div>
+
+
 
         <div class="mt-5 d-flex justify-content-between">
+
             <button id="btnBackHome" class="btn btn-light" onclick="showPage('pageHome')">Kembali</button>
+
             <button id="btnSubmitAll" class="btn btn-success px-5 fw-bold" onclick="prosesKirimFinal()">Isi Biodata</button>
+
         </div>
+
     </div>
 
+
+
     <div id="pageBiodata" class="card-custom hidden">
+
         <h3 class="section-title">Lengkapi Biodata Peserta Didik</h3>
+
         <form id="biodataForm">
+
             <fieldset id="fieldSetBio">
+
                 <div class="row">
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">Nama Lengkap</label>
+
                         <input type="text" id="nama" class="form-control" required>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">No. KTP</label>
+
                         <input type="number" id="ktp" class="form-control" required>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">NIM</label>
+
                         <input type="text" id="nim" class="form-control" required>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">Handphone (WA)</label>
+
                         <input type="tel" id="hp" class="form-control" required placeholder="0812...">
+
                     </div>
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label">Tempat Lahir</label>
+
                         <input type="text" id="tempat_lahir" list="list-kota" class="form-control" required>
+
                     </div>
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label">Tanggal Lahir</label>
+
                         <input type="date" id="tgl_lahir" class="form-control" required onchange="hitungUmur()">
+
                     </div>
+
                     <div class="col-md-4 mb-3">
+
                         <label class="form-label">Umur</label>
+
                         <input type="text" id="umur" class="form-control" readonly>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">Jenis Kelamin</label>
+
                         <select id="jk" class="form-select" required>
+
                             <option value="">Pilih...</option>
+
                             <option value="Laki-laki">Laki-laki</option>
+
                             <option value="Perempuan">Perempuan</option>
+
                         </select>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">Agama</label>
+
                         <select id="agama" class="form-select" required>
+
                             <option value="">Pilih...</option>
+
                             <option value="Islam">Islam</option>
+
                             <option value="Kristen">Kristen</option>
+
                             <option value="Protestan">Protestan</option>
+
                             <option value="Katolik">Katolik</option>
+
                             <option value="Hindu">Hindu</option>
+
                             <option value="Buddha">Buddha</option>
+
                             <option value="Konghucu">Konghucu</option>
+
                         </select>
+
                     </div>
+
                     <div class="col-md-12 mb-3">
+
                         <label class="form-label">Alamat Lengkap</label>
+
                         <textarea id="alamat" class="form-control" rows="2" required></textarea>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">Kelurahan/Kecamatan</label>
+
                         <input type="text" id="kec_kel" class="form-control" required>
+
                     </div>
+
                     <div class="col-md-6 mb-3">
+
                         <label class="form-label">Kota</label>
+
                         <input type="text" id="kota" list="list-kota" class="form-control" required>
+
                         <datalist id="list-kota"></datalist>
+
                     </div>
+
                 </div>
+
             </fieldset>
+
             <div class="mt-4 text-end">
+
                 <button type="button" id="btnCancelBio" class="btn btn-secondary px-4" onclick="tutupBiodata()">Batal</button>
+
                 <button type="button" id="btnSaveBio" class="btn btn-primary px-4" onclick="simpanBiodata()">SAVE DATA</button>
+
             </div>
+
         </form>
+
     </div>
+
+
+
+    <div id="pageEdit" class="card-custom hidden text-center">
+
+        <h3 class="section-title">Halaman Edit / Delete</h3>
+
+        <p>Fitur ini dalam pengembangan.</p>
+
+        <button class="btn btn-secondary" onclick="showPage('pageHome')">Kembali</button>
+
+    </div>
+
+
 
 </div>
 
 <script>
-    // URL Web App dari Apps Script
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxd7-v0yiVmVg5LrXyV42g7jhHA41iESlvC8V87RFSMvYznSD5VxlH7Vw4WtqBlYzNZ/exec';
-    
+
+const scriptURL = 'https://script.google.com/macros/s/AKfycby7XHVd3UOPlaA8EFkAVJowZ-a3oxgBlJ1pOG3ZDKr9DLkLWEhEFdW5lxJJm5cxcHvR/exec';
+
     let databaseSementara = [];
-    let editIndex = -1;
+
+    let editIndex = -1; // -1 berarti mode Input Baru, jika >= 0 berarti sedang Edit
+
+
 
     function showPage(pageId) {
+
         document.querySelectorAll('.card-custom').forEach(c => c.classList.add('hidden'));
+
         document.getElementById(pageId).classList.remove('hidden');
+
     }
 
-    function menujuHalamanEdit() {
-        window.location.href = 'edit.html';
-    }
+
 
     function setFormLoading(isLoading) {
+
         document.getElementById('fieldSetMaster').disabled = isLoading;
+
         document.getElementById('btnSubmitAll').disabled = isLoading;
+
         document.getElementById('btnBackHome').disabled = isLoading;
+
         if(document.getElementById('btnAddMain')) document.getElementById('btnAddMain').disabled = isLoading;
+
         document.querySelectorAll('.btn-danger, .btn-warning').forEach(btn => btn.disabled = isLoading);
+
     }
+
+
 
     function handleTipeChange() {
+
         const tipe = document.getElementById('tipe').value;
+
         const areaAdd = document.getElementById('areaBtnAdd');
+
         const btnSubmit = document.getElementById('btnSubmitAll');
+
         
+
         databaseSementara = [];
+
         updateTabel();
+
+
 
         if (tipe === 'Kelompok') {
+
             areaAdd.classList.remove('hidden');
+
             btnSubmit.classList.add('hidden');
+
             btnSubmit.innerHTML = "🚀 Simpan & Kirim Kelompok";
+
         } else {
+
             areaAdd.classList.add('hidden');
+
             btnSubmit.classList.remove('hidden');
+
             btnSubmit.innerHTML = "Isi Biodata";
+
         }
+
     }
+
+
 
     function bukaBiodata() {
+
         if(!document.getElementById('masterForm').checkValidity()){
+
             document.getElementById('masterForm').reportValidity();
+
             return;
+
         }
-        editIndex = -1;
+
+        editIndex = -1; // Pastikan masuk sebagai input baru
+
         document.getElementById('biodataForm').reset();
+
         document.getElementById('umur').value = "";
+
         showPage('pageBiodata');
+
     }
+
+
 
     function editBiodata(index) {
+
         editIndex = index;
+
         const data = databaseSementara[index];
+
+        
+
+        // Isi form biodata dengan data yang akan diedit
+
         document.getElementById('nama').value = data.nama;
+
         document.getElementById('ktp').value = data.ktp;
+
         document.getElementById('nim').value = data.nim;
+
         document.getElementById('hp').value = data.hp;
+
         document.getElementById('tempat_lahir').value = data.tempat_lahir;
+
         document.getElementById('tgl_lahir').value = data.tgl_lahir;
+
         document.getElementById('umur').value = data.umur;
+
         document.getElementById('jk').value = data.jk;
+
         document.getElementById('agama').value = data.agama;
+
         document.getElementById('alamat').value = data.alamat;
+
         document.getElementById('kec_kel').value = data.kec_kel;
+
         document.getElementById('kota').value = data.kota;
+
+
+
         showPage('pageBiodata');
+
     }
+
+
 
     function tutupBiodata() {
+
         showPage('pageInput');
+
     }
+
+
 
     function hitungUmur() {
+
         const tgl = document.getElementById('tgl_lahir').value;
+
         if (!tgl) return;
+
         const lahir = new Date(tgl);
+
         const hariIni = new Date();
+
         let thn = hariIni.getFullYear() - lahir.getFullYear();
+
         if (hariIni.getMonth() < lahir.getMonth() || (hariIni.getMonth() === lahir.getMonth() && hariIni.getDate() < lahir.getDate())) thn--;
+
         document.getElementById('umur').value = thn + " Tahun";
+
     }
+
+
 
     function validasiTanggal() {
+
         const s = document.getElementById('start_date').value;
+
         const e = document.getElementById('end_date').value;
+
         if (s && e && new Date(e) < new Date(s)) {
+
             alert("End Date tidak boleh lebih awal!");
+
             document.getElementById('end_date').value = "";
+
         }
+
     }
+
+
 
     function simpanBiodata() {
+
         const form = document.getElementById('biodataForm');
+
         if(!form.checkValidity()){ form.reportValidity(); return; }
 
+
+
         const data = {
+
             nama: document.getElementById('nama').value,
+
             ktp: document.getElementById('ktp').value,
+
             nim: document.getElementById('nim').value,
+
             hp: document.getElementById('hp').value,
+
             tempat_lahir: document.getElementById('tempat_lahir').value,
+
             tgl_lahir: document.getElementById('tgl_lahir').value,
+
             umur: document.getElementById('umur').value,
+
             jk: document.getElementById('jk').value,
+
             agama: document.getElementById('agama').value,
+
             alamat: document.getElementById('alamat').value,
+
             kec_kel: document.getElementById('kec_kel').value,
+
             kota: document.getElementById('kota').value
+
         };
 
+
+
         if (editIndex > -1) {
+
+            // Jika sedang edit, timpa data lama
+
             databaseSementara[editIndex] = data;
+
         } else {
+
+            // Jika baru, tambah ke array
+
             const tipe = document.getElementById('tipe').value;
+
             if(tipe === 'Perorangan/Mandiri') databaseSementara = []; 
+
             databaseSementara.push(data);
+
         }
+
+
 
         updateTabel();
+
         form.reset();
+
         showPage('pageInput');
 
+
+
+        // Update Logika Tombol
+
         const btnSubmit = document.getElementById('btnSubmitAll');
+
         const tipe = document.getElementById('tipe').value;
+
         if(tipe === 'Perorangan/Mandiri') {
+
             btnSubmit.innerHTML = "🚀 Simpan & Kirim Data";
+
         } else {
+
             if(databaseSementara.length >= 2) {
+
                 btnSubmit.classList.remove('hidden');
+
             } else {
+
                 btnSubmit.classList.add('hidden');
+
             }
+
         }
+
     }
+
+
 
     function updateTabel() {
+
         const area = document.getElementById('areaTabel');
+
         const tbody = document.getElementById('tbodyDaftar');
+
         const tipe = document.getElementById('tipe').value;
+
+
+
         area.classList.toggle('hidden', databaseSementara.length === 0 || tipe === 'Perorangan/Mandiri');
+
+        
+
         tbody.innerHTML = "";
+
         databaseSementara.forEach((item, index) => {
+
             tbody.innerHTML += `<tr>
+
                 <td>${item.nama}</td>
+
                 <td>${item.nim}</td>
+
                 <td>
+
                     <button class="btn btn-warning btn-sm fw-bold" onclick="editBiodata(${index})">Edit</button>
+
                     <button class="btn btn-danger btn-sm" onclick="hapusBaris(${index})">Hapus</button>
+
                 </td>
+
             </tr>`;
+
         });
+
     }
+
+
 
     function hapusBaris(i) {
+
         if(confirm("Hapus peserta ini?")) {
+
             databaseSementara.splice(i, 1);
+
             updateTabel();
+
             const btnSubmit = document.getElementById('btnSubmitAll');
+
             if(databaseSementara.length < 2) btnSubmit.classList.add('hidden');
+
         }
+
     }
 
-    // --- FUNGSI KIRIM DATA (URL ENCODED) ---
+
+
     async function prosesKirimFinal() {
+
         const btn = document.getElementById('btnSubmitAll');
+
         const tipe = document.getElementById('tipe').value;
 
+
+
         if (btn.innerHTML === "Isi Biodata") {
+
             bukaBiodata();
+
             return;
+
         }
+
+
 
         if (databaseSementara.length === 0) return;
 
+
+
         setFormLoading(true);
+
         btn.innerHTML = "⌛ Menghubungkan...";
 
+
+
         for (let i = 0; i < databaseSementara.length; i++) {
+
             btn.innerHTML = `⌛ Mengirim Data (${i+1}/${databaseSementara.length})...`;
+
             
-            const params = new URLSearchParams();
-            params.append('tipe', document.getElementById('tipe').value);
-            params.append('sekolah', document.getElementById('sekolah').value);
-            params.append('jenjang', document.getElementById('jenjang').value);
-            params.append('jurusan', document.getElementById('jurusan').value);
-            params.append('jenis', document.getElementById('jenis').value);
-            params.append('start_date', document.getElementById('start_date').value);
-            params.append('end_date', document.getElementById('end_date').value);
+
+            const fd = new FormData();
+
+            fd.append('tipe', document.getElementById('tipe').value);
+
+            fd.append('sekolah', document.getElementById('sekolah').value);
+
+            fd.append('jenjang', document.getElementById('jenjang').value);
+
+            fd.append('jurusan', document.getElementById('jurusan').value);
+
+            fd.append('jenis', document.getElementById('jenis').value);
+
+            fd.append('start_date', document.getElementById('start_date').value);
+
+            fd.append('end_date', document.getElementById('end_date').value);
+
+
 
             Object.keys(databaseSementara[i]).forEach(key => {
-                params.append(key, databaseSementara[i][key]);
+
+                fd.append(key, databaseSementara[i][key]);
+
             });
 
+
+
             try {
-                await fetch(scriptURL, { 
-                    method: 'POST', 
-                    body: params,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                });
+
+                await fetch(scriptURL, { method: 'POST', body: fd });
+
             } catch (e) { 
+
                 console.error(e);
+
             }
+
         }
 
+
+
         alert("Berhasil! Semua data tersimpan.");
+
         location.reload();
+
     }
 
     // --- DATA SUGGESTION ---
-    const dataSekolah = ["Universitas Indonesia (UI)", "Institut Teknologi Bandung (ITB)", "Universitas Gadjah Mada (UGM)", "Universitas Padjadjaran (UNPAD)", "Universitas Diponegoro", "Universitas Airlangga", "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani (UNJANI)", "Universitas Bhakti Kencana (UBK)", "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia", "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)", "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu", "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam", "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha", "Akademik Teknik Radiodiagnostik dan Radioterapi Persada Nusantara Bekasi", "Politkenik Al-Islam Bandung", "Sekolah Tinggi Farmasi Indonesia (STFI)", "Universitas Muhammadiyah Bandung", "Universitas Wahid Hasyim Semarang", "Universitas Islam Negeri Sunan Gunung Djati Bandung", "Poltekkes Kemenkes Semarang", "Poltekkes Kemenkes Tasikmalaya", "Universitas Maranatha", "Universitas Sriwijaya", "Universitas Logistik dan Bisnis Internasional (ULBI)", "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom", "SMKN 7 Bandung", "SMK Nusa Bhakti Bandung"];
-    const dataJurusan = ["Teknik Informatika", "Sistem Informasi", "Teknik Elektro", "Teknik Sipil", "Keperawatan", "Kebidanan", "Kedokteran", "Farmasi", "Gizi", "Fisioterapi", "Manajemen", "Akuntansi", "Ilmu Komunikasi", "Psikologi", "Hukum", "Kedokteran Gigi", "Teknik Radiologi", "Laboratorium Medis", "Dietisien", "Analis Kesehatan", "Rekayasa Perangkat Lunak (RPL)", "Multimedia", "Teknik Komputer Jaringan (TKJ)", "Rekam Medik", "Terapi Wicara", "Terapi Okupasi", "Fisika", "Biologi", "Management Informasi Kesehatan", "Anestesi RPL", "Anestesi regular", "Elektromedis", "PPDS Anak", "PPDS Anestesi", "PPDS Bedah", "PPDS Obsgyn", "PPDS KFR", "PPDS THT-KL", "PPDS Neurologi", "Administrasi Logistik", "PPDS IPD", "Apoteker", "Keperawatan Regular", "Keperawatan Non-Regular", "Kebidanan Regular", "Kebidanan Non-Regular", "PSPD"];
-    const dataKotaIndonesia = ["Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"];
 
-    function inisialisasiSuggestions() {
-        const dlSekolah = document.getElementById('list-sekolah');
-        dataSekolah.sort().forEach(item => { let opt = document.createElement('option'); opt.value = item; dlSekolah.appendChild(opt); });
-        const dlJurusan = document.getElementById('list-jurusan');
-        dataJurusan.sort().forEach(item => { let opt = document.createElement('option'); opt.value = item; dlJurusan.appendChild(opt); });
-        const dlKota = document.getElementById('list-kota');
-        dataKotaIndonesia.sort().forEach(item => { let opt = document.createElement('option'); opt.value = item; dlKota.appendChild(opt); });
-    }
+const dataSekolah = [
 
-    inisialisasiSuggestions();
+    "Universitas Indonesia (UI)", "Institut Teknologi Bandung (ITB)", "Universitas Gadjah Mada (UGM)", 
+
+    "Universitas Padjadjaran (UNPAD)", "Universitas Diponegoro", "Universitas Airlangga", 
+
+    "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani (UNJANI)", "Universitas Bhakti Kencana (UBK)",
+
+    "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia",
+
+    "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)",
+
+    "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu",
+
+    "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam",
+
+    "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha",
+
+    "Akademik Teknik Radiodiagnostik dan Radioterapi Persada Nusantara Bekasi", "Politkenik Al-Islam Bandung", "Sekolah Tinggi Farmasi Indonesia (STFI)",
+
+    "Universitas Muhammadiyah Bandung", "Universitas Wahid Hasyim Semarang", "Universitas Islam Negeri Sunan Gunung Djati Bandung", "Poltekkes Kemenkes Semarang",
+
+    "Poltekkes Kemenkes Tasikmalaya", "Universitas Maranatha", "Universitas Sriwijaya", "Universitas Logistik dan Bisnis Internasional (ULBI)",
+
+    "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom", "SMKN 7 Bandung", "SMK Nusa Bhakti Bandung"
+
+];
+
+
+
+const dataJurusan = [
+
+    "Teknik Informatika", "Sistem Informasi", "Teknik Elektro", "Teknik Sipil", "Keperawatan", "Kebidanan", "Kedokteran", "Farmasi", "Gizi", "Fisioterapi",
+
+    "Manajemen", "Akuntansi", "Ilmu Komunikasi", "Psikologi", "Hukum", "Kedokteran Gigi", "Teknik Radiologi", "Laboratorium Medis", "Dietisien", "Analis Kesehatan",
+
+    "Rekayasa Perangkat Lunak (RPL)", "Multimedia", "Teknik Komputer Jaringan (TKJ)", "Rekam Medik", "Terapi Wicara", "Terapi Okupasi", "Fisika", "Biologi",
+
+    "Management Informasi Kesehatan", "Anestesi RPL", "Anestesi regular", "Elektromedis", "PPDS Anak", "PPDS Anestesi", "PPDS Bedah", "PPDS Obsgyn", "PPDS KFR",
+
+    "PPDS THT-KL", "PPDS Neurologi", "Administrasi Logistik", "PPDS IPD", "Apoteker", "Keperawatan Regular", "Keperawatan Non-Regular", "Kebidanan Regular",
+
+    "Kebidanan Non-Regular", "PSPD"
+
+];
+
+
+
+const dataKotaIndonesia = [
+
+    "Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", 
+
+    "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", 
+
+    "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", 
+
+    "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", 
+
+    "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", 
+
+    "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", 
+
+    "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", 
+
+    "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", 
+
+    "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", 
+
+    "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", 
+
+    "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", 
+
+    "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", 
+
+    "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"
+
+];
+
+
+
+// --- FUNGSI PENGISI DATALIST ---
+
+function inisialisasiSuggestions() {
+
+    // Isi Datalist Sekolah
+
+    const dlSekolah = document.getElementById('list-sekolah');
+
+    dataSekolah.sort().forEach(item => {
+
+        let opt = document.createElement('option');
+
+        opt.value = item;
+
+        dlSekolah.appendChild(opt);
+
+    });
+
+
+
+    // Isi Datalist Jurusan
+
+    const dlJurusan = document.getElementById('list-jurusan');
+
+    dataJurusan.sort().forEach(item => {
+
+        let opt = document.createElement('option');
+
+        opt.value = item;
+
+        dlJurusan.appendChild(opt);
+
+    });
+
+
+
+    // Isi Datalist Kota (Dipakai untuk Tempat Lahir & Kota Domisili)
+
+    const dlKota = document.getElementById('list-kota');
+
+    dataKotaIndonesia.sort().forEach(item => {
+
+        let opt = document.createElement('option');
+
+        opt.value = item;
+
+        dlKota.appendChild(opt);
+
+    });
+
+}
+
+
+
+// Jalankan fungsi pengisian saat script selesai dibaca
+
+inisialisasiSuggestions();
+
+
+
 </script>
 
+
+
 </body>
+
 </html>
+

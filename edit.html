@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit/Delete Peserta Didik</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+        .card-custom { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .filter-box { background: #e9ecef; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card-custom">
+        <h3 class="text-primary fw-bold mb-4">⚙️ Manajemen Data Peserta</h3>
+        
+        <div class="filter-box">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Institusi</label>
+                    <select id="filterSekolah" class="form-select" onchange="filterData()">
+                        <option value="">Semua Sekolah</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Jurusan</label>
+                    <select id="filterJurusan" class="form-select" onchange="filterData()">
+                        <option value="">Semua Jurusan</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Cari Nama</label>
+                    <input type="text" id="cariNama" class="form-control" placeholder="Ketik nama..." onkeyup="filterData()">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nama</th>
+                        <th>NIM</th>
+                        <th>Institusi</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyData">
+                    <tr><td colspan="4" class="text-center">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn btn-secondary mt-3" onclick="window.location.href='index.html'">Kembali</button>
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'URL_WEB_APP_ANDA_DISINI'; // Tempel URL Apps Script Anda
+    let masterData = [];
+
+    // 1. Ambil Data dari Google Sheet
+    async function muatData() {
+        const response = await fetch(scriptURL + "?action=read");
+        masterData = await response.json();
+        
+        // Isi pilihan dropdown filter
+        populasiFilter();
+        renderTabel(masterData);
+    }
+
+    function populasiFilter() {
+        const sekolahs = [...new Set(masterData.map(d => d.sekolah))].sort();
+        const jurusans = [...new Set(masterData.map(d => d.jurusan))].sort();
+        
+        const selSekolah = document.getElementById('filterSekolah');
+        const selJurusan = document.getElementById('filterJurusan');
+
+        sekolahs.forEach(s => { if(s) selSekolah.innerHTML += `<option value="${s}">${s}</option>`; });
+        jurusans.forEach(j => { if(j) selJurusan.innerHTML += `<option value="${j}">${j}</option>`; });
+    }
+
+    function filterData() {
+        const fSekolah = document.getElementById('filterSekolah').value;
+        const fJurusan = document.getElementById('filterJurusan').value;
+        const fNama = document.getElementById('cariNama').value.toLowerCase();
+
+        const hasil = masterData.filter(d => {
+            return (fSekolah === "" || d.sekolah === fSekolah) &&
+                   (fJurusan === "" || d.jurusan === fJurusan) &&
+                   (d.nama.toLowerCase().includes(fNama));
+        });
+        renderTabel(hasil);
+    }
+
+    function renderTabel(data) {
+        const tbody = document.getElementById('tbodyData');
+        tbody.innerHTML = "";
+        data.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.nama}</td>
+                    <td>${item.nim}</td>
+                    <td><small>${item.sekolah}</small></td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editData(${item.row})">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="hapusData(${item.row})">🗑️</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    async function hapusData(row) {
+        if(confirm("Hapus data baris ini?")) {
+            const fd = new FormData();
+            fd.append('action', 'delete');
+            fd.append('row', row);
+            
+            await fetch(scriptURL, { method: 'POST', body: fd });
+            alert("Data terhapus!");
+            muatData(); // Refresh
+        }
+    }
+
+    function editData(row) {
+        alert("Fitur edit baris " + row + " akan kita hubungkan ke form pendaftaran.");
+    }
+
+    // Jalankan saat pertama kali buka
+    window.onload = muatData;
+</script>
+</body>
+</html>

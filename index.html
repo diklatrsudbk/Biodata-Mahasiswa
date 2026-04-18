@@ -189,26 +189,23 @@
         </form>
     </div>
 
-    <div id="pageEdit" class="card-custom hidden text-center">
-        <h3 class="section-title">Halaman Edit / Delete</h3>
-        <p>Fitur ini dalam pengembangan.</p>
-        <button class="btn btn-secondary" onclick="showPage('pageHome')">Kembali</button>
-    </div>
-
 </div>
+
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbzvTunM0WojN36tHVg87l_lF4G_ezTJgYcWUy7fsGgWblwOUKLDEvA-zuNtktNgHjBu/exec';
+    // URL Web App dari Apps Script
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzvTunM0WojN36tHVg87l_lF4G_ezTJgYcWUy7fsGgWblwOUKLDEvA-zuNtktNgHjBu/exec';
+    
     let databaseSementara = [];
-    let editIndex = -1; // -1 berarti mode Input Baru, jika >= 0 berarti sedang Edit
+    let editIndex = -1;
 
     function showPage(pageId) {
         document.querySelectorAll('.card-custom').forEach(c => c.classList.add('hidden'));
         document.getElementById(pageId).classList.remove('hidden');
     }
-    // Ganti fungsi showPage('pageEdit') menjadi navigasi file
-function menujuHalamanEdit() {
-    window.location.href = 'edit.html';
-}
+
+    function menujuHalamanEdit() {
+        window.location.href = 'edit.html';
+    }
 
     function setFormLoading(isLoading) {
         document.getElementById('fieldSetMaster').disabled = isLoading;
@@ -242,7 +239,7 @@ function menujuHalamanEdit() {
             document.getElementById('masterForm').reportValidity();
             return;
         }
-        editIndex = -1; // Pastikan masuk sebagai input baru
+        editIndex = -1;
         document.getElementById('biodataForm').reset();
         document.getElementById('umur').value = "";
         showPage('pageBiodata');
@@ -251,8 +248,6 @@ function menujuHalamanEdit() {
     function editBiodata(index) {
         editIndex = index;
         const data = databaseSementara[index];
-        
-        // Isi form biodata dengan data yang akan diedit
         document.getElementById('nama').value = data.nama;
         document.getElementById('ktp').value = data.ktp;
         document.getElementById('nim').value = data.nim;
@@ -265,7 +260,6 @@ function menujuHalamanEdit() {
         document.getElementById('alamat').value = data.alamat;
         document.getElementById('kec_kel').value = data.kec_kel;
         document.getElementById('kota').value = data.kota;
-
         showPage('pageBiodata');
     }
 
@@ -312,10 +306,8 @@ function menujuHalamanEdit() {
         };
 
         if (editIndex > -1) {
-            // Jika sedang edit, timpa data lama
             databaseSementara[editIndex] = data;
         } else {
-            // Jika baru, tambah ke array
             const tipe = document.getElementById('tipe').value;
             if(tipe === 'Perorangan/Mandiri') databaseSementara = []; 
             databaseSementara.push(data);
@@ -325,7 +317,6 @@ function menujuHalamanEdit() {
         form.reset();
         showPage('pageInput');
 
-        // Update Logika Tombol
         const btnSubmit = document.getElementById('btnSubmitAll');
         const tipe = document.getElementById('tipe').value;
         if(tipe === 'Perorangan/Mandiri') {
@@ -343,9 +334,7 @@ function menujuHalamanEdit() {
         const area = document.getElementById('areaTabel');
         const tbody = document.getElementById('tbodyDaftar');
         const tipe = document.getElementById('tipe').value;
-
         area.classList.toggle('hidden', databaseSementara.length === 0 || tipe === 'Perorangan/Mandiri');
-        
         tbody.innerHTML = "";
         databaseSementara.forEach((item, index) => {
             tbody.innerHTML += `<tr>
@@ -368,6 +357,7 @@ function menujuHalamanEdit() {
         }
     }
 
+    // --- FUNGSI KIRIM DATA (URL ENCODED) ---
     async function prosesKirimFinal() {
         const btn = document.getElementById('btnSubmitAll');
         const tipe = document.getElementById('tipe').value;
@@ -385,21 +375,25 @@ function menujuHalamanEdit() {
         for (let i = 0; i < databaseSementara.length; i++) {
             btn.innerHTML = `⌛ Mengirim Data (${i+1}/${databaseSementara.length})...`;
             
-            const fd = new FormData();
-            fd.append('tipe', document.getElementById('tipe').value);
-            fd.append('sekolah', document.getElementById('sekolah').value);
-            fd.append('jenjang', document.getElementById('jenjang').value);
-            fd.append('jurusan', document.getElementById('jurusan').value);
-            fd.append('jenis', document.getElementById('jenis').value);
-            fd.append('start_date', document.getElementById('start_date').value);
-            fd.append('end_date', document.getElementById('end_date').value);
+            const params = new URLSearchParams();
+            params.append('tipe', document.getElementById('tipe').value);
+            params.append('sekolah', document.getElementById('sekolah').value);
+            params.append('jenjang', document.getElementById('jenjang').value);
+            params.append('jurusan', document.getElementById('jurusan').value);
+            params.append('jenis', document.getElementById('jenis').value);
+            params.append('start_date', document.getElementById('start_date').value);
+            params.append('end_date', document.getElementById('end_date').value);
 
             Object.keys(databaseSementara[i]).forEach(key => {
-                fd.append(key, databaseSementara[i][key]);
+                params.append(key, databaseSementara[i][key]);
             });
 
             try {
-                await fetch(scriptURL, { method: 'POST', body: fd });
+                await fetch(scriptURL, { 
+                    method: 'POST', 
+                    body: params,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
             } catch (e) { 
                 console.error(e);
             }
@@ -408,77 +402,22 @@ function menujuHalamanEdit() {
         alert("Berhasil! Semua data tersimpan.");
         location.reload();
     }
+
     // --- DATA SUGGESTION ---
-const dataSekolah = [
-    "Universitas Indonesia (UI)", "Institut Teknologi Bandung (ITB)", "Universitas Gadjah Mada (UGM)", 
-    "Universitas Padjadjaran (UNPAD)", "Universitas Diponegoro", "Universitas Airlangga", 
-    "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani (UNJANI)", "Universitas Bhakti Kencana (UBK)",
-    "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia",
-    "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)",
-    "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu",
-    "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam",
-    "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha",
-    "Akademik Teknik Radiodiagnostik dan Radioterapi Persada Nusantara Bekasi", "Politkenik Al-Islam Bandung", "Sekolah Tinggi Farmasi Indonesia (STFI)",
-    "Universitas Muhammadiyah Bandung", "Universitas Wahid Hasyim Semarang", "Universitas Islam Negeri Sunan Gunung Djati Bandung", "Poltekkes Kemenkes Semarang",
-    "Poltekkes Kemenkes Tasikmalaya", "Universitas Maranatha", "Universitas Sriwijaya", "Universitas Logistik dan Bisnis Internasional (ULBI)",
-    "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom", "SMKN 7 Bandung", "SMK Nusa Bhakti Bandung"
-];
+    const dataSekolah = ["Universitas Indonesia (UI)", "Institut Teknologi Bandung (ITB)", "Universitas Gadjah Mada (UGM)", "Universitas Padjadjaran (UNPAD)", "Universitas Diponegoro", "Universitas Airlangga", "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani (UNJANI)", "Universitas Bhakti Kencana (UBK)", "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia", "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)", "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu", "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam", "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha", "Akademik Teknik Radiodiagnostik dan Radioterapi Persada Nusantara Bekasi", "Politkenik Al-Islam Bandung", "Sekolah Tinggi Farmasi Indonesia (STFI)", "Universitas Muhammadiyah Bandung", "Universitas Wahid Hasyim Semarang", "Universitas Islam Negeri Sunan Gunung Djati Bandung", "Poltekkes Kemenkes Semarang", "Poltekkes Kemenkes Tasikmalaya", "Universitas Maranatha", "Universitas Sriwijaya", "Universitas Logistik dan Bisnis Internasional (ULBI)", "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom", "SMKN 7 Bandung", "SMK Nusa Bhakti Bandung"];
+    const dataJurusan = ["Teknik Informatika", "Sistem Informasi", "Teknik Elektro", "Teknik Sipil", "Keperawatan", "Kebidanan", "Kedokteran", "Farmasi", "Gizi", "Fisioterapi", "Manajemen", "Akuntansi", "Ilmu Komunikasi", "Psikologi", "Hukum", "Kedokteran Gigi", "Teknik Radiologi", "Laboratorium Medis", "Dietisien", "Analis Kesehatan", "Rekayasa Perangkat Lunak (RPL)", "Multimedia", "Teknik Komputer Jaringan (TKJ)", "Rekam Medik", "Terapi Wicara", "Terapi Okupasi", "Fisika", "Biologi", "Management Informasi Kesehatan", "Anestesi RPL", "Anestesi regular", "Elektromedis", "PPDS Anak", "PPDS Anestesi", "PPDS Bedah", "PPDS Obsgyn", "PPDS KFR", "PPDS THT-KL", "PPDS Neurologi", "Administrasi Logistik", "PPDS IPD", "Apoteker", "Keperawatan Regular", "Keperawatan Non-Regular", "Kebidanan Regular", "Kebidanan Non-Regular", "PSPD"];
+    const dataKotaIndonesia = ["Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"];
 
-const dataJurusan = [
-    "Teknik Informatika", "Sistem Informasi", "Teknik Elektro", "Teknik Sipil", "Keperawatan", "Kebidanan", "Kedokteran", "Farmasi", "Gizi", "Fisioterapi",
-    "Manajemen", "Akuntansi", "Ilmu Komunikasi", "Psikologi", "Hukum", "Kedokteran Gigi", "Teknik Radiologi", "Laboratorium Medis", "Dietisien", "Analis Kesehatan",
-    "Rekayasa Perangkat Lunak (RPL)", "Multimedia", "Teknik Komputer Jaringan (TKJ)", "Rekam Medik", "Terapi Wicara", "Terapi Okupasi", "Fisika", "Biologi",
-    "Management Informasi Kesehatan", "Anestesi RPL", "Anestesi regular", "Elektromedis", "PPDS Anak", "PPDS Anestesi", "PPDS Bedah", "PPDS Obsgyn", "PPDS KFR",
-    "PPDS THT-KL", "PPDS Neurologi", "Administrasi Logistik", "PPDS IPD", "Apoteker", "Keperawatan Regular", "Keperawatan Non-Regular", "Kebidanan Regular",
-    "Kebidanan Non-Regular", "PSPD"
-];
+    function inisialisasiSuggestions() {
+        const dlSekolah = document.getElementById('list-sekolah');
+        dataSekolah.sort().forEach(item => { let opt = document.createElement('option'); opt.value = item; dlSekolah.appendChild(opt); });
+        const dlJurusan = document.getElementById('list-jurusan');
+        dataJurusan.sort().forEach(item => { let opt = document.createElement('option'); opt.value = item; dlJurusan.appendChild(opt); });
+        const dlKota = document.getElementById('list-kota');
+        dataKotaIndonesia.sort().forEach(item => { let opt = document.createElement('option'); opt.value = item; dlKota.appendChild(opt); });
+    }
 
-const dataKotaIndonesia = [
-    "Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", 
-    "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", 
-    "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", 
-    "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", 
-    "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", 
-    "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", 
-    "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", 
-    "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", 
-    "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", 
-    "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", 
-    "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", 
-    "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", 
-    "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"
-];
-
-// --- FUNGSI PENGISI DATALIST ---
-function inisialisasiSuggestions() {
-    // Isi Datalist Sekolah
-    const dlSekolah = document.getElementById('list-sekolah');
-    dataSekolah.sort().forEach(item => {
-        let opt = document.createElement('option');
-        opt.value = item;
-        dlSekolah.appendChild(opt);
-    });
-
-    // Isi Datalist Jurusan
-    const dlJurusan = document.getElementById('list-jurusan');
-    dataJurusan.sort().forEach(item => {
-        let opt = document.createElement('option');
-        opt.value = item;
-        dlJurusan.appendChild(opt);
-    });
-
-    // Isi Datalist Kota (Dipakai untuk Tempat Lahir & Kota Domisili)
-    const dlKota = document.getElementById('list-kota');
-    dataKotaIndonesia.sort().forEach(item => {
-        let opt = document.createElement('option');
-        opt.value = item;
-        dlKota.appendChild(opt);
-    });
-}
-
-// Jalankan fungsi pengisian saat script selesai dibaca
-inisialisasiSuggestions();
-
+    inisialisasiSuggestions();
 </script>
 
 </body>

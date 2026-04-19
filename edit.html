@@ -3,111 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Data - Edit/Delete</title>
+    <title>Sistem Informasi Peserta Didik - Pengelolaan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; padding-top: 20px; font-family: 'Segoe UI', sans-serif; }
         .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: none; }
         .header-title { color: #dc3545; font-weight: bold; text-align: center; margin-bottom: 25px; }
-        .table-area { background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #dee2e6; }
+        .table-area { background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #dee2e6; margin-top: 20px; }
+        .btn-edit { background-color: #ffc107; border: none; font-weight: bold; }
+        .btn-delete { background-color: #dc3545; color: white; border: none; font-weight: bold; }
+        input:focus { box-shadow: none !important; border-color: #dc3545 !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" style="max-width: 1000px;">
     <div class="card-custom">
         <h2 class="header-title">⚙️ Pengelolaan Data Peserta</h2>
         
-        <div class="mb-3 d-flex justify-content-between">
-            <button class="btn btn-secondary" onclick="backToHome()">⬅️ Kembali</button>
-            <input type="text" id="searchInput" class="form-control w-50" placeholder="Cari Nama atau NIM..." onkeyup="filterTable()">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-secondary fw-bold" onclick="backToHome()">⬅️ Kembali ke Home</button>
+            <div class="input-group w-50">
+                <span class="input-group-text bg-white">🔍</span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Cari Nama atau NIM..." onkeyup="filterTable()">
+            </div>
         </div>
 
         <div class="table-area">
-            <table class="table table-hover mb-0" id="pesertaTable">
+            <table class="table table-hover mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>Nama</th>
-                        <th>NIM</th>
-                        <th>Sekolah</th>
-                        <th>Aksi</th>
+                        <th>Nama Peserta</th>
+                        <th>NIM / No. Induk</th>
+                        <th>Institusi</th>
+                        <th class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr><td colspan="4" class="text-center">Memuat data...</td></tr>
+                    <tr><td colspan="4" class="text-center p-4">Memuat data dari Google Sheets...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
+<div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title fw-bold">📝 Edit Data Peserta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEdit">
+                    <input type="hidden" id="edit_old_nim"> <div class="mb-3">
+                        <label class="form-label fw-bold">Nama Lengkap</label>
+                        <input type="text" id="edit_nama" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">NIM (Nomor Induk)</label>
+                        <input type="text" id="edit_nim" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Sekolah / Universitas</label>
+                        <input type="text" id="edit_sekolah" class="form-control" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" id="btnSimpanUpdate" class="btn btn-primary px-4" onclick="simpanPerubahan()">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxPs8fCnd2HTpciOloub5BJaIMwy33qdvSPMVjrUBEFVInj2SvGd_-g6LfbxaDh5NC-/exec';
+    // GANTI DENGAN URL WEB APP ANDA
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyRh_GJQaJrv6dEV5uywr4CE1WFuipEnERyN4rJyt1U0VpitmUTjCKcHpAL2u0tUYps/exec';
+    
+    let myModal = new bootstrap.Modal(document.getElementById('modalEdit'));
 
     window.onload = function() {
-    // Panggil data menggunakan fetch ke URL Web App Anda
-    const urlRead = scriptURL + "?action=read";
-    
-    fetch(urlRead)
-    .then(response => response.json())
-    .then(data => {
-        showData(data); // Panggil fungsi tampilkan tabel yang sudah ada
-    })
-    .catch(err => {
-        console.error("Gagal mengambil data:", err);
-        document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data. Pastikan Web App sudah di-deploy sebagai "Anyone".</td></tr>';
-    });
-};
+        loadData();
+    };
 
-    function showData(data) {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        data.forEach(item => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.nama}</td>
-                    <td>${item.nim}</td>
-                    <td>${item.sekolah}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="btnEdit('${item.nim}', '${item.nama}', '${item.sekolah}')">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="btnDelete('${item.nim}')">Hapus</button>
-                    </td>
-                </tr>`;
+    function loadData() {
+        // Ambil data menggunakan Fetch GET (Logika action=read di Code.gs)
+        fetch(scriptURL + "?action=read")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">Tidak ada data ditemukan.</td></tr>';
+                return;
+            }
+
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${item.nama}</td>
+                        <td>${item.nim}</td>
+                        <td>${item.sekolah}</td>
+                        <td class="text-center">
+                            <button class="btn btn-warning btn-sm fw-bold me-1" onclick="openEditModal('${item.nim}', '${item.nama}', '${item.sekolah}')">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="btnDelete('${item.nim}')">Hapus</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+    }
+
+    function openEditModal(nim, nama, sekolah) {
+        document.getElementById('edit_old_nim').value = nim;
+        document.getElementById('edit_nama').value = nama;
+        document.getElementById('edit_nim').value = nim;
+        document.getElementById('edit_sekolah').value = sekolah;
+        myModal.show();
+    }
+
+    function simpanPerubahan() {
+        const btn = document.getElementById('btnSimpanUpdate');
+        const fd = new FormData();
+        fd.append('action', 'update');
+        fd.append('old_nim', document.getElementById('edit_old_nim').value);
+        fd.append('nama', document.getElementById('edit_nama').value);
+        fd.append('nim', document.getElementById('edit_nim').value);
+        fd.append('sekolah', document.getElementById('edit_sekolah').value);
+
+        btn.disabled = true;
+        btn.innerHTML = "⌛ Menyimpan...";
+
+        fetch(scriptURL, { method: 'POST', body: fd })
+        .then(res => res.text())
+        .then(txt => {
+            alert(txt);
+            myModal.hide();
+            loadData();
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = "Simpan Perubahan";
         });
     }
 
     function btnDelete(nim) {
-        if(confirm("Hapus data dengan NIM: " + nim + "?")) {
+        if(confirm("Yakin ingin menghapus data dengan NIM: " + nim + "?")) {
             const fd = new FormData();
             fd.append('action', 'delete');
             fd.append('old_nim', nim);
 
             fetch(scriptURL, { method: 'POST', body: fd })
-            .then(() => { alert('Data Dihapus'); location.reload(); })
-            .catch(e => console.error(e));
-        }
-    }
-
-    function btnEdit(nim, nama, sekolah) {
-        const newNama = prompt("Edit Nama:", nama);
-        const newSekolah = prompt("Edit Sekolah:", sekolah);
-        
-        if (newNama && newSekolah) {
-            const fd = new FormData();
-            fd.append('action', 'update');
-            fd.append('old_nim', nim); // Kunci pencarian
-            fd.append('nama', newNama);
-            fd.append('nim', nim);
-            fd.append('sekolah', newSekolah);
-
-            fetch(scriptURL, { method: 'POST', body: fd })
             .then(res => res.text())
-            .then(txt => { alert(txt); location.reload(); });
+            .then(txt => {
+                alert(txt);
+                loadData();
+            });
         }
     }
 
     function backToHome() {
-        window.open(scriptURL + "?p=index", "_top");
+        // Ganti index.html jika nama filenya berbeda di GitHub Pages
+        window.location.href = "index.html";
     }
 
     function filterTable() {

@@ -99,30 +99,55 @@
 
     function updateData() {
         const btn = document.getElementById('saveBtn');
-        btn.disabled = true; btn.innerText = "Proses...";
+        btn.disabled = true; 
+        btn.innerText = "Proses...";
         
-        let fd = new FormData();
-        fd.append('action', 'update');
-        fd.append('old_nim', document.getElementById('e_old_nim').value);
-        fd.append('nama', document.getElementById('e_nama').value);
-        fd.append('nim', document.getElementById('e_nim').value);
-        fd.append('ktp', document.getElementById('e_ktp').value);
-        fd.append('hp', document.getElementById('e_hp').value);
-        fd.append('alamat', document.getElementById('e_alamat').value);
-        fd.append('sekolah', document.getElementById('e_sekolah').value);
+        // Buat objek JSON, bukan FormData
+        const payload = {
+            action: 'update',
+            nama: document.getElementById('e_nama').value,
+            nim: document.getElementById('e_nim').value, // Ini NIM yang dicari di Sheet
+            ktp: document.getElementById('e_ktp').value,
+            hp: document.getElementById('e_hp').value,
+            alamat: document.getElementById('e_alamat').value,
+            sekolah: document.getElementById('e_sekolah').value
+        };
 
-        fetch(url, { method: 'POST', body: fd }).then(res => res.text()).then(r => {
-            alert(r); modal.hide(); load();
-            btn.disabled = false; btn.innerText = "Simpan Perubahan";
+        fetch(url, { 
+            method: 'POST', 
+            mode: 'no-cors', // Tambahkan ini untuk menghindari isu CORS
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload) 
+        }).then(() => {
+            alert("Data Berhasil Diupdate!"); 
+            modal.hide(); 
+            load();
+            btn.disabled = false; 
+            btn.innerText = "Simpan Perubahan";
+        }).catch(err => {
+            alert("Error: " + err);
+            btn.disabled = false;
         });
     }
 
     function del(nim) {
-        if(confirm("Hapus data " + nim + "?")) {
-            let fd = new FormData();
-            fd.append('action', 'delete');
-            fd.append('old_nim', nim);
-            fetch(url, { method: 'POST', body: fd }).then(res => res.text()).then(r => { alert(r); load(); });
+        if(confirm("Yakin ingin menghapus data dengan NIM " + nim + "?")) {
+            const payload = {
+                action: 'delete',
+                nim: nim
+            };
+
+            fetch(url, { 
+                method: 'POST', 
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload) 
+            }).then(() => { 
+                alert("Data Berhasil Dihapus!"); 
+                load(); 
+            }).catch(err => {
+                alert("Gagal menghapus: " + err);
+            });
         }
     }
 

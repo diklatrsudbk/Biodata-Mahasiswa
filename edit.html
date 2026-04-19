@@ -3,157 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengelolaan Data Peserta</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Manajemen Data - Edit/Delete</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
-        .hidden { display: none; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .section-title { border-left: 5px solid #0d6efd; padding-left: 15px; margin-bottom: 20px; color: #0d6efd; font-weight: bold; }
+        body { background-color: #f8f9fa; padding-top: 20px; font-family: 'Segoe UI', sans-serif; }
+        .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: none; }
+        .header-title { color: #dc3545; font-weight: bold; text-align: center; margin-bottom: 25px; }
+        .table-area { background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #dee2e6; }
     </style>
 </head>
 <body>
 
-<div id="loader" class="loading-overlay hidden">
-    <div class="spinner-border text-primary" role="status"></div>
-    <span class="ms-3">Memproses Data...</span>
-</div>
-
 <div class="container">
     <div class="card-custom">
-        <h2 class="text-center mb-4" style="color: #0d6efd; font-weight: bold;">⚙️ Pengelolaan Data</h2>
+        <h2 class="header-title">⚙️ Pengelolaan Data Peserta</h2>
         
-        <div id="searchPanel">
-            <h5 class="section-title">Cari Data Peserta</h5>
-            <div class="row g-3">
-                <div class="col-md-9">
-                    <input type="text" id="input_nim" class="form-control" placeholder="Masukkan NIM Peserta...">
-                </div>
-                <div class="col-md-3">
-                    <button class="btn btn-primary w-100" onclick="cariData()">🔍 CARI</button>
-                </div>
-            </div>
+        <div class="mb-3 d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="backToHome()">⬅️ Kembali</button>
+            <input type="text" id="searchInput" class="form-control w-50" placeholder="Cari Nama atau NIM..." onkeyup="filterTable()">
         </div>
 
-        <div id="editPanel" class="mt-5 pt-4 border-top hidden">
-            <h5 class="section-title">Edit / Hapus Data</h5>
-            <form id="formUpdate">
-                <input type="hidden" id="res_rowId"> <div class="mb-3">
-                    <label class="form-label fw-bold">Nama Lengkap</label>
-                    <input type="text" id="res_nama" class="form-control" required>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">NIM</label>
-                        <input type="text" id="res_nim" class="form-control" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Institusi</label>
-                        <input type="text" id="res_sekolah" class="form-control" required>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between mt-4">
-                    <button type="button" class="btn btn-danger px-4" onclick="eksekusiData('deleteRecord')">🗑️ HAPUS</button>
-                    <div>
-                        <button type="button" class="btn btn-light me-2" onclick="location.reload()">Batal</button>
-                        <button type="submit" class="btn btn-success px-5 fw-bold">💾 SIMPAN</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <div class="text-center mt-5">
-            <a href="index.html" class="text-decoration-none">← Kembali ke Menu Utama</a>
+        <div class="table-area">
+            <table class="table table-hover mb-0" id="pesertaTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nama</th>
+                        <th>NIM</th>
+                        <th>Sekolah</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="4" class="text-center">Memuat data...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <script>
-    // MASUKKAN URL EXEC WEB APP ANDA
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRh_GJQaJrv6dEV5uywr4CE1WFuipEnERyN4rJyt1U0VpitmUTjCKcHpAL2u0tUYps/exec";
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyRh_GJQaJrv6dEV5uywr4CE1WFuipEnERyN4rJyt1U0VpitmUTjCKcHpAL2u0tUYps/exec';
 
-    function showLoader(show) {
-        if(show) $("#loader").removeClass("hidden");
-        else $("#loader").addClass("hidden");
+    window.onload = function() {
+        google.script.run.withSuccessHandler(showData).getSheetData();
+    };
+
+    function showData(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        data.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.nama}</td>
+                    <td>${item.nim}</td>
+                    <td>${item.sekolah}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="btnEdit('${item.nim}', '${item.nama}', '${item.sekolah}')">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="btnDelete('${item.nim}')">Hapus</button>
+                    </td>
+                </tr>`;
+        });
     }
 
-    // FUNGSI CARI (MENGGUNAKAN POST + URLSEARCHPARAMS SEPERTI CONTOH SUKSES ANDA)
-    async function cariData() {
-        const nim = document.getElementById('input_nim').value;
-        if(!nim) return alert("Masukkan NIM!");
+    function btnDelete(nim) {
+        if(confirm("Hapus data dengan NIM: " + nim + "?")) {
+            const fd = new FormData();
+            fd.append('action', 'delete');
+            fd.append('old_nim', nim);
 
-        showLoader(true);
+            fetch(scriptURL, { method: 'POST', body: fd })
+            .then(() => { alert('Data Dihapus'); location.reload(); })
+            .catch(e => console.error(e));
+        }
+    }
+
+    function btnEdit(nim, nama, sekolah) {
+        const newNama = prompt("Edit Nama:", nama);
+        const newSekolah = prompt("Edit Sekolah:", sekolah);
         
-        const formData = new URLSearchParams();
-        formData.append('action', 'getRecordDetailByNIM'); // Pastikan action ini ada di .gs
-        formData.append('nim', nim);
+        if (newNama && newSekolah) {
+            const fd = new FormData();
+            fd.append('action', 'update');
+            fd.append('old_nim', nim); // Kunci pencarian
+            fd.append('nama', newNama);
+            fd.append('nim', nim);
+            fd.append('sekolah', newSekolah);
 
-        try {
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            
-            if(result.status === 'success') {
-                const data = result.record;
-                document.getElementById('res_rowId').value = data.rowId;
-                document.getElementById('res_nama').value = data.namaLengkap;
-                document.getElementById('res_nim').value = data.nim;
-                document.getElementById('res_sekolah').value = data.namaInstitusi;
-                
-                $("#editPanel").fadeIn().removeClass("hidden");
-            } else {
-                alert("Data tidak ditemukan! Pastikan NIM benar.");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Gagal mengambil data. Periksa koneksi atau URL Script.");
-        } finally {
-            showLoader(false);
+            fetch(scriptURL, { method: 'POST', body: fd })
+            .then(res => res.text())
+            .then(txt => { alert(txt); location.reload(); });
         }
     }
 
-    // FUNGSI UPDATE & DELETE
-    async function eksekusiData(aksi) {
-        if(aksi === 'deleteRecord' && !confirm("Yakin ingin menghapus data ini?")) return;
-
-        showLoader(true);
-        const formData = new URLSearchParams();
-        formData.append('action', aksi);
-        formData.append('rowId', document.getElementById('res_rowId').value);
-        formData.append('namaLengkap', document.getElementById('res_nama').value);
-        formData.append('nim', document.getElementById('res_nim').value);
-        formData.append('namaInstitusi', document.getElementById('res_sekolah').value);
-
-        try {
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            alert(result.message);
-            location.reload();
-        } catch (error) {
-            alert("Gagal memproses permintaan.");
-        } finally {
-            showLoader(false);
-        }
+    function backToHome() {
+        window.open(scriptURL + "?p=index", "_top");
     }
 
-    // Handle Submit Form
-    document.getElementById('formUpdate').addEventListener('submit', function(e) {
-        e.preventDefault();
-        eksekusiData('updateRecord');
-    });
+    function filterTable() {
+        let input = document.getElementById("searchInput").value.toUpperCase();
+        let rows = document.getElementById("tableBody").getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let txt = rows[i].textContent || rows[i].innerText;
+            rows[i].style.display = txt.toUpperCase().indexOf(input) > -1 ? "" : "none";
+        }
+    }
 </script>
-
 </body>
 </html>

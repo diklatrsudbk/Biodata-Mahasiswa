@@ -388,85 +388,43 @@
         }
     }
 
-      async function prosesKirimFinal() {
+async function prosesKirimFinal() {
+    const btn = document.getElementById('btnSubmitAll');
+    if (btn.innerHTML === "Isi Biodata") { bukaBiodata(); return; }
+    if (databaseSementara.length === 0) return;
 
-        const btn = document.getElementById('btnSubmitAll');
+    setFormLoading(true);
+    
+    for (let i = 0; i < databaseSementara.length; i++) {
+        btn.innerHTML = `⌛ Mengirim (${i+1}/${databaseSementara.length})...`;
+        
+        // Gabungkan data Master dengan data Peserta
+        const payload = {
+            tipe: document.getElementById('tipe').value,
+            sekolah: document.getElementById('sekolah').value,
+            jenjang: document.getElementById('jenjang').value,
+            jurusan: document.getElementById('jurusan').value,
+            jenis: document.getElementById('jenis').value,
+            start_date: document.getElementById('start_date').value,
+            end_date: document.getElementById('end_date').value,
+            ...databaseSementara[i] // Menggabungkan nama, nim, fotoData, dll
+        };
 
-        const tipe = document.getElementById('tipe').value;
-
-
-
-        if (btn.innerHTML === "Isi Biodata") {
-
-            bukaBiodata();
-
-            return;
-
-        }
-
-
-
-        if (databaseSementara.length === 0) return;
-
-
-
-        setFormLoading(true);
-
-        btn.innerHTML = "⌛ Menghubungkan...";
-
-
-
-        for (let i = 0; i < databaseSementara.length; i++) {
-
-            btn.innerHTML = `⌛ Mengirim Data (${i+1}/${databaseSementara.length})...`;
-
-            
-
-            const fd = new FormData();
-
-            fd.append('tipe', document.getElementById('tipe').value);
-
-            fd.append('sekolah', document.getElementById('sekolah').value);
-
-            fd.append('jenjang', document.getElementById('jenjang').value);
-
-            fd.append('jurusan', document.getElementById('jurusan').value);
-
-            fd.append('jenis', document.getElementById('jenis').value);
-
-            fd.append('start_date', document.getElementById('start_date').value);
-
-            fd.append('end_date', document.getElementById('end_date').value);
-
-
-
-            Object.keys(databaseSementara[i]).forEach(key => {
-
-                fd.append(key, databaseSementara[i][key]);
-
+        try {
+            const response = await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors', // Menghindari masalah CORS
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload) 
             });
-
-
-
-            try {
-
-                await fetch(scriptURL, { method: 'POST', body: fd });
-
-            } catch (e) { 
-
-                console.error(e);
-
-            }
-
+        } catch (e) {
+            console.error("Gagal mengirim baris ke-" + i, e);
         }
-
-
-
-        alert("Berhasil! Semua data tersimpan.");
-
-        location.reload();
-
     }
+
+    alert("Proses Selesai! Silakan cek spreadsheet.");
+    location.reload();
+}
 
 
     // --- DATA SUGGESTION ---

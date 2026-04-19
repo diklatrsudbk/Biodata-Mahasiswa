@@ -45,8 +45,19 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxPs8fCnd2HTpciOloub5BJaIMwy33qdvSPMVjrUBEFVInj2SvGd_-g6LfbxaDh5NC-/exec';
 
     window.onload = function() {
-        google.script.run.withSuccessHandler(showData).getSheetData();
-    };
+    // Panggil data menggunakan fetch ke URL Web App Anda
+    const urlRead = scriptURL + "?action=read";
+    
+    fetch(urlRead)
+    .then(response => response.json())
+    .then(data => {
+        showData(data); // Panggil fungsi tampilkan tabel yang sudah ada
+    })
+    .catch(err => {
+        console.error("Gagal mengambil data:", err);
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data. Pastikan Web App sudah di-deploy sebagai "Anyone".</td></tr>';
+    });
+};
 
     function showData(data) {
         const tbody = document.getElementById('tableBody');

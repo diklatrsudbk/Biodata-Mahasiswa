@@ -103,17 +103,25 @@
             }
 
             data.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="fw-bold">${item.nama}</td>
-                        <td>${item.nim}</td>
-                        <td>${item.sekolah}</td>
-                        <td class="text-center">
-                            <button class="btn btn-warning btn-sm fw-bold me-1" onclick="openEditModal('${item.nim}', '${item.nama}', '${item.sekolah}')">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="btnDelete('${item.nim}')">Hapus</button>
-                        </td>
-                    </tr>`;
-            });
+    tbody.innerHTML += `
+        <tr>
+            <td class="fw-bold">${item.nama}</td>
+            <td>${item.nim}</td>
+            <td>${item.sekolah}</td>
+            <td>
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-warning btn-sm fw-bold" 
+                            onclick="openEditModal('${item.nim}', '${item.nama}', '${item.sekolah}')">
+                        Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm fw-bold" 
+                            onclick="btnDelete('${item.nim}')">
+                        Hapus
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+});
         });
     }
 

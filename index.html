@@ -384,35 +384,39 @@
     }
 
     async function prosesKirimFinal() {
-        const btn = document.getElementById('btnSubmitAll');
-        if (btn.innerHTML === "Isi Biodata") { bukaBiodata(); return; }
-        if (databaseSementara.length === 0) return;
+    const btn = document.getElementById('btnSubmitAll');
+    if (btn.innerHTML === "Isi Biodata") { bukaBiodata(); return; }
+    if (databaseSementara.length === 0) return;
 
-        setFormLoading(true);
-        for (let i = 0; i < databaseSementara.length; i++) {
-            btn.innerHTML = `⌛ Mengirim (${i+1}/${databaseSementara.length})...`;
-            
-            const payload = {
-                ...databaseSementara[i],
-                tipe: document.getElementById('tipe').value,
-                sekolah: document.getElementById('sekolah').value,
-                jenjang: document.getElementById('jenjang').value,
-                jurusan: document.getElementById('jurusan').value,
-                jenis: document.getElementById('jenis').value,
-                start_date: document.getElementById('start_date').value,
-                end_date: document.getElementById('end_date').value
-            };
+    setFormLoading(true);
+    for (let i = 0; i < databaseSementara.length; i++) {
+        btn.innerHTML = `⌛ Mengirim (${i+1}/${databaseSementara.length})...`;
+        
+        const fd = new FormData();
+        // Data Master
+        fd.append('tipe', document.getElementById('tipe').value);
+        fd.append('sekolah', document.getElementById('sekolah').value);
+        fd.append('jenjang', document.getElementById('jenjang').value);
+        fd.append('jurusan', document.getElementById('jurusan').value);
+        fd.append('jenis', document.getElementById('jenis').value);
+        fd.append('start_date', document.getElementById('start_date').value);
+        fd.append('end_date', document.getElementById('end_date').value);
 
-            try {
-                await fetch(scriptURL, { 
-                    method: 'POST', 
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) { console.error(e); }
-        }
-        alert("Berhasil! Semua data dan foto tersimpan.");
-        location.reload();
+        // Data Peserta (Nama, NIM, dll)
+        Object.keys(databaseSementara[i]).forEach(key => {
+            fd.append(key, databaseSementara[i][key]);
+        });
+
+        try {
+            await fetch(scriptURL, { 
+                method: 'POST', 
+                body: fd // Mengirim sebagai FormData lebih disukai Google Script
+            });
+        } catch (e) { console.error(e); }
     }
+    alert("Berhasil! Semua data tersimpan.");
+    location.reload();
+}
 
     // --- DATA SUGGESTION ---
     const dataSekolah = ["Universitas Indonesia (UI)", "Institut Teknologi Bandung (ITB)", "Universitas Gadjah Mada (UGM)", "Universitas Padjadjaran (UNPAD)", "Universitas Diponegoro", "Universitas Airlangga", "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani (UNJANI)", "Universitas Bhakti Kencana (UBK)", "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia", "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)", "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu", "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam", "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha", "Akademik Teknik Radiodiagnostik dan Radioterapi Persada Nusantara Bekasi", "Politkenik Al-Islam Bandung", "Sekolah Tinggi Farmasi Indonesia (STFI)", "Universitas Muhammadiyah Bandung", "Universitas Wahid Hasyim Semarang", "Universitas Islam Negeri Sunan Gunung Djati Bandung", "Poltekkes Kemenkes Semarang", "Poltekkes Kemenkes Tasikmalaya", "Universitas Maranatha", "Universitas Sriwijaya", "Universitas Logistik dan Bisnis Internasional (ULBI)", "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom", "SMKN 7 Bandung", "SMK Nusa Bhakti Bandung"];

@@ -3,115 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit/Delete Data Peserta</title>
+    <title>Edit/Delete Peserta Didik</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding-top: 20px; }
-        .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { background-color: #f8f9fa; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+        .card-custom { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+        .section-title { border-left: 5px solid #0d6efd; padding-left: 15px; margin-bottom: 20px; color: #0d6efd; font-weight: bold; }
         .hidden { display: none; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; }
     </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 700px;">
+<div id="loader" class="loading-overlay hidden">
+    <div class="spinner-border text-primary"></div>
+</div>
+
+<div class="container">
     <div class="card-custom">
-        <h3 class="text-primary fw-bold mb-4">⚙️ Edit / Delete Data</h3>
+        <h2 class="text-center mb-4" style="color: #0d6efd; font-weight: bold;">⚙️ Pengelolaan Data</h2>
         
-        <div id="searchArea">
-            <div class="input-group mb-3">
-                <input type="text" id="searchNim" class="form-control" placeholder="Masukkan NIM Peserta...">
-                <button class="btn btn-primary" onclick="cariData()">Cari Data</button>
+        <div id="panelFilter">
+            <h5 class="section-title">Langkah 1: Filter Institusi</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Sekolah / Universitas</label>
+                    <input type="text" id="f_sekolah" list="list-sekolah" class="form-control" placeholder="Pilih Sekolah...">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Jurusan</label>
+                    <input type="text" id="f_jurusan" list="list-jurusan" class="form-control" placeholder="Pilih Jurusan...">
+                </div>
+                <div class="col-12 text-end">
+                    <button class="btn btn-primary px-4" onclick="kunciFilter()">Lanjut ke Cari NIM</button>
+                </div>
             </div>
-            <small class="text-muted text-center d-block">Data akan dicari berdasarkan NIM yang terdaftar di Spreadsheet.</small>
         </div>
 
-        <div id="editFormArea" class="hidden mt-4">
-            <hr>
+        <div id="panelSearch" class="mt-4 hidden">
+            <h5 class="section-title">Langkah 2: Cari Berdasarkan NIM</h5>
+            <div class="input-group">
+                <input type="text" id="f_nim" class="form-control border-primary" placeholder="Masukkan NIM Peserta...">
+                <button class="btn btn-primary" onclick="cariData()">🔍 CARI DATA</button>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">Mencari di: <b id="infoFilter"></b></small>
+                <button class="btn btn-sm btn-link p-0 ms-2" onclick="resetFilter()">Ganti Institusi</button>
+            </div>
+        </div>
+
+        <div id="panelEdit" class="mt-5 pt-4 border-top hidden">
+            <h5 class="section-title">Langkah 3: Edit atau Hapus Data</h5>
             <form id="formEdit">
-                <input type="hidden" id="old_nim"> <div class="mb-3">
-                    <label class="form-label fw-bold">Nama Lengkap</label>
-                    <input type="text" id="edit_nama" class="form-control" required>
+                <input type="hidden" id="old_nim"> <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input type="text" id="edit_nama" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">NIM Baru (Jika ingin diubah)</label>
+                        <input type="text" id="edit_nim" class="form-control" required>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Update Nama Sekolah</label>
+                        <input type="text" id="edit_sekolah" list="list-sekolah" class="form-control" required>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">NIM</label>
-                    <input type="text" id="edit_nim" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Sekolah/Universitas</label>
-                    <input type="text" id="edit_sekolah" class="form-control" required>
-                </div>
-                
+
                 <div class="d-flex justify-content-between mt-4">
-                    <button type="button" class="btn btn-danger" onclick="prosesAksi('delete')">🗑️ HAPUS DATA</button>
+                    <button type="button" class="btn btn-danger px-4" onclick="eksekusi('delete')">🗑️ HAPUS DATA</button>
                     <div>
-                        <button type="button" class="btn btn-secondary" onclick="location.reload()">Batal</button>
-                        <button type="button" class="btn btn-success fw-bold" onclick="prosesAksi('update')">💾 SIMPAN PERUBAHAN</button>
+                        <button type="button" class="btn btn-light me-2" onclick="location.reload()">Batal</button>
+                        <button type="button" class="btn btn-success px-5 fw-bold" onclick="eksekusi('update')">💾 SIMPAN PERUBAHAN</button>
                     </div>
                 </div>
             </form>
         </div>
-        
-        <div class="mt-4 text-center">
-            <a href="index.html" class="btn btn-link text-decoration-none">← Kembali ke Beranda</a>
+
+        <div class="text-center mt-5">
+            <a href="index.html" class="btn btn-outline-secondary btn-sm"> Kembali ke Beranda</a>
         </div>
     </div>
 </div>
 
+<datalist id="list-sekolah"></datalist>
+<datalist id="list-jurusan"></datalist>
+
 <script>
-    // URL Web App GAS Anda (Gunakan URL yang sama dengan index.html)
-    const scriptURL = 'URL_WEB_APP_ANDA_DISINI';
+    // MASUKKAN URL APPSCRIPT KAMU DI SINI
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyRh_GJQaJrv6dEV5uywr4CE1WFuipEnERyN4rJyt1U0VpitmUTjCKcHpAL2u0tUYps/exec';
+
+    function showLoader(isTrue) {
+        document.getElementById('loader').classList.toggle('hidden', !isTrue);
+    }
+
+    function kunciFilter() {
+        const sek = document.getElementById('f_sekolah').value;
+        const jur = document.getElementById('f_jurusan').value;
+        if(!sek || !jur) return alert("Pilih Sekolah dan Jurusan dulu!");
+
+        document.getElementById('infoFilter').innerText = `${sek} - ${jur}`;
+        document.getElementById('panelFilter').classList.add('hidden');
+        document.getElementById('panelSearch').classList.remove('hidden');
+    }
+
+    function resetFilter() {
+        document.getElementById('panelFilter').classList.remove('hidden');
+        document.getElementById('panelSearch').classList.add('hidden');
+        document.getElementById('panelEdit').classList.add('hidden');
+    }
 
     async function cariData() {
-        const nim = document.getElementById('searchNim').value;
+        const nim = document.getElementById('f_nim').value;
+        const sek = document.getElementById('f_sekolah').value;
+        const jur = document.getElementById('f_jurusan').value;
         if(!nim) return alert("Masukkan NIM!");
 
-        // Beri loading sederhana
-        const btn = document.querySelector('#searchArea button');
-        btn.disabled = true; btn.innerText = "Mencari...";
-
+        showLoader(true);
         try {
-            // Kita kirim request GET ke GAS dengan parameter nim
-            const response = await fetch(`${scriptURL}?action=read&nim=${nim}`);
-            const data = await response.json();
+            // Memanggil doGet dengan parameter lengkap
+            const resp = await fetch(`${scriptURL}?action=read&nim=${nim}&sekolah=${sek}&jurusan=${jur}`);
+            const data = await resp.json();
 
-            if(data.status === "error") {
-                alert("Data tidak ditemukan!");
-            } else {
-                // Isi form dengan data dari spreadsheet
+            if(data.status === "success") {
                 document.getElementById('old_nim').value = data.nim;
                 document.getElementById('edit_nama').value = data.nama;
                 document.getElementById('edit_nim').value = data.nim;
                 document.getElementById('edit_sekolah').value = data.sekolah;
                 
-                document.getElementById('editFormArea').classList.remove('hidden');
-                document.getElementById('searchArea').classList.add('hidden');
+                document.getElementById('panelEdit').classList.remove('hidden');
+            } else {
+                alert(data.message || "Data tidak ditemukan!");
             }
         } catch (e) {
-            alert("Terjadi kesalahan koneksi.");
-        } finally {
-            btn.disabled = false; btn.innerText = "Cari Data";
+            alert("Gagal terhubung ke database. Pastikan URL Script benar.");
         }
+        showLoader(false);
     }
 
-    async function prosesAksi(tipe) {
+    async function eksekusi(tipe) {
         if(tipe === 'delete' && !confirm("Yakin ingin menghapus data ini?")) return;
 
-        const formData = new FormData();
-        formData.append('action', tipe);
-        formData.append('old_nim', document.getElementById('old_nim').value);
-        formData.append('nama', document.getElementById('edit_nama').value);
-        formData.append('nim', document.getElementById('edit_nim').value);
-        formData.append('sekolah', document.getElementById('edit_sekolah').value);
+        showLoader(true);
+        const fd = new FormData();
+        fd.append('action', tipe);
+        fd.append('old_nim', document.getElementById('old_nim').value);
+        fd.append('nama', document.getElementById('edit_nama').value);
+        fd.append('nim', document.getElementById('edit_nim').value);
+        fd.append('sekolah', document.getElementById('edit_sekolah').value);
 
         try {
-            const response = await fetch(scriptURL, { method: 'POST', body: formData });
-            const result = await response.text();
+            const resp = await fetch(scriptURL, { method: 'POST', body: fd });
+            const result = await resp.text();
             alert(result);
-            location.reload(); // Refresh halaman
+            location.reload();
         } catch (e) {
-            alert("Gagal memproses data.");
+            alert("Terjadi kesalahan saat memproses data.");
         }
+        showLoader(false);
     }
+
+    // --- INISIALISASI DATALIST (Salin array dari index.html kamu) ---
+    const dataSekolah = ["Universitas Indonesia (UI)", "Institut Teknologi Bandung (ITB)", "Universitas Gadjah Mada (UGM)", "Universitas Padjadjaran (UNPAD)", "Universitas Diponegoro", "Universitas Airlangga", "IPB University", "ITS Surabaya", "Universitas Brawijaya", "Universitas Telkom", "Universitas Jenderal Achmad Yani (UNJANI)", "Universitas Bhakti Kencana (UBK)", "Universitas Persatuan Islam", "Universitas Santo Borromeus", "Universitas Bandung", "Universitas Bhakti Husada Indonesia", "Inkes Rajawali", "Institut Digital Ekonomi LPKIA", "Inkes Karsa Husada Garut", "Universitas Aisyiyah (UNISA Bandung)", "Stikep PPNI Jabar", "Stikes Budi Luhur", "Stikes Dharma Husada Bandung", "Inkes Immanuel", "Inkes Palamonia Makassar", "Politeknik Kemenkes Palu", "Politeknik Kemenkes Bandung", "Poltekkes Kemenkes Jakarta II", "Politeknik Cendrawasih Palu", "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam", "Universitas Pendidikan Indonesia (UPI)", " Universitas Muhammadiyah Ahmad Dahlan Palembang", "Universitas Dehasen Bengkulu", "Politeknik PIKSI Ganesha", "Akademik Teknik Radiodiagnostik dan Radioterapi Persada Nusantara Bekasi", "Politkenik Al-Islam Bandung", "Sekolah Tinggi Farmasi Indonesia (STFI)", "Universitas Muhammadiyah Bandung", "Universitas Wahid Hasyim Semarang", "Universitas Islam Negeri Sunan Gunung Djati Bandung", "Poltekkes Kemenkes Semarang", "Poltekkes Kemenkes Tasikmalaya", "Universitas Maranatha", "Universitas Sriwijaya", "Universitas Logistik dan Bisnis Internasional (ULBI)", "SMKN 1 Bandung", "SMKN 2 Bandung", "SMKN 4 Bandung", "SMK Telkom", "SMKN 7 Bandung", "SMK Nusa Bhakti Bandung"];
+    const dataJurusan = ["Teknik Informatika", "Sistem Informasi", "Teknik Elektro", "Teknik Sipil", "Keperawatan", "Kebidanan", "Kedokteran", "Farmasi", "Gizi", "Fisioterapi", "Manajemen", "Akuntansi", "Ilmu Komunikasi", "Psikologi", "Hukum", "Kedokteran Gigi", "Teknik Radiologi", "Laboratorium Medis", "Dietisien", "Analis Kesehatan", "Rekayasa Perangkat Lunak (RPL)", "Multimedia", "Teknik Komputer Jaringan (TKJ)", "Rekam Medik", "Terapi Wicara", "Terapi Okupasi", "Fisika", "Biologi", "Management Informasi Kesehatan", "Anestesi RPL", "Anestesi regular", "Elektromedis", "PPDS Anak", "PPDS Anestesi", "PPDS Bedah", "PPDS Obsgyn", "PPDS KFR", "PPDS THT-KL", "PPDS Neurologi", "Administrasi Logistik", "PPDS IPD", "Apoteker", "Keperawatan Regular", "Keperawatan Non-Regular", "Kebidanan Regular", "Kebidanan Non-Regular", "PSPD"];
+
+    function loadSuggestions() {
+        const dlSek = document.getElementById('list-sekolah');
+        const dlJur = document.getElementById('list-jurusan');
+        dataSekolah.sort().forEach(s => { let o = document.createElement('option'); o.value = s; dlSek.appendChild(o); });
+        dataJurusan.sort().forEach(j => { let o = document.createElement('option'); o.value = j; dlJur.appendChild(o); });
+    }
+    loadSuggestions();
 </script>
+
 </body>
 </html>

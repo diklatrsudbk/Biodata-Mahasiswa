@@ -93,9 +93,21 @@
     // MASUKKAN URL APPSCRIPT KAMU DI SINI
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyRh_GJQaJrv6dEV5uywr4CE1WFuipEnERyN4rJyt1U0VpitmUTjCKcHpAL2u0tUYps/exec';
 
-    function showLoader(isTrue) {
-        document.getElementById('loader').classList.toggle('hidden', !isTrue);
+    // Fungsi Loader yang lebih simpel
+    function showLoader(status) {
+        const loader = document.getElementById('loader');
+        if (status) {
+            loader.classList.remove('hidden');
+        } else {
+            loader.classList.add('hidden');
+        }
     }
+
+    // Jalankan ini saat halaman pertama kali dibuka
+    window.addEventListener('load', function() {
+        loadSuggestions();
+        showLoader(false); // Pastikan loader mati saat halaman siap
+    });
 
     function kunciFilter() {
         const sek = document.getElementById('f_sekolah').value;
@@ -117,12 +129,18 @@
         const nim = document.getElementById('f_nim').value;
         const sek = document.getElementById('f_sekolah').value;
         const jur = document.getElementById('f_jurusan').value;
-        if(!nim) return alert("Masukkan NIM!");
+        
+        if(!nim || !sek || !jur) {
+            alert("Lengkapi Sekolah, Jurusan, dan NIM!");
+            return;
+        }
 
         showLoader(true);
         try {
-            // Memanggil doGet dengan parameter lengkap
-            const resp = await fetch(`${scriptURL}?action=read&nim=${nim}&sekolah=${sek}&jurusan=${jur}`);
+            // Kita tambahkan cache-buster agar browser tidak mengambil data lama
+            const finalURL = `${scriptURL}?action=read&nim=${encodeURIComponent(nim)}&sekolah=${encodeURIComponent(sek)}&jurusan=${encodeURIComponent(jur)}&t=${new Date().getTime()}`;
+            
+            const resp = await fetch(finalURL);
             const data = await resp.json();
 
             if(data.status === "success") {
@@ -132,13 +150,17 @@
                 document.getElementById('edit_sekolah').value = data.sekolah;
                 
                 document.getElementById('panelEdit').classList.remove('hidden');
+                // Scroll otomatis ke form edit agar kelihatan
+                document.getElementById('panelEdit').scrollIntoView({ behavior: 'smooth' });
             } else {
                 alert(data.message || "Data tidak ditemukan!");
             }
         } catch (e) {
-            alert("Gagal terhubung ke database. Pastikan URL Script benar.");
+            console.error(e);
+            alert("Terjadi kesalahan koneksi ke server Google.");
+        } finally {
+            showLoader(false);
         }
-        showLoader(false);
     }
 
     async function eksekusi(tipe) {

@@ -383,37 +383,56 @@
         }
     }
 
-    async function prosesKirimFinal() {
+   async function prosesKirimFinal() {
     const btn = document.getElementById('btnSubmitAll');
-    if (btn.innerHTML === "Isi Biodata") { bukaBiodata(); return; }
+
+    if (btn.innerHTML === "Isi Biodata") { 
+        bukaBiodata(); 
+        return; 
+    }
+
     if (databaseSementara.length === 0) return;
 
     setFormLoading(true);
+
     for (let i = 0; i < databaseSementara.length; i++) {
         btn.innerHTML = `⌛ Mengirim (${i+1}/${databaseSementara.length})...`;
-        
-        const fd = new FormData();
-        // Data Master
-        fd.append('tipe', document.getElementById('tipe').value);
-        fd.append('sekolah', document.getElementById('sekolah').value);
-        fd.append('jenjang', document.getElementById('jenjang').value);
-        fd.append('jurusan', document.getElementById('jurusan').value);
-        fd.append('jenis', document.getElementById('jenis').value);
-        fd.append('start_date', document.getElementById('start_date').value);
-        fd.append('end_date', document.getElementById('end_date').value);
 
-        // Data Peserta (Nama, NIM, dll)
-        Object.keys(databaseSementara[i]).forEach(key => {
-            fd.append(key, databaseSementara[i][key]);
-        });
+        // Gabungkan data master + data peserta
+        const dataKirim = {
+            // --- DATA MASTER ---
+            tipe: document.getElementById('tipe').value,
+            sekolah: document.getElementById('sekolah').value,
+            jenjang: document.getElementById('jenjang').value,
+            jurusan: document.getElementById('jurusan').value,
+            jenis: document.getElementById('jenis').value,
+            start_date: document.getElementById('start_date').value,
+            end_date: document.getElementById('end_date').value,
+
+            // --- DATA PESERTA ---
+            ...databaseSementara[i]
+        };
 
         try {
-            await fetch(scriptURL, { 
-                method: 'POST', 
-                body: fd // Mengirim sebagai FormData lebih disukai Google Script
+            const response = await fetch(scriptURL, { 
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(dataKirim)
             });
-        } catch (e) { console.error(e); }
+
+            const text = await response.text();
+            console.log("Response:", text);
+
+        } catch (e) { 
+            console.error("Error kirim:", e);
+            alert("Gagal kirim data ke server!");
+            setFormLoading(false);
+            return;
+        }
     }
+
     alert("Berhasil! Semua data tersimpan.");
     location.reload();
 }

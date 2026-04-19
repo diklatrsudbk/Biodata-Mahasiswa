@@ -309,57 +309,62 @@
     }
 
     async function simpanBiodata() {
-        const form = document.getElementById('biodataForm');
-        if(!form.checkValidity()){ form.reportValidity(); return; }
+    const form = document.getElementById('biodataForm');
+    if(!form.checkValidity()){ form.reportValidity(); return; }
 
-        const fotoFile = document.getElementById('foto_file').files[0];
-        let fotoData = "";
-        let fotoType = "";
+    const fotoFile = document.getElementById('foto_file').files[0];
+    let fotoData = "";
+    let fotoType = "";
 
-        if(fotoFile) {
+    // PERBAIKAN: Pastikan await benar-benar bekerja
+    if(fotoFile) {
+        try {
             fotoData = await toBase64(fotoFile);
             fotoType = fotoFile.type;
-        }
-
-        const data = {
-            nama: document.getElementById('nama').value,
-            ktp: document.getElementById('ktp').value,
-            nim: document.getElementById('nim').value,
-            hp: document.getElementById('hp').value,
-            tempat_lahir: document.getElementById('tempat_lahir').value,
-            tgl_lahir: document.getElementById('tgl_lahir').value,
-            umur: document.getElementById('umur').value,
-            jk: document.getElementById('jk').value,
-            agama: document.getElementById('agama').value,
-            alamat: document.getElementById('alamat').value,
-            kec_kel: document.getElementById('kec_kel').value,
-            kota: document.getElementById('kota').value,
-            fotoData: fotoData,
-            fotoType: fotoType
-        };
-
-        if (editIndex > -1) {
-            databaseSementara[editIndex] = data;
-        } else {
-            const tipe = document.getElementById('tipe').value;
-            if(tipe === 'Perorangan/Mandiri') databaseSementara = []; 
-            databaseSementara.push(data);
-        }
-
-        updateTabel();
-        form.reset();
-        document.getElementById('imgPreview').style.display = 'none';
-        showPage('pageInput');
-
-        const btnSubmit = document.getElementById('btnSubmitAll');
-        const tipe = document.getElementById('tipe').value;
-        if(tipe === 'Perorangan/Mandiri') {
-            btnSubmit.innerHTML = "🚀 Simpan & Kirim Data";
-        } else {
-            btnSubmit.classList.toggle('hidden', databaseSementara.length < 2);
-            btnSubmit.innerHTML = "🚀 Simpan & Kirim Kelompok";
+        } catch (err) {
+            console.error("Gagal konversi foto:", err);
+            alert("Gagal memproses foto, silakan coba lagi.");
+            return;
         }
     }
+
+    const data = {
+        nama: document.getElementById('nama').value,
+        ktp: document.getElementById('ktp').value,
+        nim: document.getElementById('nim').value,
+        hp: document.getElementById('hp').value,
+        tempat_lahir: document.getElementById('tempat_lahir').value,
+        tgl_lahir: document.getElementById('tgl_lahir').value,
+        umur: document.getElementById('umur').value,
+        jk: document.getElementById('jk').value,
+        agama: document.getElementById('agama').value,
+        alamat: document.getElementById('alamat').value,
+        kec_kel: document.getElementById('kec_kel').value,
+        kota: document.getElementById('kota').value,
+        fotoData: fotoData, // Data Base64 panjang
+        fotoType: fotoType
+    };
+
+    // ... sisa kode simpan ke databaseSementara tetap sama ...
+    if (editIndex > -1) {
+        databaseSementara[editIndex] = data;
+    } else {
+        const tipe = document.getElementById('tipe').value;
+        if(tipe === 'Perorangan/Mandiri') databaseSementara = []; 
+        databaseSementara.push(data);
+    }
+
+    updateTabel();
+    form.reset();
+    document.getElementById('imgPreview').style.display = 'none';
+    showPage('pageInput');
+    
+    // Update label tombol kirim
+    const btnSubmit = document.getElementById('btnSubmitAll');
+    btnSubmit.innerHTML = (document.getElementById('tipe').value === 'Perorangan/Mandiri') ? 
+        "🚀 Simpan & Kirim Data" : "🚀 Simpan & Kirim Kelompok";
+    if(document.getElementById('tipe').value === 'Kelompok') btnSubmit.classList.remove('hidden');
+}
 
     function updateTabel() {
         const area = document.getElementById('areaTabel');

@@ -102,11 +102,10 @@
         btn.disabled = true; 
         btn.innerText = "Proses...";
         
-        // Buat objek JSON, bukan FormData
         const payload = {
             action: 'update',
             nama: document.getElementById('e_nama').value,
-            nim: document.getElementById('e_nim').value, // Ini NIM yang dicari di Sheet
+            nim: document.getElementById('e_nim').value,
             ktp: document.getElementById('e_ktp').value,
             hp: document.getElementById('e_hp').value,
             alamat: document.getElementById('e_alamat').value,
@@ -115,13 +114,13 @@
 
         fetch(url, { 
             method: 'POST', 
-            mode: 'no-cors', // Tambahkan ini untuk menghindari isu CORS
+            mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload) 
         }).then(() => {
             alert("Data Berhasil Diupdate!"); 
             modal.hide(); 
-            load();
+            load(); // Refresh tabel setelah edit
             btn.disabled = false; 
             btn.innerText = "Simpan Perubahan";
         }).catch(err => {

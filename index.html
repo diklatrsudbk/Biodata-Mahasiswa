@@ -202,74 +202,117 @@
         </form>
     </div>
 
-    <script>
-        function app() {
-            return {
-                config: {
-                    targetSheet: "GEL5",
-                    scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
-                },
-                loading: false,
-                formData: {
-                    tipe: 'Perorangan', bagian: '', jenis: '', namaInstitusi: '', jurusan: '', jenjangPendidikan: '', level: '1',
-                    startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki',
-                    tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '',
-                    pasFotoData: '', pasFotoType: ''
-                },
-                kelompok: [{ nama: '', nim: '', hp: '', ktp: '' }],
-                
-                addMhs() { this.kelompok.push({ nama: '', nim: '', hp: '', ktp: '' }) },
-                removeMhs(index) { this.kelompok.splice(index, 1) },
+<script>
+    function app() {
+        // Template data awal agar mudah direset
+        const initialForm = {
+            tipe: 'Perorangan', bagian: '', jenis: 'Magang', namaInstitusi: '', jurusan: '', 
+            kota: '', jenjangPendidikan: '', level: '1', startDate: '', endDate: '', 
+            nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki',
+            tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '',
+            pasFotoData: '', pasFotoType: '', dokumenList: []
+        };
 
-                validateAge() {
-                    const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
-                    if (age < 14) { alert("Umur minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
-                },
+        return {
+            config: {
+                targetSheet: "GEL5",
+                scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
+            },
+            loading: false,
+            formData: { ...initialForm },
+            // Setiap baris kelompok sekarang punya penampung filenya sendiri
+            kelompok: [{ nama: '', nim: '', hp: '', ktp: '', tanggalLahir: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }],
+            
+            addMhs() { 
+                this.kelompok.push({ nama: '', nim: '', hp: '', ktp: '', tanggalLahir: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }) 
+            },
+            
+            removeMhs(index) { if(this.kelompok.length > 1) this.kelompok.splice(index, 1) },
 
-                validateDates() {
-                    if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) {
-                        alert("Start Date tidak boleh melewati End Date!"); this.formData.endDate = '';
-                    }
-                },
+            // Fungsi sakti untuk handle file (PasFoto atau Dokumen Lain)
+            handleFile(e, targetObj, isMulti = false) {
+                const files = e.target.files;
+                if (!files.length) return;
 
-                handlePasFoto(e) {
-                    const file = e.target.files[0];
+                if (!isMulti) {
+                    // Handle PasFoto (Single)
                     const reader = new FileReader();
                     reader.onload = (f) => {
-                        this.formData.pasFotoData = f.target.result.split(',')[1];
-                        this.formData.pasFotoType = file.type;
+                        targetObj.pasFotoData = f.target.result.split(',')[1];
+                        targetObj.pasFotoType = files[0].type;
                     };
-                    reader.readAsDataURL(file);
-                },
+                    reader.readAsDataURL(files[0]);
+                } else {
+                    // Handle Dokumen Pendukung (Multiple)
+                    targetObj.dokumenList = [];
+                    Array.from(files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = (f) => {
+                            targetObj.dokumenList.push({
+                                name: file.name,
+                                type: file.type,
+                                base64: f.target.result.split(',')[1]
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+            },
 
-                async handleSubmit() {
-                    this.loading = true;
-                    
+            validateAge() {
+                const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
+                if (age < 14) { alert("Umur minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
+            },
+
+            validateDates() {
+                if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) {
+                    alert("Start Date tidak boleh melewati End Date!"); this.formData.endDate = '';
+                }
+            },
+
+            async handleSubmit() {
+                this.loading = true;
+                try {
                     if (this.formData.tipe === 'Perorangan') {
                         await this.sendToAppsScript(this.formData);
                     } else {
-                        // Jika kelompok, kirim data satu per satu agar masuk tiap baris di Spreadsheet
                         for (let mhs of this.kelompok) {
+                            // Gabungkan data institusi/periode dengan data tiap mahasiswa
                             let dataToSend = { ...this.formData, ...mhs };
                             await this.sendToAppsScript(dataToSend);
                         }
                     }
-                    
-                    alert("Berhasil terkirim!");
+                    alert("Berhasil! Data dan dokumen telah terunggah.");
+                    window.location.reload(); // Reset form total
+                } catch (e) {
+                    alert("Gagal mengirim: " + e);
+                } finally {
                     this.loading = false;
-                },
-
-                async sendToAppsScript(payload) {
-                    const body = new URLSearchParams();
-                    body.append("targetSheet", this.config.targetSheet);
-                    for (let key in payload) body.append(key, payload[key]);
-
-                    try {
-                        await fetch(this.config.scriptUrl, { method: 'POST', body: body, mode: 'no-cors' });
-                    } catch (e) { console.error(e); }
                 }
+            },
+
+            async sendToAppsScript(payload) {
+                const body = new URLSearchParams();
+                body.append("targetSheet", this.config.targetSheet);
+                
+                for (let key in payload) {
+                    if (key === 'dokumenList') {
+                        // Kirim array dokumen sebagai string JSON agar terbaca oleh Apps Script
+                        body.append(key, JSON.stringify(payload[key]));
+                    } else if (payload[key] !== undefined) {
+                        body.append(key, payload[key]);
+                    }
+                }
+
+                await fetch(this.config.scriptUrl, { 
+                    method: 'POST', 
+                    body: body, 
+                    mode: 'no-cors' 
+                });
             }
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>

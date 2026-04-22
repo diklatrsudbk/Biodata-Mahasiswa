@@ -190,8 +190,8 @@
                             if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
                                 alert("Pas Foto harus format JPG/JPEG!"); e.target.value = ""; return;
                             }
-                            if (file.size > 80 * 1024) {
-                                alert("Ukuran Pas Foto maksimal 80KB!"); e.target.value = ""; return;
+                            if (file.size > 200 * 1024) {
+                                alert("Ukuran Pas Foto maksimal 200KB!"); e.target.value = ""; return;
                             }
                         } else { // Dokumen PDF
                             if (file.type !== 'application/pdf') {

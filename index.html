@@ -77,7 +77,12 @@
                         <div><label class="label-text">NIM</label><input type="text" x-model="formData.nim" class="input-field" required></div>
                         <div><label class="label-text">No. KTP</label><input type="number" x-model="formData.ktp" class="input-field" required></div>
                         <div><label class="label-text">No. WA</label><input type="text" x-model="formData.hp" class="input-field" required></div>
+                        <div><label class="label-text">Tempat Lahir</label><input type="text" x-model="formData.tempatLahir" class="input-field" required></div>
                         <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="formData.tanggalLahir" @change="validateAge" class="input-field" required></div>
+                        
+                        <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label><input type="text" x-model="formData.alamat" class="input-field" required></div>
+                        <div><label class="label-text">Kelurahan-Kecamatan</label><input type="text" x-model="formData.kelurahanKecamatan" class="input-field" required></div>
+
                         <div class="md:col-span-1"><label class="label-text">Pas Foto (JPG)</label><input type="file" accept=".jpg,.jpeg" @change="handleFile($event, formData, false)" class="text-xs"></div>
                         <div class="md:col-span-2"><label class="label-text">Dokumen (PDF)</label><input type="file" accept=".pdf" multiple @change="handleFile($event, formData, true)" class="text-xs"></div>
                     </div>
@@ -126,8 +131,12 @@
                             <div><label class="label-text">NIM</label><input type="text" x-model="tempMhs.nim" class="input-field"></div>
                             <div><label class="label-text">No. KTP</label><input type="number" x-model="tempMhs.ktp" class="input-field"></div>
                             <div><label class="label-text">No. WA</label><input type="text" x-model="tempMhs.hp" class="input-field"></div>
-                            <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="tempMhs.tanggalLahir" class="input-field"></div>
                             <div><label class="label-text">Tempat Lahir</label><input type="text" x-model="tempMhs.tempatLahir" class="input-field"></div>
+                            <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="tempMhs.tanggalLahir" class="input-field"></div>
+                            
+                            <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label><input type="text" x-model="tempMhs.alamat" class="input-field"></div>
+                            <div><label class="label-text">Kelurahan-Kecamatan</label><input type="text" x-model="tempMhs.kelurahanKecamatan" class="input-field"></div>
+
                             <div class="md:col-span-1"><label class="label-text">Pas Foto (JPG)</label><input type="file" accept=".jpg,.jpeg" @change="handleFile($event, tempMhs, false)" class="text-[10px]"></div>
                             <div class="md:col-span-2"><label class="label-text">Dokumen (PDF)</label><input type="file" accept=".pdf" multiple @change="handleFile($event, tempMhs, true)" class="text-[10px]"></div>
                         </div>
@@ -155,30 +164,12 @@
     <script>
         function app() {
             const initialForm = {
-    tipe: 'Perorangan', 
-    bagian: '', 
-    jenis: 'Magang', 
-    namaInstitusi: '', 
-    jurusan: '', 
-    kotaInstitusi: '', // DIUBAH dari 'kota' menjadi 'kotaInstitusi'
-    jenjangPendidikan: 'S1', 
-    level: '1', 
-    startDate: '', 
-    endDate: '',  
-    nama: '', 
-    nim: '', 
-    ktp: '', 
-    hp: '', 
-    agama: 'Islam', 
-    jenisKelamin: 'Laki-Laki',
-    tempatLahir: '', 
-    tanggalLahir: '', 
-    alamat: '', 
-    kelurahanKecamatan: '',
-    pasFotoData: '', 
-    pasFotoType: '', 
-    dokumenList: []
-};
+                tipe: 'Perorangan', bagian: '', jenis: 'Magang', namaInstitusi: '', jurusan: '', kotaInstitusi: '',
+                jenjangPendidikan: 'S1', level: '1', startDate: '', endDate: '',  
+                nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki',
+                tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '',
+                pasFotoData: '', pasFotoType: '', dokumenList: []
+            };
 
             return {
                 config: {
@@ -188,7 +179,7 @@
                 loading: false,
                 progressText: '',
                 formData: { ...initialForm },
-                kelompok: [], // Mulai dengan array kosong
+                kelompok: [],
                 
                 resetKelompok() { this.kelompok = []; },
                 removeMhs(index) { this.kelompok.splice(index, 1); },
@@ -196,13 +187,6 @@
                 handleFile(e, targetObj, isMulti) {
                     const files = e.target.files;
                     if (!files.length) return;
-                    for (let file of files) {
-                        if (!isMulti) {
-                            if (file.size > 500 * 1024) { alert("Pas Foto max 500KB!"); e.target.value = ""; return; }
-                        } else {
-                            if (file.size > 1024 * 1024) { alert("Dokumen max 1MB/file!"); e.target.value = ""; return; }
-                        }
-                    }
                     if (!isMulti) {
                         const reader = new FileReader();
                         reader.onload = (f) => { targetObj.pasFotoData = f.target.result.split(',')[1]; targetObj.pasFotoType = files[0].type; };
@@ -229,7 +213,6 @@
                 },
 
                 async handleSubmit() {
-                    // VALIDASI MINIMAL 2 ORANG UNTUK KELOMPOK
                     if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 2) {
                         alert("Gagal: Pendaftaran kelompok harus minimal 2 orang anggota!");
                         return;
@@ -257,7 +240,8 @@
                 },
 
                 async sendToAppsScript(payload) {
-                    const body = new URLSearchParams();
+                    // MENGGUNAKAN FORMDATA (LEBIH STABIL UNTUK BASE64)
+                    const body = new FormData();
                     body.append("targetSheet", this.config.targetSheet);
                     for (let key in payload) {
                         if (key === 'dokumenList') {

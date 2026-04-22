@@ -62,7 +62,7 @@
                     </div>
                     <div>
                         <label class="label-text">Kota (Institusi)</label>
-                        <input type="text" x-model="formData.kota" class="input-field" required>
+                        <input type="text" x-model="formData.kotaInstitusi" class="input-field" required>
                     </div>
                     <div><label class="label-text">Start Date</label><input type="date" x-model="formData.startDate" class="input-field" required></div>
                     <div><label class="label-text">End Date</label><input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required></div>
@@ -155,12 +155,30 @@
     <script>
         function app() {
             const initialForm = {
-                tipe: 'Perorangan', bagian: '', jenis: 'Magang', namaInstitusi: '', jurusan: '', kota: '',
-                jenjangPendidikan: 'S1', level: '1', startDate: '', endDate: '', 
-                nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki',
-                tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '',
-                pasFotoData: '', pasFotoType: '', dokumenList: []
-            };
+    tipe: 'Perorangan', 
+    bagian: '', 
+    jenis: 'Magang', 
+    namaInstitusi: '', 
+    jurusan: '', 
+    kotaInstitusi: '', // DIUBAH dari 'kota' menjadi 'kotaInstitusi'
+    jenjangPendidikan: 'S1', 
+    level: '1', 
+    startDate: '', 
+    endDate: '',  
+    nama: '', 
+    nim: '', 
+    ktp: '', 
+    hp: '', 
+    agama: 'Islam', 
+    jenisKelamin: 'Laki-Laki',
+    tempatLahir: '', 
+    tanggalLahir: '', 
+    alamat: '', 
+    kelurahanKecamatan: '',
+    pasFotoData: '', 
+    pasFotoType: '', 
+    dokumenList: []
+};
 
             return {
                 config: {

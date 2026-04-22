@@ -17,7 +17,6 @@
     <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden">
         <div class="bg-blue-800 p-6 text-white text-center">
             <h1 class="text-2xl font-bold" x-text="'REGISTRASI ' + config.targetSheet"></h1>
-            <p class="text-blue-100 text-sm">Pastikan seluruh data dan dokumen terisi dengan benar</p>
         </div>
 
         <form @submit.prevent="handleSubmit" class="p-6">
@@ -40,7 +39,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="label-text">Tipe</label>
+                        <label class="label-text">Tipe Pendaftaran</label>
                         <select x-model="formData.tipe" class="input-field" required @change="resetKelompok">
                             <option value="Perorangan">Perorangan</option>
                             <option value="Kelompok">Kelompok</option>
@@ -61,8 +60,8 @@
                         <input type="text" x-model="formData.jurusan" class="input-field" required>
                     </div>
                     <div>
-                        <label class="label-text">Kota Institusi</label>
-                        <input type="text" x-model="formData.kotaInstitusi" class="input-field" required placeholder="Kota Kampus">
+                        <label class="label-text">Kota (Institusi)</label>
+                        <input type="text" x-model="formData.kota" class="input-field" required placeholder="Kota Sekolah/Kampus">
                     </div>
                     <div>
                         <label class="label-text">Jenjang</label>
@@ -70,14 +69,8 @@
                             <option>SMA/SMK</option><option>D3</option><option>D4</option><option>S1</option><option>S2</option><option>S3</option><option>Profesi</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="label-text">Start Date</label>
-                        <input type="date" x-model="formData.startDate" class="input-field" required>
-                    </div>
-                    <div>
-                        <label class="label-text">End Date</label>
-                        <input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required>
-                    </div>
+                    <div><label class="label-text">Start Date</label><input type="date" x-model="formData.startDate" class="input-field" required></div>
+                    <div><label class="label-text">End Date</label><input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required></div>
                 </div>
             </div>
 
@@ -97,11 +90,10 @@
                         <div><label class="label-text">Jenis Kelamin</label>
                             <select x-model="formData.jenisKelamin" class="input-field"><option>Laki-Laki</option><option>Perempuan</option></select>
                         </div>
-                        <div class="md:col-span-2"><label class="label-text">Alamat Lengkap (Tempat Tinggal)</label><input type="text" x-model="formData.alamat" class="input-field" required></div>
+                        <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label><input type="text" x-model="formData.alamat" class="input-field" required></div>
                         <div><label class="label-text">Kelurahan-Kecamatan</label><input type="text" x-model="formData.kelurahanKecamatan" class="input-field" required></div>
-                        <div><label class="label-text">Kota Tempat Tinggal</label><input type="text" x-model="formData.kota" class="input-field" required></div>
                         <div class="md:col-span-1"><label class="label-text">Pas Foto</label><input type="file" @change="handleFile($event, formData, false)" class="text-xs"></div>
-                        <div class="md:col-span-1"><label class="label-text">Dokumen (Multi)</label><input type="file" multiple @change="handleFile($event, formData, true)" class="text-xs"></div>
+                        <div class="md:col-span-2"><label class="label-text">Dokumen Pendukung (Multi-upload)</label><input type="file" multiple @change="handleFile($event, formData, true)" class="text-xs"></div>
                     </div>
                 </div>
             </template>
@@ -113,8 +105,8 @@
                         <table class="w-full text-[11px] text-left">
                             <thead class="bg-gray-100">
                                 <tr>
-                                    <th class="p-2 border">Detail Mahasiswa (Nama, NIM, KTP, HP, Tgl Lahir, Agama, Alamat, Kel-Kec, Kota)</th>
-                                    <th class="p-2 border w-40">File</th>
+                                    <th class="p-2 border">Data Peserta (Nama, NIM, KTP, HP, Tgl Lahir, Tempat Lahir, Agama, Alamat, Kel-Kec)</th>
+                                    <th class="p-2 border w-40">Upload Berkas</th>
                                     <th class="p-2 border text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -132,11 +124,10 @@
                                                 <input type="text" x-model="mhs.agama" placeholder="Agama" class="input-field" required>
                                                 <input type="text" x-model="mhs.alamat" placeholder="Alamat" class="input-field" required>
                                                 <input type="text" x-model="mhs.kelurahanKecamatan" placeholder="Kel-Kec" class="input-field" required>
-                                                <input type="text" x-model="mhs.kota" placeholder="Kota Asal" class="input-field" required>
                                             </div>
                                         </td>
                                         <td class="p-2 border bg-gray-50">
-                                            <label class="block text-[9px] font-bold">Foto:</label>
+                                            <label class="block text-[9px] font-bold">Pas Foto:</label>
                                             <input type="file" @change="handleFile($event, mhs, false)" class="text-[9px] mb-2">
                                             <label class="block text-[9px] font-bold">Dokumen:</label>
                                             <input type="file" multiple @change="handleFile($event, mhs, true)" class="text-[9px]">
@@ -149,13 +140,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <button type="button" @click="addMhs" class="mt-4 bg-green-600 text-white px-4 py-2 rounded text-xs">+ Tambah Baris Anggota</button>
+                    <button type="button" @click="addMhs" class="mt-4 bg-green-600 text-white px-4 py-2 rounded text-xs">+ Tambah Anggota</button>
                 </div>
             </template>
 
             <button type="submit" class="w-full bg-blue-700 text-white font-bold py-4 rounded-lg hover:bg-blue-900 transition disabled:bg-gray-400" :disabled="loading">
-                <span x-show="!loading">SUBMIT DATA PENDAFTARAN</span>
-                <span x-show="loading">PROSES PENGIRIMAN & UPLOAD...</span>
+                <span x-show="!loading">SUBMIT PENDAFTARAN</span>
+                <span x-show="loading">SEDANG MENGIRIM DATA...</span>
             </button>
         </form>
     </div>
@@ -163,10 +154,10 @@
     <script>
         function app() {
             const initialForm = {
-                tipe: 'Perorangan', bagian: '', jenis: 'Magang', namaInstitusi: '', jurusan: '', kotaInstitusi: '',
+                tipe: 'Perorangan', bagian: '', jenis: 'Magang', namaInstitusi: '', jurusan: '', kota: '',
                 jenjangPendidikan: 'S1', level: '1', startDate: '', endDate: '', 
                 nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki',
-                tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', kota: '',
+                tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '',
                 pasFotoData: '', pasFotoType: '', dokumenList: []
             };
 
@@ -177,11 +168,11 @@
                 },
                 loading: false,
                 formData: { ...initialForm },
-                kelompok: [{ nama: '', nim: '', ktp: '', hp: '', tanggalLahir: '', tempatLahir: '', agama: 'Islam', alamat: '', kelurahanKecamatan: '', kota: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }],
+                kelompok: [{ nama: '', nim: '', ktp: '', hp: '', tanggalLahir: '', tempatLahir: '', agama: 'Islam', alamat: '', kelurahanKecamatan: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }],
                 
-                addMhs() { this.kelompok.push({ nama: '', nim: '', ktp: '', hp: '', tanggalLahir: '', tempatLahir: '', agama: 'Islam', alamat: '', kelurahanKecamatan: '', kota: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }) },
+                addMhs() { this.kelompok.push({ nama: '', nim: '', ktp: '', hp: '', tanggalLahir: '', tempatLahir: '', agama: 'Islam', alamat: '', kelurahanKecamatan: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }) },
                 removeMhs(index) { if(this.kelompok.length > 1) this.kelompok.splice(index, 1) },
-                resetKelompok() { this.kelompok = [{ nama: '', nim: '', ktp: '', hp: '', tanggalLahir: '', tempatLahir: '', agama: 'Islam', alamat: '', kelurahanKecamatan: '', kota: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }] },
+                resetKelompok() { this.kelompok = [{ nama: '', nim: '', ktp: '', hp: '', tanggalLahir: '', tempatLahir: '', agama: 'Islam', alamat: '', kelurahanKecamatan: '', pasFotoData: '', pasFotoType: '', dokumenList: [] }] },
 
                 handleFile(e, targetObj, isMulti) {
                     const files = e.target.files;
@@ -223,12 +214,11 @@
                             await this.sendToAppsScript(this.formData);
                         } else {
                             for (let mhs of this.kelompok) {
-                                // Gabungkan data institusi dari formData dengan data individu dari mhs
                                 let dataToSend = { ...this.formData, ...mhs };
                                 await this.sendToAppsScript(dataToSend);
                             }
                         }
-                        alert("Berhasil Terkirim!");
+                        alert("Pendaftaran Berhasil!");
                         window.location.reload(); 
                     } catch (e) {
                         alert("Gagal: " + e);
@@ -240,7 +230,6 @@
                 async sendToAppsScript(payload) {
                     const body = new URLSearchParams();
                     body.append("targetSheet", this.config.targetSheet);
-                    // Gunakan data kota yang sesuai: jika mhs punya kota (kelompok), pakai itu. Jika tidak, pakai formData.kota
                     for (let key in payload) {
                         if (key === 'dokumenList') {
                             body.append(key, JSON.stringify(payload[key]));

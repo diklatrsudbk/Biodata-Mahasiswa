@@ -175,47 +175,116 @@
     </div>
 
     <script>
-        function app() {
-            return {
-                view: 'menu',
-                loading: false,
-                photoPreview: null,
-                formData: { tipe: 'Perorangan', bagian: '', jenis: '', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
-                kelompok: [],
-                resetKelompok() { this.kelompok = []; },
-                removeMhs(i) { this.kelompok.splice(i, 1); },
-                handlePhoto(e, target) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (f) => { this.photoPreview = f.target.result; target.pasFotoData = f.target.result.split(',')[1]; };
-                        reader.readAsDataURL(file);
-                    }
-                },
-                handleFile(e, target, isMulti) {
-                    const files = Array.from(e.target.files);
-                    target.dokumenList = [];
-                    files.forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = (f) => { target.dokumenList.push({ name: file.name, base64: f.target.result.split(',')[1] }); };
-                        reader.readAsDataURL(file);
-                    });
-                },
-                validateAge() {
-                    const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
-                    if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
-                },
-                validateDates() {
-                    if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) { alert("Tanggal tidak valid!"); this.formData.endDate = ''; }
-                },
-                async handleSubmit() {
-                    if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 2) { alert("Minimal 2 orang!"); return; }
-                    this.loading = true;
-                    // Simulasi API Delay - Ganti dengan fetch Anda
-                    setTimeout(() => { alert("Data Berhasil Dikirim!"); window.location.reload(); }, 2000);
+    function app() {
+        return {
+            view: 'menu',
+            loading: false,
+            progressText: '', // Tambahkan ini untuk indikator progres
+            photoPreview: null,
+            // Pastikan URL di bawah ini adalah URL Web App Google Apps Script Anda yang aktif
+            config: {
+                targetSheet: "GEL5",
+                scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
+            },
+            formData: { 
+                tipe: 'Perorangan', bagian: '', jenis: 'Magang', namaInstitusi: '', jurusan: '', 
+                kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', 
+                ktp: '', hp: '', tempatLahir: '', tanggalLahir: '', alamat: '', 
+                kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] 
+            },
+            kelompok: [],
+            resetKelompok() { this.kelompok = []; },
+            removeMhs(i) { this.kelompok.splice(i, 1); },
+            
+            handlePhoto(e, target) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (f) => { 
+                        this.photoPreview = f.target.result; 
+                        target.pasFotoData = f.target.result.split(',')[1]; 
+                    };
+                    reader.readAsDataURL(file);
                 }
+            },
+
+            handleFile(e, target, isMulti) {
+                const files = Array.from(e.target.files);
+                target.dokumenList = [];
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (f) => { 
+                        target.dokumenList.push({ 
+                            name: file.name, 
+                            base64: f.target.result.split(',')[1] 
+                        }); 
+                    };
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            validateAge() {
+                if(!this.formData.tanggalLahir) return;
+                const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
+                if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
+            },
+
+            validateDates() {
+                if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) { 
+                    alert("Tanggal Berakhir tidak boleh lebih awal dari Tanggal Mulai!"); 
+                    this.formData.endDate = ''; 
+                }
+            },
+
+            async handleSubmit() {
+                if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 2) { 
+                    alert("Minimal harus ada 2 anggota untuk pendaftaran kelompok!"); 
+                    return; 
+                }
+
+                this.loading = true;
+                try {
+                    if (this.formData.tipe === 'Perorangan') {
+                        this.progressText = "Mengirim data...";
+                        await this.sendToAppsScript(this.formData);
+                    } else {
+                        let total = this.kelompok.length;
+                        for (let [index, mhs] of this.kelompok.entries()) {
+                            this.progressText = `Mengirim data anggota ${index + 1} dari ${total}...`;
+                            // Gabungkan data institusi/kegiatan dengan data anggota
+                            let dataToSend = { ...this.formData, ...mhs };
+                            await this.sendToAppsScript(dataToSend);
+                        }
+                    }
+                    alert("Pendaftaran Berhasil Terkirim ke Google Sheets!");
+                    window.location.reload(); 
+                } catch (e) {
+                    alert("Terjadi kesalahan: " + e);
+                    this.loading = false;
+                }
+            },
+
+            async sendToAppsScript(payload) {
+                const body = new FormData();
+                body.append("targetSheet", this.config.targetSheet);
+                
+                for (let key in payload) {
+                    if (key === 'dokumenList') {
+                        body.append(key, JSON.stringify(payload[key]));
+                    } else if (payload[key]) {
+                        body.append(key, payload[key]);
+                    }
+                }
+
+                // Mengirim data ke Google Apps Script
+                return fetch(this.config.scriptUrl, { 
+                    method: 'POST', 
+                    body: body, 
+                    mode: 'no-cors' 
+                });
             }
         }
-    </script>
+    }
+</script>
 </body>
 </html>

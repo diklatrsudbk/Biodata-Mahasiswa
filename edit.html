@@ -133,7 +133,7 @@
                         formData.append("nim", nim);
                         formData.append("targetSheet", this.targetSheet);
 
-                        fetch("YOUR_SCRIPT_URL_HERE", { // Ganti dengan URL Script Anda
+                        fetch("https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec", { // Ganti dengan URL Script Anda
                             method: "POST",
                             body: formData
                         }).then(() => {

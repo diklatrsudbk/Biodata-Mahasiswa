@@ -187,7 +187,21 @@
                                     <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="formData.tanggalLahir" @change="validateAge" class="input-field" required></div>
                                     <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label><input type="text" x-model="formData.alamat" class="input-field" required></div>
                                     <div class="md:col-span-2"><label class="label-text">Kelurahan - Kecamatan</label><input type="text" x-model="formData.kelurahanKecamatan" class="input-field" required></div>
-                                    <div class="md:col-span-2"><label class="label-text">Dokumen (PDF)</label><input type="file" multiple @change="handleFile($event, formData, true)" accept=".pdf" class="input-field text-xs"></div>
+                                    <div class="md:col-span-2">
+    <label class="label-text">Dokumen (PDF)</label>
+    <input type="file" multiple 
+           @change="handleFile($event, formData)" 
+           accept="application/pdf" 
+           class="input-field text-xs">
+    
+    <div class="mt-2 p-3 bg-amber-50 border-l-2 border-amber-400 rounded-r-md">
+        <p class="text-[10px] text-amber-900 leading-relaxed">
+            <strong>Persyaratan Dokumen:</strong><br>
+            Silakan unggah dokumen yang diminta seperti <b>STR, Ijazah, dan Sertifikat</b> dalam format PDF.<br>
+            <span class="text-red-600 font-bold">* Maksimal kapasitas per file: 3MB.</span>
+        </p>
+    </div>
+</div>
                                 </div>
                             </div>
                         </div>
@@ -253,7 +267,7 @@
                     jurusan: ["Keperawatan Regular","Keperawatan Non-Regular","Keperawatan RPL","Profesi Ners","Profesi Ners Non-Regular","Kebidanan Regular","Kebidanan Non-regular","Kebidanan RPL","Profesi Bidan Regular","Profesi Bidan Non-Regular","Kedokteran","Kedokteran / PSPD","PPDS Anak","PPDS Anaestesi","PPDS Bedah","PPDS Obgyn","PPDS KFR","PPDS THT-KL","PPDS Neurologi","PPDS IPD","Kedokteran Gigi","Anestesi Regular","Anestesi RPL","Laboratorium Medis","Gizi","Psikologi","Fisioterapi","Analis Kesehatan","Rekam Medik","Terapi Wicara","Terapi Okupasi","Fisika","Biologi","Radiologi","Farmasi","Apoteker"]
                 },
                 config: {
-                    targetSheet: "GEL5",
+                    targetSheet: "GEL6",
                     scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
                 },
                 formData: { tipe: 'Perorangan', bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
@@ -261,22 +275,64 @@
                 resetKelompok() { this.kelompok = []; },
                 removeMhs(i) { this.kelompok.splice(i, 1); },
                 handlePhoto(e, target) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (f) => { this.photoPreview = f.target.result; target.pasFotoData = f.target.result.split(',')[1]; };
-                        reader.readAsDataURL(file);
-                    }
-                },
-                handleFile(e, target, isMulti) {
-                    const files = Array.from(e.target.files);
-                    target.dokumenList = [];
-                    files.forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = (f) => { target.dokumenList.push({ name: file.name, base64: f.target.result.split(',')[1] }); };
-                        reader.readAsDataURL(file);
-                    });
-                },
+    const file = e.target.files[0];
+    const MAX_PHOTO_SIZE = 100 * 1024; // 100KB dalam bytes
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+    if (file) {
+        // Validasi Tipe File
+        if (!allowedTypes.includes(file.type)) {
+            alert("Format foto harus JPG, JPEG, atau PNG!");
+            e.target.value = "";
+            return;
+        }
+
+        // Validasi Ukuran File
+        if (file.size > MAX_PHOTO_SIZE) {
+            alert("Ukuran foto terlalu besar! Maksimal adalah 100KB. Silakan kompres foto Anda terlebih dahulu.");
+            e.target.value = ""; // Reset input
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (f) => { 
+            this.photoPreview = f.target.result; 
+            target.pasFotoData = f.target.result.split(',')[1]; 
+        };
+        reader.readAsDataURL(file);
+    }
+},
+                handleFile(e, target) {
+    const files = Array.from(e.target.files);
+    const MAX_SIZE = 3 * 1024 * 1024; // 3MB dalam bytes
+    
+    target.dokumenList = []; // Reset list
+    
+    files.forEach(file => {
+        // Cek apakah file adalah PDF
+        if (file.type !== "application/pdf") {
+            alert(`File "${file.name}" bukan PDF!`);
+            return;
+        }
+
+        // Cek ukuran file
+        if (file.size > MAX_SIZE) {
+            alert(`File "${file.name}" terlalu besar! Maksimal adalah 3MB.`);
+            // Reset input file secara fisik agar tidak terkirim
+            e.target.value = ""; 
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (f) => { 
+            target.dokumenList.push({ 
+                name: file.name, 
+                base64: f.target.result.split(',')[1] 
+            }); 
+        };
+        reader.readAsDataURL(file);
+    });
+},
                 validateAge() {
                     const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
                     if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }

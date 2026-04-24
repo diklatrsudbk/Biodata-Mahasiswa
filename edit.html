@@ -1,237 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Data Peserta</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Edit/Delete Data Peserta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f6; padding: 20px; font-size: 14px; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 1000px; }
-        .btn-container { display: flex; gap: 5px; justify-content: center; }
-        .table td { vertical-align: middle; }
-        .modal-body { max-height: 70vh; overflow-y: auto; }
-        label { font-weight: bold; margin-top: 8px; color: #555; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
+        .input-field { border: 1px solid #dee2e6; padding: 0.7rem 1rem; border-radius: 0.5rem; width: 100%; }
+        .section-card { background: #ffffff; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
     </style>
 </head>
-<body>
+<body class="py-10 px-4" x-data="editApp()">
 
-<div class="container">
-    <h3 class="mb-4 text-center text-danger">⚙️ Manajemen Data Peserta</h3>
-    <div class="d-flex justify-content-between mb-3">
-        <a href="index.html" class="btn btn-secondary">⬅️ Kembali</a>
-        <input type="text" id="search" class="form-control w-50" placeholder="Cari Nama/NIM..." onkeyup="filter()">
-    </div>
+    <div class="max-w-3xl mx-auto">
+        <a href="index.html" class="mb-6 inline-block text-[#714B67] font-bold">← Kembali ke Input</a>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>Nama</th>
-                    <th>NIM</th>
-                    <th>Sekolah</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="content">
-                <tr><td colspan="4" class="text-center">Memuat data...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title">Edit Data Lengkap</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="fEdit" class="row">
-                    <input type="hidden" id="e_old_nim">
-                    
-                    <div class="col-md-6 mb-2"><label>Nama Peserta</label><input type="text" id="e_nama" class="form-control"></div>
-                    <div class="col-md-6 mb-2"><label>NIM</label><input type="text" id="e_nim" class="form-control"></div>
-                    
-                    <div class="col-md-6 mb-2"><label>No. KTP</label><input type="text" id="e_ktp" class="form-control"></div>
-                    <div class="col-md-6 mb-2"><label>No. HP (WhatsApp)</label><input type="text" id="e_hp" class="form-control"></div>
-                    
-                    <div class="col-md-6 mb-2">
-                        <label>Jenis Kelamin</label>
-                        <select id="e_jk" class="form-select">
-                            <option value="Laki-Laki">Laki-Laki</option>
-                            <option value="Perempuan">Perempuan</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <label>Agama</label>
-                        <select id="e_agama" class="form-select">
-                            <option value="Islam">Islam</option>
-                            <option value="Kristen">Kristen</option>
-                            <option value="Protestan">Protestan</option>
-                            <option value="Katolik">Katolik</option>
-                            <option value="Hindu">Hindu</option>
-                            <option value="Buddha">Buddha</option>
-                            <option value="Konghucu">Konghucu</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-2"><label>Tempat Lahir</label><input type="text" id="e_tempat_lahir" class="form-control" list="list_kota"></div>
-                    <div class="col-md-6 mb-2"><label>Tanggal Lahir</label><input type="date" id="e_tgl_lahir" class="form-control"></div>
-
-                    <div class="col-md-12 mb-2"><label>Alamat Lengkap</label><textarea id="e_alamat" class="form-control" rows="2"></textarea></div>
-                    <div class="col-md-6 mb-2"><label>Kecamatan/Kelurahan</label><input type="text" id="e_kec_kel" class="form-control"></div>
-                    <div class="col-md-6 mb-2"><label>Kota Domisili</label><input type="text" id="e_kota" class="form-control" list="list_kota"></div>
-
-                    <div class="col-md-6 mb-2"><label>Sekolah/Instansi</label><input type="text" id="e_sekolah" class="form-control" list="list_sekolah"></div>
-                    <div class="col-md-6 mb-2"><label>Jurusan</label><input type="text" id="e_jurusan" class="form-control" list="list_jurusan"></div>
-
-                    <div class="col-md-4 mb-2">
-                        <label>Jenjang</label>
-                        <select id="e_jenjang" class="form-select">
-                            <option value="SMA/SMK">SMA/SMK</option>
-                            <option value="D3">D3</option>
-                            <option value="D4">D4</option>
-                            <option value="S1">S1</option>
-                            <option value="S2">S2</option>
-                            <option value="S3">S3</option>
-                            <option value="Profesi">Profesi</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-2">
-                        <label>Jenis Kegiatan</label>
-                        <select id="e_jenis" class="form-select">
-                            <option value="PKL">PKL</option>
-                            <option value="PBL">PBL</option>
-                            <option value="Penelitian">Penelitian</option>
-                            <option value="Magang">Magang</option>
-                            <option value="Resident">Resident</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button id="saveBtn" class="btn btn-primary" onclick="updateData()">Simpan Perubahan</button>
+        <div class="section-card mb-6">
+            <h2 class="font-bold mb-4">Cari & Kelola Data Peserta</h2>
+            <div class="flex gap-2">
+                <input type="text" x-model="searchNim" class="input-field" placeholder="Masukkan NIM Peserta...">
+                <button @click="searchData" class="bg-[#714B67] text-white px-6 py-2 rounded-lg font-bold" :disabled="loading">Cari</button>
             </div>
         </div>
+
+        <template x-if="foundData">
+            <div class="section-card border-t-4 border-[#714B67]">
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="text-xs font-bold uppercase text-gray-400">Nama Lengkap</label>
+                        <input type="text" x-model="foundData.nama" class="input-field">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold uppercase text-gray-400">Institusi</label>
+                        <input type="text" x-model="foundData.namaInstitusi" class="input-field">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button @click="updateData" class="bg-blue-600 text-white py-3 rounded-lg font-bold">Simpan Perubahan</button>
+                        <button @click="deleteData" class="bg-red-600 text-white py-3 rounded-lg font-bold">Hapus Peserta</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <p x-show="loading" class="text-center mt-4 text-gray-500 italic">Memproses...</p>
     </div>
-</div>
 
-<datalist id="list_kota">
-    <option value="Aceh Barat"> Aceh Barat</option><option value="Ambon"> Ambon</option><option value="Bandung"> Bandung</option><option value="Bekasi"> Bekasi</option><option value="Bogor"> Bogor</option><option value="Cimahi"> Cimahi</option><option value="Jakarta Barat"> Jakarta Barat</option><option value="Jakarta Pusat"> Jakarta Pusat</option><option value="Jakarta Selatan"> Jakarta Selatan</option><option value="Jakarta Timur"> Jakarta Timur</option><option value="Jakarta Utara"> Jakarta Utara</option><option value="Medan"> Medan</option><option value="Surabaya"> Surabaya</option><option value="Tangerang"> Tangerang</option><option value="Yogyakarta"> Yogyakarta</option>
-    </datalist>
+    <script>
+        function editApp() {
+            return {
+                searchNim: '',
+                foundData: null,
+                loading: false,
+                scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec", // Samakan dengan index.html
 
-<datalist id="list_sekolah">
-    <option value="Universitas Indonesia (UI)"> Universitas Indonesia (UI)</option><option value="Institut Teknologi Bandung (ITB)"> Institut Teknologi Bandung (ITB)</option><option value="Universitas Gadjah Mada (UGM)"> Universitas Gadjah Mada (UGM)</option><option value="Universitas Padjadjaran (UNPAD)"> Universitas Padjadjaran (UNPAD)</option><option value="Politeknik Kemenkes Bandung"> Politeknik Kemenkes Bandung</option>
-    </datalist>
+                async searchData() {
+                    if(!this.searchNim) return alert("Masukkan NIM!");
+                    this.loading = true;
+                    try {
+                        const resp = await fetch(`${this.scriptUrl}?action=read&nim=${this.searchNim}`);
+                        const result = await resp.json();
+                        if(result.status === "success") {
+                            this.foundData = result.data;
+                        } else {
+                            alert("Data tidak ditemukan!");
+                        }
+                    } catch (e) { alert("Gagal mengambil data"); }
+                    this.loading = false;
+                },
 
-<datalist id="list_jurusan">
-    <option value="Teknik Informatika"> Teknik Informatika</option><option value="Keperawatan"> Keperawatan</option><option value="Kebidanan"> Kebidanan</option><option value="Farmasi"> Farmasi</option><option value="Gizi"> Gizi</option><option value="Analis Kesehatan"> Analis Kesehatan</option>
-</datalist>
+                async updateData() {
+                    if(!confirm("Yakin ingin mengubah data ini?")) return;
+                    this.loading = true;
+                    // Logika fetch POST ke Apps Script dengan action=update
+                    alert("Fitur Update perlu disesuaikan di Apps Script (GS) Anda");
+                    this.loading = false;
+                },
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    const url = 'https://script.google.com/macros/s/AKfycby2878XyWx79MpBjwQSR137ocsaYIz_IwTSgzJruTu1Ls-X1VIG6hvG4ooPVPteukLUVg/exec';
-    let modal = new bootstrap.Modal(document.getElementById('editModal'));
-    let rawData = [];
-
-    function load() {
-        fetch(url + "?action=read").then(res => res.json()).then(data => {
-            rawData = data;
-            let html = "";
-            data.forEach((d, index) => {
-                html += `<tr>
-                    <td>${d.nama}</td>
-                    <td>${d.nim}</td>
-                    <td>${d.sekolah}</td>
-                    <td>
-                        <div class="btn-container">
-                            <button class="btn btn-sm btn-warning" onclick="openEdit(${index})">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="del('${d.nim}')">Hapus</button>
-                        </div>
-                    </td>
-                </tr>`;
-            });
-            document.getElementById('content').innerHTML = html;
-        });
-    }
-
-    function openEdit(index) {
-        const d = rawData[index];
-        document.getElementById('e_old_nim').value = d.nim;
-        document.getElementById('e_nama').value = d.nama || "";
-        document.getElementById('e_nim').value = d.nim || "";
-        document.getElementById('e_ktp').value = d.ktp || "";
-        document.getElementById('e_hp').value = d.hp || "";
-        document.getElementById('e_alamat').value = d.alamat || "";
-        document.getElementById('e_kec_kel').value = d.kec_kel || "";
-        document.getElementById('e_tempat_lahir').value = d.tempat_lahir || "";
-        document.getElementById('e_tgl_lahir').value = d.tgl_lahir ? new Date(d.tgl_lahir).toISOString().split('T')[0] : "";
-        document.getElementById('e_jk').value = d.jk || "Laki-Laki";
-        document.getElementById('e_agama').value = d.agama || "Islam";
-        document.getElementById('e_sekolah').value = d.sekolah || "";
-        document.getElementById('e_jurusan').value = d.jurusan || "";
-        document.getElementById('e_kota').value = d.kota || "";
-        document.getElementById('e_jenjang').value = d.jenjang || "D3";
-        document.getElementById('e_jenis').value = d.jenis || "PKL";
-        modal.show();
-    }
-
-    function updateData() {
-        const btn = document.getElementById('saveBtn');
-        btn.disabled = true; btn.innerText = "⌛ Menyimpan...";
-        
-        const payload = {
-            action: 'update',
-            old_nim: document.getElementById('e_old_nim').value,
-            nama: document.getElementById('e_nama').value,
-            nim: document.getElementById('e_nim').value,
-            ktp: document.getElementById('e_ktp').value,
-            hp: document.getElementById('e_hp').value,
-            alamat: document.getElementById('e_alamat').value,
-            kec_kel: document.getElementById('e_kec_kel').value,
-            tempat_lahir: document.getElementById('e_tempat_lahir').value,
-            tgl_lahir: document.getElementById('e_tgl_lahir').value,
-            jk: document.getElementById('e_jk').value,
-            agama: document.getElementById('e_agama').value,
-            sekolah: document.getElementById('e_sekolah').value,
-            jurusan: document.getElementById('e_jurusan').value,
-            kota: document.getElementById('e_kota').value,
-            jenjang: document.getElementById('e_jenjang').value,
-            jenis: document.getElementById('e_jenis').value
-        };
-
-        fetch(url, { 
-            method: 'POST', 
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload) 
-        }).then(() => {
-            alert("Data Berhasil Diperbarui!"); 
-            modal.hide(); load();
-            btn.disabled = false; btn.innerText = "Simpan Perubahan";
-        });
-    }
-
-    function del(nim) {
-        if(confirm("Hapus data NIM " + nim + "?")) {
-            fetch(url, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                body: JSON.stringify({ action: 'delete', nim: nim }) 
-            }).then(() => { alert("Data Dihapus!"); load(); });
+                async deleteData() {
+                    if(!confirm("HAPUS DATA INI PERMANEN?")) return;
+                    this.loading = true;
+                    // Logika fetch POST ke Apps Script dengan action=delete
+                    alert("Fitur Delete perlu disesuaikan di Apps Script (GS) Anda");
+                    this.loading = false;
+                }
+            }
         }
-    }
-
-    function filter() {
-        let val = document.getElementById("search").value.toLowerCase();
-        let rows = document.querySelectorAll("#content tr");
-        rows.forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none");
-    }
-
-    window.onload = load;
-</script>
+    </script>
 </body>
 </html>

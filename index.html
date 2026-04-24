@@ -223,28 +223,37 @@
                             <button type="button" x-show="!showForm" @click="showForm = true" class="bg-white border-2 border-[#714B67] text-[#714B67] px-5 py-2 rounded-lg font-bold text-xs">+ Tambah Anggota</button>
 
                             <div x-show="showForm" class="p-6 bg-[#fdfafc] border rounded-xl mt-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <input type="text" placeholder="Nama Lengkap" x-model="tempMhs.nama" class="input-field">
-                                    <input type="text" placeholder="NIM" x-model="tempMhs.nim" class="input-field">
-                                    <select x-model="tempMhs.agama" class="input-field">
-                                        <option>Islam</option>
-                                        <option>Kristen</option>
-                                        <option>Protestan</option>
-                                        <option>Katolik</option>
-                                        <option>Hindu</option>
-                                        <option>Budha</option>
-                                        <option>Konghucu</option>
-                                    </select>
-                                    <select x-model="tempMhs.jenisKelamin" class="input-field"><option>Laki-Laki</option><option>Perempuan</option></select>
-                                    <input type="number" placeholder="No. KTP" x-model="tempMhs.ktp" class="input-field">
-                                    <input type="number" placeholder="No. WA (Contoh: 62812...)" x-model="tempMhs.hp" class="input-field" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
-                                    <input type="text" placeholder="Alamat" x-model="tempMhs.alamat" class="input-field md:col-span-2">
-                                </div>
-                                <div class="mt-4 flex gap-2">
-                                    <button type="button" @click="if(tempMhs.nama){ kelompok.push({...tempMhs}); showForm = false; tempMhs={agama:'Islam', jenisKelamin:'Laki-Laki'}; }else{alert('Nama wajib diisi!')}" class="bg-[#714B67] text-white px-4 py-2 rounded text-xs font-bold">Tambah ke Daftar</button>
-                                    <button type="button" @click="showForm = false" class="bg-gray-300 px-4 py-2 rounded text-xs font-bold">Batal</button>
-                                </div>
-                            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="text" placeholder="Nama Lengkap" x-model="tempMhs.nama" class="input-field">
+        <input type="text" placeholder="NIM" x-model="tempMhs.nim" class="input-field">
+        
+        <input type="number" placeholder="No. KTP" x-model="tempMhs.ktp" class="input-field">
+        <input type="number" placeholder="No. WA (62812...)" x-model="tempMhs.hp" class="input-field" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+        
+        <select x-model="tempMhs.agama" class="input-field">
+            <option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Budha</option>
+        </select>
+        <select x-model="tempMhs.jenisKelamin" class="input-field">
+            <option>Laki-Laki</option><option>Perempuan</option>
+        </select>
+
+        <input type="text" placeholder="Tempat Lahir" x-model="tempMhs.tempatLahir" class="input-field">
+        <input type="date" x-model="tempMhs.tanggalLahir" class="input-field">
+
+        <input type="text" placeholder="Alamat Lengkap" x-model="tempMhs.alamat" class="input-field md:col-span-2">
+        
+        <div class="md:col-span-2">
+            <label class="text-[10px] font-bold">Upload PDF Anggota (Max 3MB)</label>
+            <input type="file" multiple @change="handleFile($event, tempMhs)" accept="application/pdf" class="input-field text-xs">
+        </div>
+    </div>
+    <div class="mt-4 flex gap-2">
+        <button type="button" @click="if(tempMhs.nama && tempMhs.nim){ kelompok.push({...tempMhs}); showForm = false; tempMhs={agama:'Islam', jenisKelamin:'Laki-Laki'}; }else{alert('Nama & NIM wajib diisi!')}" class="bg-[#714B67] text-white px-4 py-2 rounded text-xs font-bold">Simpan Anggota</button>
+        <button type="button" @click="showForm = false" class="bg-gray-300 px-4 py-2 rounded text-xs font-bold">Batal</button>
+    </div>
+</div>
+
+                            
                         </div>
                     </template>
 
@@ -276,7 +285,7 @@
                 removeMhs(i) { this.kelompok.splice(i, 1); },
                 handlePhoto(e, target) {
     const file = e.target.files[0];
-    const MAX_PHOTO_SIZE = 100 * 1024; // 100KB dalam bytes
+    const MAX_PHOTO_SIZE = 400 * 1024; // 400KB dalam bytes
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
 
     if (file) {
@@ -304,7 +313,7 @@
 },
                 handleFile(e, target) {
     const files = Array.from(e.target.files);
-    const MAX_SIZE = 3 * 1024 * 1024; // 3MB dalam bytes
+    const MAX_SIZE = 4 * 1024 * 1024; // 4MB dalam bytes
     
     target.dokumenList = []; // Reset list
     

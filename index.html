@@ -58,15 +58,7 @@
                 <form @submit.prevent="handleSubmit" :class="loading ? 'opacity-50 pointer-events-none' : ''">
                     <div class="section-card">
                         <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">I. Data Institusi & Kegiatan</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div>
-                                <label class="label-text">Bagian</label>
-                                <select x-model="formData.bagian" class="input-field" required>
-                                <option value="">-- Pilih --</option>
-                                <option>Pelayanan Medik</option>
-                                <option>Penunjang Medik</option>
-                                <option>Umum</option>
-                            </select>
+                        
                             <div class="md:col-span-1">
     <label class="label-text">Bagian</label>
     <select x-model="formData.bagian" class="input-field" required>

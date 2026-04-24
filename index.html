@@ -58,21 +58,21 @@
                 <form @submit.prevent="handleSubmit" :class="loading ? 'opacity-50 pointer-events-none' : ''">
                     <div class="section-card">
                         <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">I. Data Institusi & Kegiatan</h2>
-                        
-                            <div class="md:col-span-1">
+                        <div class="md:col-span-2">
     <label class="label-text">Bagian</label>
     <select x-model="formData.bagian" class="input-field" required>
-        <option value="">-- Pilih --</option>
+        <option value="">-- Pilih Bagian --</option>
         <option>Pelayanan Medik</option>
         <option>Penunjang Medik</option>
         <option>Umum</option>
     </select>
-    <div class="mt-2 p-2 bg-gray-50 border-l-2 border-[#714B67] rounded shadow-sm">
-        <p class="text-[9px] text-gray-500 leading-relaxed">
-            <strong>PANDUAN PILIHAN:</strong><br>
-            • <b>Pelayanan Medik:</b> Keperawatan, Kebidanan, Kedokteran.<br>
-            • <b>Penunjang Medik:</b> Selain jurusan di atas (Farmasi, Gizi, Radiologi, dll).<br>
-            • <b>Umum:</b> Administrasi, Manajemen, Promkes, IT, Keuangan, Perkantoran, Teknisi.
+    
+    <div class="mt-2 p-3 bg-gray-50 border-l-2 border-[#714B67] rounded-r-md">
+        <p class="text-[10px] text-gray-600 leading-relaxed">
+            <strong>Panduan Memilih Bagian:</strong><br>
+            • <span class="font-semibold text-[#714B67]">Pelayanan Medik:</span> Khusus Jurusan Keperawatan, Kebidanan, dan Kedokteran.<br>
+            • <span class="font-semibold text-[#714B67]">Penunjang Medik:</span> Selain jurusan di atas (contoh: Farmasi, Gizi, Radiologi, dll).<br>
+            • <span class="font-semibold text-[#714B67]">Umum:</span> Administrasi, Management, Promkes, IT, Keuangan, Perkantoran, Teknisi.
         </p>
     </div>
 </div>

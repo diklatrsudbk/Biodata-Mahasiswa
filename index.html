@@ -3,52 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Peserta Didik 2026</title>
+    <title>Sistem Data Peserta Didik 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; color: #495057; }
         [x-cloak] { display: none !important; }
-        .input-field { border: 1px solid #dee2e6; padding: 0.75rem 1rem; border-radius: 0.5rem; width: 100%; font-size: 0.95rem; transition: all 0.2s ease; background-color: #ffffff; }
+        .input-field { border: 1px solid #dee2e6; padding: 0.7rem 1rem; border-radius: 0.5rem; width: 100%; font-size: 0.9rem; transition: all 0.2s ease; background-color: #ffffff; }
         .input-field:focus { border-color: #714B67; outline: none; box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.1); }
-        .label-text { font-weight: 600; font-size: 0.85rem; color: #495057; margin-bottom: 0.4rem; display: block; }
+        .label-text { font-weight: 600; font-size: 0.8rem; color: #495057; margin-bottom: 0.4rem; display: block; }
         .section-card { background: #ffffff; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 2rem; }
-        .menu-card { cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent; }
-        .menu-card:hover { border-color: #714B67; transform: translateY(-5px); }
-        .photo-box { width: 150px; height: 200px; border: 2px dashed #dee2e6; border-radius: 0.75rem; display: flex; items-center: center; justify-content: center; position: relative; overflow: hidden; background: #fdfdfd; }
+        .photo-box { width: 140px; height: 180px; border: 2px dashed #dee2e6; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #fdfdfd; transition: all 0.2s; }
+        .photo-box:hover { border-color: #714B67; background: #fcf6fa; }
+        .btn-primary { background-color: #714B67; color: white; font-weight: 700; transition: all 0.3s; }
+        .btn-primary:hover { background-color: #5a3b52; transform: translateY(-2px); }
     </style>
 </head>
-<body class="py-12 px-4 antialiased" x-data="app()">
+<body class="py-10 px-4 antialiased" x-data="app()">
 
     <div class="max-w-5xl mx-auto">
-        <div class="text-center mb-12">
+        <div class="text-center mb-10">
             <div class="flex justify-center mb-4">
-                <div class="w-16 h-16 bg-[#714B67] rounded-2xl flex items-center justify-center text-white shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor font-bold">
-                        <path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                    </svg>
+                <div class="w-14 h-14 bg-[#714B67] rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
                 </div>
             </div>
-            <h1 class="text-3xl font-extrabold text-[#212529] tracking-tight">Data Peserta Didik 2026</h1>
+            <h1 class="text-3xl font-extrabold text-[#212529]">Data Peserta Didik 2026</h1>
         </div>
 
         <template x-if="view === 'menu'">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mt-10">
-                <div @click="view = 'input'" class="section-card menu-card text-center p-10 group">
-                    <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-[#714B67] group-hover:text-white transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                <div @click="view = 'input'" class="section-card cursor-pointer border-2 border-transparent hover:border-[#714B67] transition-all text-center p-10">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-800">Input Data Baru</h3>
-                    <p class="text-gray-500 mt-2 text-sm">Daftarkan peserta didik baru ke dalam sistem.</p>
+                    <h3 class="text-xl font-bold">Input Data Peserta</h3>
+                    <p class="text-gray-400 text-sm mt-2">Pendaftaran baru untuk mahasiswa/siswa.</p>
                 </div>
-
-                <div @click="alert('Fitur Edit/Delete dalam pengembangan')" class="section-card menu-card text-center p-10 group opacity-75">
-                    <div class="w-20 h-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-amber-600 group-hover:text-white transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                <div @click="alert('Fitur Edit/Delete segera hadir!')" class="section-card cursor-pointer opacity-80 hover:opacity-100 transition-all text-center p-10">
+                    <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-800">Edit / Delete Data</h3>
-                    <p class="text-gray-500 mt-2 text-sm">Perbarui informasi atau hapus data yang sudah ada.</p>
+                    <h3 class="text-xl font-bold">Edit / Delete Data</h3>
+                    <p class="text-gray-400 text-sm mt-2">Kelola data peserta yang sudah terdaftar.</p>
                 </div>
             </div>
         </template>
@@ -57,18 +55,18 @@
             <div>
                 <button @click="view = 'menu'" class="mb-6 flex items-center text-[#714B67] font-bold hover:underline">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                    Kembali ke Menu
+                    Kembali ke Menu Utama
                 </button>
 
                 <form @submit.prevent="handleSubmit" :class="loading ? 'opacity-50 pointer-events-none' : ''">
                     <div class="section-card">
                         <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">I. Data Kegiatan & Institusi</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div><label class="label-text">Bagian</label>
                                 <select x-model="formData.bagian" class="input-field" required><option value="">-- Pilih --</option><option>Pelayanan Medik</option><option>Penunjang Medik</option><option>Umum</option></select>
                             </div>
                             <div><label class="label-text">Jenis Kegiatan</label>
-                                <select x-model="formData.jenis" class="input-field" required><option value="">-- Pilih --</option><option>PKL</option><option>PBL</option><option>Penelitian</option><option>Magang</option></select>
+                                <select x-model="formData.jenis" class="input-field" required><option value="">-- Pilih --</option><option>PKL</option><option>PBL</option><option>Penelitian</option><option>Magang</option><option>Resident</option></select>
                             </div>
                             <div><label class="label-text">Tipe Pendaftaran</label>
                                 <select x-model="formData.tipe" class="input-field" @change="resetKelompok"><option value="Perorangan">Perorangan</option><option value="Kelompok">Kelompok</option></select>
@@ -76,51 +74,100 @@
                             <div><label class="label-text">Level</label><input type="number" x-model="formData.level" class="input-field"></div>
                             <div class="md:col-span-2"><label class="label-text">Nama Institusi</label><input type="text" x-model="formData.namaInstitusi" class="input-field" required></div>
                             <div><label class="label-text">Jurusan</label><input type="text" x-model="formData.jurusan" class="input-field" required></div>
-                            <div><label class="label-text">Kota</label><input type="text" x-model="formData.kotaInstitusi" class="input-field" required></div>
+                            <div><label class="label-text">Kota Institusi</label><input type="text" x-model="formData.kotaInstitusi" class="input-field" required></div>
+                            <div class="md:col-span-2"><label class="label-text">Tanggal Mulai</label><input type="date" x-model="formData.startDate" class="input-field" required></div>
+                            <div class="md:col-span-2"><label class="label-text">Tanggal Selesai</label><input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required></div>
                         </div>
                     </div>
 
-                    <div class="section-card">
-                        <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">II. Biodata & Berkas</h2>
-                        <div class="flex flex-col md:flex-row gap-8">
-                            <div class="flex flex-col items-center">
-                                <label class="label-text text-center">Pas Foto (JPG)</label>
-                                <div class="photo-box mt-2">
-                                    <template x-if="!photoPreview">
-                                        <div class="text-center p-4">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                            <p class="text-[10px] text-gray-400 mt-2">Klik untuk upload</p>
-                                        </div>
-                                    </template>
-                                    <template x-if="photoPreview">
-                                        <img :src="photoPreview" class="w-full h-full object-cover">
-                                    </template>
-                                    <input type="file" @change="handlePhoto" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <template x-if="formData.tipe === 'Perorangan'">
+                        <div class="section-card">
+                            <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">II. Biodata Mahasiswa</h2>
+                            <div class="flex flex-col md:flex-row gap-8">
+                                <div class="flex flex-col items-center">
+                                    <label class="label-text">Pas Foto (JPG)</label>
+                                    <div class="photo-box mt-1">
+                                        <template x-if="!photoPreview"><span class="text-[10px] text-gray-400 text-center p-2">Klik/Drag Foto di sini</span></template>
+                                        <template x-if="photoPreview"><img :src="photoPreview" class="w-full h-full object-cover"></template>
+                                        <input type="file" @change="handlePhoto($event, formData)" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer">
+                                    </div>
+                                    <button x-show="photoPreview" @click="photoPreview = null" type="button" class="text-[10px] text-red-500 mt-2">Hapus Foto</button>
                                 </div>
-                                <button x-show="photoPreview" @click="photoPreview = null" type="button" class="text-xs text-red-500 mt-2 underline">Hapus Foto</button>
-                            </div>
-
-                            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div class="md:col-span-2"><label class="label-text">Nama Lengkap</label><input type="text" x-model="formData.nama" class="input-field" required></div>
-                                <div><label class="label-text">NIM/ID</label><input type="text" x-model="formData.nim" class="input-field" required></div>
-                                <div><label class="label-text">No. WA</label><input type="text" x-model="formData.hp" class="input-field" required></div>
-                                
-                                <div class="md:col-span-2">
-                                    <label class="label-text">Dokumen Pendukung (PDF)</label>
-                                    <input type="file" multiple @change="handleFile($event, formData, true)" accept=".pdf" class="input-field text-sm">
-                                    <div class="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
-                                        <p class="text-[11px] text-blue-700 leading-relaxed">
-                                            <strong>CATATAN PENTING:</strong> Mohon unggah dokumen asli dalam format PDF (maksimal 2MB per file). Dokumen yang wajib dilampirkan antara lain: Surat Pengantar Institusi, Proposal Kegiatan, dan Kartu Identitas. Pastikan scan dokumen terlihat jelas dan tidak terpotong untuk mempercepat proses verifikasi.
-                                        </p>
+                                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="md:col-span-2"><label class="label-text">Nama Lengkap</label><input type="text" x-model="formData.nama" class="input-field" required></div>
+                                    <div><label class="label-text">NIM</label><input type="text" x-model="formData.nim" class="input-field" required></div>
+                                    <div><label class="label-text">No. KTP</label><input type="number" x-model="formData.ktp" class="input-field" required></div>
+                                    <div><label class="label-text">No. WhatsApp</label><input type="text" x-model="formData.hp" class="input-field" required></div>
+                                    <div><label class="label-text">Tempat Lahir</label><input type="text" x-model="formData.tempatLahir" class="input-field" required></div>
+                                    <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="formData.tanggalLahir" @change="validateAge" class="input-field" required></div>
+                                    <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label><input type="text" x-model="formData.alamat" class="input-field" required></div>
+                                    <div class="md:col-span-2"><label class="label-text">Kelurahan - Kecamatan</label><input type="text" x-model="formData.kelurahanKecamatan" class="input-field" required></div>
+                                    <div class="md:col-span-2"><label class="label-text">Upload Dokumen (PDF)</label><input type="file" multiple @change="handleFile($event, formData, true)" accept=".pdf" class="input-field text-xs">
+                                        <div class="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                                            <p class="text-[10px] text-blue-800 leading-relaxed italic">
+                                                <strong>CATATAN:</strong> Pastikan dokumen yang diunggah adalah file asli/scan berwarna (PDF). Dokumen wajib meliputi: Surat Pengantar, Proposal, dan Fotokopi KTP. Maksimal ukuran per file adalah 2MB.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </template>
 
-                    <button type="submit" class="w-full bg-[#714B67] text-white font-bold py-5 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1">
-                        <span x-show="!loading">SIMPAN DATA PESERTA</span>
-                        <span x-show="loading" class="animate-pulse">MENGIRIM...</span>
+                    <template x-if="formData.tipe === 'Kelompok'">
+                        <div class="section-card" x-data="{ showForm: false, tempMhs: {}, tempPreview: null }">
+                            <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">II. Daftar Anggota Kelompok</h2>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="w-full text-xs text-left border rounded-lg">
+                                    <thead class="bg-gray-50 border-b"><tr><th class="p-3">Nama</th><th class="p-3">NIM / KTP</th><th class="p-3">Aksi</th></tr></thead>
+                                    <tbody>
+                                        <template x-if="kelompok.length === 0"><tr><td colspan="3" class="p-5 text-center text-gray-400">Belum ada anggota.</td></tr></template>
+                                        <template x-for="(mhs, index) in kelompok" :key="index">
+                                            <tr class="border-t">
+                                                <td class="p-3 font-bold" x-text="mhs.nama"></td>
+                                                <td class="p-3" x-text="mhs.nim + ' / ' + mhs.ktp"></td>
+                                                <td class="p-3"><button type="button" @click="removeMhs(index)" class="text-red-500 font-bold">Hapus</button></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button type="button" x-show="!showForm" @click="showForm = true; tempMhs = { dokumenList: [] }; tempPreview = null" class="bg-white border-2 border-[#714B67] text-[#714B67] px-5 py-2 rounded-lg font-bold text-xs">+ Tambah Anggota</button>
+
+                            <div x-show="showForm" class="p-6 bg-[#fdfafc] border-2 border-[#714B67]/20 rounded-xl mt-4">
+                                <h3 class="font-bold text-[#714B67] mb-4 text-xs">Form Anggota Baru</h3>
+                                <div class="flex flex-col md:flex-row gap-6">
+                                    <div class="photo-box shrink-0 mx-auto md:mx-0">
+                                        <template x-if="!tempPreview"><span class="text-[9px] text-gray-400">Foto Anggota</span></template>
+                                        <template x-if="tempPreview"><img :src="tempPreview" class="w-full h-full object-cover"></template>
+                                        <input type="file" @change="const file = $event.target.files[0]; if(file){ const reader = new FileReader(); reader.onload=(f)=>{tempPreview=f.target.result; tempMhs.pasFotoData=f.target.result.split(',')[1];}; reader.readAsDataURL(file); }" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer">
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                                        <input type="text" placeholder="Nama Lengkap" x-model="tempMhs.nama" class="input-field">
+                                        <input type="text" placeholder="NIM" x-model="tempMhs.nim" class="input-field">
+                                        <input type="number" placeholder="No. KTP" x-model="tempMhs.ktp" class="input-field">
+                                        <input type="text" placeholder="No. WA" x-model="tempMhs.hp" class="input-field">
+                                        <input type="text" placeholder="Tempat Lahir" x-model="tempMhs.tempatLahir" class="input-field">
+                                        <input type="date" x-model="tempMhs.tanggalLahir" class="input-field">
+                                        <input type="text" placeholder="Alamat Lengkap" x-model="tempMhs.alamat" class="input-field md:col-span-2">
+                                        <input type="text" placeholder="Kelurahan - Kecamatan" x-model="tempMhs.kelurahanKecamatan" class="input-field md:col-span-2">
+                                        <div class="md:col-span-2">
+                                            <label class="label-text">Dokumen (PDF)</label>
+                                            <input type="file" multiple @change="handleFile($event, tempMhs, true)" accept=".pdf" class="input-field text-[10px]">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex gap-2">
+                                    <button type="button" @click="if(tempMhs.nama){ kelompok.push({...tempMhs}); showForm = false; }else{alert('Nama wajib diisi')}" class="bg-[#714B67] text-white px-6 py-2 rounded-lg text-xs font-bold">Simpan ke Daftar</button>
+                                    <button type="button" @click="showForm = false" class="bg-gray-200 px-4 py-2 rounded-lg text-xs font-bold">Batal</button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <button type="submit" class="w-full btn-primary py-5 rounded-xl text-lg shadow-lg mb-10" :disabled="loading">
+                        <span x-show="!loading">SUBMIT DATA PENDAFTARAN</span>
+                        <span x-show="loading" class="animate-pulse">SEDANG MENGIRIM...</span>
                     </button>
                 </form>
             </div>
@@ -130,43 +177,42 @@
     <script>
         function app() {
             return {
-                view: 'menu', // State tampilan: menu atau input
+                view: 'menu',
                 loading: false,
                 photoPreview: null,
-                formData: { tipe: 'Perorangan', bagian: '', jenis: '', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, nama: '', nim: '', hp: '', pasFotoData: '', dokumenList: [] },
-                
-                handlePhoto(e) {
+                formData: { tipe: 'Perorangan', bagian: '', jenis: '', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
+                kelompok: [],
+                resetKelompok() { this.kelompok = []; },
+                removeMhs(i) { this.kelompok.splice(i, 1); },
+                handlePhoto(e, target) {
                     const file = e.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = (f) => {
-                            this.photoPreview = f.target.result;
-                            this.formData.pasFotoData = f.target.result.split(',')[1];
-                        };
+                        reader.onload = (f) => { this.photoPreview = f.target.result; target.pasFotoData = f.target.result.split(',')[1]; };
                         reader.readAsDataURL(file);
                     }
                 },
-
                 handleFile(e, target, isMulti) {
                     const files = Array.from(e.target.files);
                     target.dokumenList = [];
                     files.forEach(file => {
                         const reader = new FileReader();
-                        reader.onload = (f) => {
-                            target.dokumenList.push({ name: file.name, base64: f.target.result.split(',')[1] });
-                        };
+                        reader.onload = (f) => { target.dokumenList.push({ name: file.name, base64: f.target.result.split(',')[1] }); };
                         reader.readAsDataURL(file);
                     });
                 },
-
+                validateAge() {
+                    const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
+                    if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
+                },
+                validateDates() {
+                    if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) { alert("Tanggal tidak valid!"); this.formData.endDate = ''; }
+                },
                 async handleSubmit() {
+                    if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 2) { alert("Minimal 2 orang!"); return; }
                     this.loading = true;
-                    // Logic kirim ke GAS tetap sama seperti sebelumnya
-                    setTimeout(() => { 
-                        alert('Data Berhasil Disimpan!'); 
-                        this.loading = false;
-                        this.view = 'menu';
-                    }, 2000);
+                    // Simulasi API Delay - Ganti dengan fetch Anda
+                    setTimeout(() => { alert("Data Berhasil Dikirim!"); window.location.reload(); }, 2000);
                 }
             }
         }

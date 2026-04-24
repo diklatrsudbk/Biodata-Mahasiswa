@@ -67,10 +67,23 @@
                                 <option>Penunjang Medik</option>
                                 <option>Umum</option>
                             </select>
-                            <p class="text-[9px] text-gray-400 mt-1 italic leading-tight">* - Pelayanan Medik = Keperawatan, Kebidanan, Kedokteran.
-                                - Penunjang Medik = Apoteker, Farmasi, Gizi, Laboratorium, Radiologi, Rehab Medik, 
-                                - Umum = Elektro, Fisika, Management, Listrik</p>
-                            </div>
+                            <div class="md:col-span-1">
+    <label class="label-text">Bagian</label>
+    <select x-model="formData.bagian" class="input-field" required>
+        <option value="">-- Pilih --</option>
+        <option>Pelayanan Medik</option>
+        <option>Penunjang Medik</option>
+        <option>Umum</option>
+    </select>
+    <div class="mt-2 p-2 bg-gray-50 border-l-2 border-[#714B67] rounded shadow-sm">
+        <p class="text-[9px] text-gray-500 leading-relaxed">
+            <strong>PANDUAN PILIHAN:</strong><br>
+            • <b>Pelayanan Medik:</b> Keperawatan, Kebidanan, Kedokteran.<br>
+            • <b>Penunjang Medik:</b> Selain jurusan di atas (Farmasi, Gizi, Radiologi, dll).<br>
+            • <b>Umum:</b> Administrasi, Manajemen, Promkes, IT, Keuangan, Perkantoran, Teknisi.
+        </p>
+    </div>
+</div>
                             <div><label class="label-text">Jenis Kegiatan</label>
                                 <select x-model="formData.jenis" class="input-field" required>
                                     <option value="">-- Pilih --</option>

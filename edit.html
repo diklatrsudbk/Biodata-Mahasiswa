@@ -1,90 +1,146 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit/Delete Data Peserta</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
-        .input-field { border: 1px solid #dee2e6; padding: 0.7rem 1rem; border-radius: 0.5rem; width: 100%; }
-        .section-card { background: #ffffff; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+        .btn-action { transition: all 0.2s; }
+        .btn-action:hover { transform: scale(1.05); }
     </style>
 </head>
-<body class="py-10 px-4" x-data="editApp()">
+<body class="p-4 md:p-8" x-data="editApp()" x-init="initData()">
 
-    <div class="max-w-3xl mx-auto">
-        <a href="index.html" class="mb-6 inline-block text-[#714B67] font-bold">← Kembali ke Input</a>
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-[#714B67]">Database Peserta 2026</h1>
+            <button @click="initData()" class="bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300">
+                🔄 Refresh Data
+            </button>
+        </div>
 
-        <div class="section-card mb-6">
-            <h2 class="font-bold mb-4">Cari & Kelola Data Peserta</h2>
-            <div class="flex gap-2">
-                <input type="text" x-model="searchNim" class="input-field" placeholder="Masukkan NIM Peserta...">
-                <button @click="searchData" class="bg-[#714B67] text-white px-6 py-2 rounded-lg font-bold" :disabled="loading">Cari</button>
+        <div class="bg-white p-6 rounded-xl shadow-sm mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Cari NIM / Nama</label>
+                <input type="text" x-model="filters.search" placeholder="Ketik NIM atau Nama..." class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#714B67] outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Filter Jurusan</label>
+                <select x-model="filters.jurusan" class="w-full border rounded-lg px-3 py-2 outline-none">
+                    <option value="">Semua Jurusan</option>
+                    <template x-for="j in uniqueJurusan" :key="j">
+                        <option :value="j" x-text="j"></option>
+                    </template>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Filter Institusi</label>
+                <select x-model="filters.instansi" class="w-full border rounded-lg px-3 py-2 outline-none">
+                    <option value="">Semua Institusi</option>
+                    <template x-for="i in uniqueInstansi" :key="i">
+                        <option :value="i" x-text="i"></option>
+                    </template>
+                </select>
             </div>
         </div>
 
-        <template x-if="foundData">
-            <div class="section-card border-t-4 border-[#714B67]">
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label class="text-xs font-bold uppercase text-gray-400">Nama Lengkap</label>
-                        <input type="text" x-model="foundData.nama" class="input-field">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold uppercase text-gray-400">Institusi</label>
-                        <input type="text" x-model="foundData.namaInstitusi" class="input-field">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button @click="updateData" class="bg-blue-600 text-white py-3 rounded-lg font-bold">Simpan Perubahan</button>
-                        <button @click="deleteData" class="bg-red-600 text-white py-3 rounded-lg font-bold">Hapus Peserta</button>
-                    </div>
-                </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="p-4 text-xs font-bold text-gray-400 uppercase">NIM</th>
+                            <th class="p-4 text-xs font-bold text-gray-400 uppercase">Nama Peserta</th>
+                            <th class="p-4 text-xs font-bold text-gray-400 uppercase">Institusi / Jurusan</th>
+                            <th class="p-4 text-xs font-bold text-gray-400 uppercase text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="p in filteredParticipants" :key="p.nim">
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-4 text-sm font-mono text-gray-600" x-text="p.nim"></td>
+                                <td class="p-4">
+                                    <div class="text-sm font-bold text-gray-800" x-text="p.nama"></div>
+                                    <div class="text-[10px] text-purple-600 font-bold uppercase" x-text="p.bagian"></div>
+                                </td>
+                                <td class="p-4">
+                                    <div class="text-sm text-gray-700" x-text="p.instansi"></div>
+                                    <div class="text-xs text-gray-400" x-text="p.jurusan"></div>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <button @click="editPeserta(p.nim)" class="bg-amber-100 text-amber-700 px-3 py-1 rounded text-xs font-bold btn-action">EDIT</button>
+                                        <button @click="hapusPeserta(p.nim, p.nama)" class="bg-red-100 text-red-700 px-3 py-1 rounded text-xs font-bold btn-action">HAPUS</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
             </div>
-        </template>
-
-        <p x-show="loading" class="text-center mt-4 text-gray-500 italic">Memproses...</p>
+            
+            <div x-show="loading" class="p-10 text-center text-gray-500 italic">Memuat database...</div>
+            <div x-show="!loading && filteredParticipants.length === 0" class="p-10 text-center text-gray-500">Data tidak ditemukan.</div>
+        </div>
     </div>
 
     <script>
         function editApp() {
             return {
-                searchNim: '',
-                foundData: null,
+                allData: [],
                 loading: false,
-                scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec", // Samakan dengan index.html
+                filters: { search: '', jurusan: '', instansi: '' },
+                targetSheet: "GEL6", // Sesuaikan gelombang aktif
 
-                async searchData() {
-                    if(!this.searchNim) return alert("Masukkan NIM!");
+                initData() {
                     this.loading = true;
-                    try {
-                        const resp = await fetch(`${this.scriptUrl}?action=read&nim=${this.searchNim}`);
-                        const result = await resp.json();
-                        if(result.status === "success") {
-                            this.foundData = result.data;
-                        } else {
-                            alert("Data tidak ditemukan!");
-                        }
-                    } catch (e) { alert("Gagal mengambil data"); }
-                    this.loading = false;
+                    // Memanggil fungsi getAllData di Code.gs
+                    google.script.run.withSuccessHandler((res) => {
+                        this.allData = res;
+                        this.loading = false;
+                    }).getAllData(this.targetSheet);
                 },
 
-                async updateData() {
-                    if(!confirm("Yakin ingin mengubah data ini?")) return;
-                    this.loading = true;
-                    // Logika fetch POST ke Apps Script dengan action=update
-                    alert("Fitur Update perlu disesuaikan di Apps Script (GS) Anda");
-                    this.loading = false;
+                get uniqueJurusan() {
+                    return [...new Set(this.allData.map(d => d.jurusan))].sort();
                 },
 
-                async deleteData() {
-                    if(!confirm("HAPUS DATA INI PERMANEN?")) return;
-                    this.loading = true;
-                    // Logika fetch POST ke Apps Script dengan action=delete
-                    alert("Fitur Delete perlu disesuaikan di Apps Script (GS) Anda");
-                    this.loading = false;
+                get uniqueInstansi() {
+                    return [...new Set(this.allData.map(d => d.instansi))].sort();
+                },
+
+                get filteredParticipants() {
+                    return this.allData.filter(p => {
+                        const matchSearch = p.nama.toLowerCase().includes(this.filters.search.toLowerCase()) || 
+                                           p.nim.toString().includes(this.filters.search);
+                        const matchJurusan = this.filters.jurusan === '' || p.jurusan === this.filters.jurusan;
+                        const matchInstansi = this.filters.instansi === '' || p.instansi === this.filters.instansi;
+                        return matchSearch && matchJurusan && matchInstansi;
+                    });
+                },
+
+                editPeserta(nim) {
+                    alert("Fitur edit untuk NIM " + nim + " akan membuka form pengisian dengan data yang sudah terisi.");
+                    // Logika: Redirect atau buka modal form
+                },
+
+                hapusPeserta(nim, nama) {
+                    if (confirm(`Yakin ingin menghapus data ${nama} (NIM: ${nim})?`)) {
+                        this.loading = true;
+                        const formData = new FormData();
+                        formData.append("action", "delete");
+                        formData.append("nim", nim);
+                        formData.append("targetSheet", this.targetSheet);
+
+                        fetch("YOUR_SCRIPT_URL_HERE", { // Ganti dengan URL Script Anda
+                            method: "POST",
+                            body: formData
+                        }).then(() => {
+                            alert("Terhapus!");
+                            this.initData();
+                        });
+                    }
                 }
             }
         }

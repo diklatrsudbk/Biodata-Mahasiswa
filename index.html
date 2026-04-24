@@ -59,16 +59,57 @@
                     <div class="section-card">
                         <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">I. Data Institusi & Kegiatan</h2>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div><label class="label-text">Bagian</label>
-                                <select x-model="formData.bagian" class="input-field" required><option value="">-- Pilih --</option><option>Pelayanan Medik</option><option>Penunjang Medik</option><option>Umum</option></select>
+                            <div>
+                                <label class="label-text">Bagian</label>
+                                <select x-model="formData.bagian" class="input-field" required>
+                                <option value="">-- Pilih --</option>
+                                <option>Pelayanan Medik</option>
+                                <option>Penunjang Medik</option>
+                                <option>Umum</option>
+                            </select>
+                            <p class="text-[9px] text-gray-400 mt-1 italic leading-tight">* - Pelayanan Medik = Keperawatan, Kebidanan, Kedokteran.
+                                - Penunjang Medik = Apoteker, Farmasi, Gizi, Laboratorium, Radiologi, Rehab Medik, 
+                                - Umum = Elektro, Fisika, Management, Listrik</p>
                             </div>
                             <div><label class="label-text">Jenis Kegiatan</label>
-                                <select x-model="formData.jenis" class="input-field" required><option value="">-- Pilih --</option><option>PKL</option><option>PBL</option><option>Penelitian</option><option>Magang</option><option>Resident</option></select>
+                                <select x-model="formData.jenis" class="input-field" required>
+                                    <option value="">-- Pilih --</option>
+                                    <option>PKL</option>
+                                    <option>PBL</option>
+                                    <option>Pembelajaran Luar Kelas</option>
+                                    <option>Magang</option>
+                                    <option>Resident</option>
+                                    <option>Hospital Visit</option>
+                                    <option>LIC</option>
+                                    </select>
                             </div>
                             <div><label class="label-text">Jenjang Pendidikan</label>
-                                <select x-model="formData.jenjangPendidikan" class="input-field" required><option value="D3">D3</option><option value="D4">D4</option><option value="S1">S1</option><option value="S2">S2</option><option value="Profesi">Profesi</option><option value="Spesialis">Spesialis</option><option value="SMK">SMK</option></select>
+                                <select x-model="formData.jenjangPendidikan" class="input-field" required>
+                                    <option value="SMK">SMK</option>
+                                    <option value="D3">D3</option>
+                                    <option value="D4">D4</option>
+                                    <option value="S1">S1</option>
+                                    <option value="S2 Pasca Sarjana">S2 Pasca Sarjana</option>
+                                    <option value="PPDS Sp.1">PPDS Sp.1</option>
+                                    <option value="PPDS Sp.2">PPDS Sp.2</option>
+                                    <option value="Profesi">Profesi</option>
+                                    <option value="Spesialis">Spesialis</option>
+                                    <option value="Fellowship">Fellowship</option>
+                                    </select>
                             </div>
-                            <div><label class="label-text">Level</label><input type="number" x-model="formData.level" class="input-field"></div>
+                            <div>
+                                <label class="label-text">Level</label>
+                                <input type="number" x-model="formData.level" class="input-field">
+                                <p class="text-[9px] text-gray-400 mt-1 italic leading-tight">*List supervisi Keperawatan dan Kebidanan :
+* Tingkat 1 : Rendah, Warna Hijau, Semua Mahasiswa Praktik dan Magang Profesi kelas Non Reguler/Karyawan, S2 Magister
+* Tingkat 2 : Moderat, Warna Kuning, Semua Mahasiswa Praktik dan Magang Profesi kelas Reguler dan D4 kelas Non Reguler/Karyawan
+* Tingkat 3 : Tinggi, Warna Merah, Semua Mahasiswa Praktik dan Magang D3, dan S1
+List supervisi Kedokteran :
+* Tingkat 1 : Rendah, Warna Hijau. PPDS Dokter Residen Senior/Chief Residen ( Semester 7 - 9 ), Magang Dokter Spesialis
+* Tingkat 2 : Moderat Rendah, Warna Biru. PPDS Dokter Residen Midle ( Semester 4 - 6 ) 
+* Tingkat 3 : Moderat Tinggi, Warna Kuning. PPDS Dokter Residen Junior ( Semester 1 - 3 ), Dokter Magang, Internship PIDI/PIDGI
+* Tingkat 4 : Tinggi, Warna Merah, Profesi Dokter, S1 - Kedokterani.</p>
+                            </div>
                             
                             <div class="md:col-span-2">
                                 <label class="label-text">Nama Institusi / Universitas</label>
@@ -109,12 +150,19 @@
                                     <div><label class="label-text">NIM / NISN</label><input type="text" x-model="formData.nim" class="input-field" required></div>
                                     <div><label class="label-text">No. KTP</label><input type="number" x-model="formData.ktp" class="input-field" required></div>
                                     <div><label class="label-text">Agama</label>
-                                        <select x-model="formData.agama" class="input-field"><option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Budha</option><option>Konghucu</option></select>
+                                        <select x-model="formData.agama" class="input-field">
+                                            <option>Islam</option>
+                                            <option>Kristen</option>
+                                            <option>Protestan</option>
+                                            <option>Katolik</option>
+                                            <option>Hindu</option>
+                                            <option>Budha</option>
+                                            <option>Konghucu</option></select>
                                     </div>
                                     <div><label class="label-text">Jenis Kelamin</label>
                                         <select x-model="formData.jenisKelamin" class="input-field"><option>Laki-Laki</option><option>Perempuan</option></select>
                                     </div>
-                                    <div><label class="label-text">No. WhatsApp</label><input type="text" x-model="formData.hp" class="input-field" required></div>
+                                    <div><label class="label-text">No. WhatsApp</label><input type="number" x-model="formData.hp" class="input-field" placeholder="628123xxx" oninput="this.value = this.value.replace(/[^0-9]/g, '');"required></div>
                                     <div><label class="label-text">Tempat Lahir</label><input type="text" x-model="formData.tempatLahir" class="input-field" required></div>
                                     <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="formData.tanggalLahir" @change="validateAge" class="input-field" required></div>
                                     <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label><input type="text" x-model="formData.alamat" class="input-field" required></div>
@@ -144,10 +192,18 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <input type="text" placeholder="Nama Lengkap" x-model="tempMhs.nama" class="input-field">
                                     <input type="text" placeholder="NIM" x-model="tempMhs.nim" class="input-field">
-                                    <select x-model="tempMhs.agama" class="input-field"><option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Budha</option></select>
+                                    <select x-model="tempMhs.agama" class="input-field">
+                                        <option>Islam</option>
+                                        <option>Kristen</option>
+                                        <option>Protestan</option>
+                                        <option>Katolik</option>
+                                        <option>Hindu</option>
+                                        <option>Budha</option>
+                                        <option>Konghucu</option>
+                                    </select>
                                     <select x-model="tempMhs.jenisKelamin" class="input-field"><option>Laki-Laki</option><option>Perempuan</option></select>
                                     <input type="number" placeholder="No. KTP" x-model="tempMhs.ktp" class="input-field">
-                                    <input type="text" placeholder="No. WA" x-model="tempMhs.hp" class="input-field">
+                                    <input type="number" placeholder="No. WA (Contoh: 62812...)" x-model="tempMhs.hp" class="input-field" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                                     <input type="text" placeholder="Alamat" x-model="tempMhs.alamat" class="input-field md:col-span-2">
                                 </div>
                                 <div class="mt-4 flex gap-2">

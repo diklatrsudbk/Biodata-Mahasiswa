@@ -108,98 +108,99 @@
 
     <script>
         function editApp() {
-            return {
-                loading: false,
-                allData: [],
-                filters: {
-                    search: '',
-                    jurusan: '',
-                    institusi: ''
-                },
-                config: {
-                    targetSheet: "GEL6",
-                    scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
-                },
+    return {
+        loading: false,
+        allData: [],
+        filters: {
+            search: '',
+            jurusan: '',
+            institusi: ''
+        },
+        config: {
+            targetSheet: "GEL6",
+            // PASTIKAN URL INI ADALAH URL DEPLOYMENT TERBARU ANDA
+            scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
+        },
 
-                initData() {
-    this.loading = true;
-    const url = this.config.scriptUrl + "?action=read";
+        initData() {
+            this.loading = true;
+            const url = this.config.scriptUrl + "?action=read&t=" + new Date().getTime();
 
-    initData() {
-    this.loading = true;
-    // Tambahkan timestamp agar browser tidak mengambil data lama dari cache
-    const url = this.config.scriptUrl + "?action=read&t=" + new Date().getTime();
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Respons jaringan gagal');
+                    return response.json();
+                })
+                .then(res => {
+                    this.allData = Array.isArray(res) ? res : [];
+                    this.loading = false;
+                })
+                .catch(err => {
+                    console.error("Gagal load:", err);
+                    this.loading = false;
+                    alert("Koneksi gagal. Pastikan Script sudah di-Deploy sebagai 'Anyone'.");
+                });
+        },
 
-    fetch(url)
-        .then(response => {
-            // Google Apps Script akan mengembalikan redirect (302)
-            // fetch secara default akan mengikuti redirect tersebut
-            if (!response.ok) throw new Error('Respons jaringan tidak oke');
-            return response.json();
-        })
-        .then(res => {
-            console.log("Data berhasil diterima:", res);
-            this.allData = res || [];
-            this.loading = false;
-        })
-        .catch(err => {
-            console.error("Gagal load:", err);
-            this.loading = false;
-            // Jika masuk ke sini, kemungkinan besar URL salah atau belum di-deploy ulang
-            alert("Koneksi gagal. Pastikan URL Script benar dan sudah di-Deploy sebagai 'Anyone'.");
-        });
-},
+        get filteredData() {
+            return this.allData.filter(item => {
+                const nama = item.nama ? item.nama.toLowerCase() : '';
+                const nim = item.nim ? item.nim.toString().toLowerCase() : '';
+                const searchTxt = this.filters.search.toLowerCase();
+                
+                const matchSearch = nama.includes(searchTxt) || nim.includes(searchTxt);
+                const matchJurusan = this.filters.jurusan === '' || item.jurusan === this.filters.jurusan;
+                const matchInstitusi = this.filters.institusi === '' || item.namaInstitusi === this.filters.institusi;
+                
+                return matchSearch && matchJurusan && matchInstitusi;
+            });
+        },
 
-                // Logika Filter
-                get filteredData() {
-                    return this.allData.filter(item => {
-                        const matchSearch = (item.nama + item.nim).toLowerCase().includes(this.filters.search.toLowerCase());
-                        const matchJurusan = this.filters.jurusan === '' || item.jurusan === this.filters.jurusan;
-                        const matchInstitusi = this.filters.institusi === '' || item.namaInstitusi === this.filters.institusi;
-                        return matchSearch && matchJurusan && matchInstitusi;
-                    });
-                },
+        get uniqueJurusan() {
+            return [...new Set(this.allData.map(i => i.jurusan).filter(Boolean))].sort();
+        },
 
-                get uniqueJurusan() {
-                    return [...new Set(this.allData.map(i => i.jurusan))].sort();
-                },
+        get uniqueInstitusi() {
+            return [...new Set(this.allData.map(i => i.namaInstitusi).filter(Boolean))].sort();
+        },
 
-                get uniqueInstitusi() {
-                    return [...new Set(this.allData.map(i => i.namaInstitusi))].sort();
-                },
+        formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+            } catch(e) { return '-'; }
+        },
 
-                formatDate(dateStr) {
-                    if(!dateStr) return '-';
-                    const d = new Date(dateStr);
-                    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
-                },
+        async hapusData(nim, nama) {
+            if (confirm(`Hapus data ${nama} (NIM: ${nim})?`)) {
+                this.loading = true;
+                
+                const url = this.config.scriptUrl;
+                const body = {
+                    action: "delete",
+                    targetSheet: this.config.targetSheet,
+                    nim: nim
+                };
 
-               async hapusData(nim, nama) {
-    if (confirm(`Hapus data ${nama}?`)) {
-        this.loading = true;
-        
-        // Menggunakan metode POST ke web app untuk hapus
-        const formData = new FormData();
-        formData.append("action", "delete");
-        formData.append("targetSheet", this.config.targetSheet);
-        formData.append("nim", nim);
-
-        fetch(this.config.scriptUrl, {
-            method: "POST",
-            body: formData
-        })
-        .then(res => res.json())
-        .then(res => {
-            if (res.status === "deleted") {
-                alert("Data berhasil dihapus!");
-                this.initData(); // Refresh data
-            }
-        })
-        .catch(err => alert("Gagal hapus: " + err));
-    }
-}
+                // Menggunakan fetch POST untuk hapus
+                fetch(url, {
+                    method: "POST",
+                    mode: "no-cors", // Trik agar tidak kena CORS saat kirim data ke Google
+                    body: JSON.stringify(body)
+                })
+                .then(() => {
+                    alert("Permintaan hapus dikirim. Tunggu sebentar lalu refresh halaman.");
+                    this.initData();
+                })
+                .catch(err => {
+                    alert("Gagal kirim perintah hapus: " + err);
+                    this.loading = false;
+                });
             }
         }
+    }
+}
     </script>
 </body>
 </html>

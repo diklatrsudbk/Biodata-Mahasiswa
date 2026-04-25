@@ -38,7 +38,9 @@
 
         <template x-if="view === 'menu'">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mt-10">
-                <div @click="view = 'input'" class="section-card cursor-pointer border-2 border-transparent hover:border-[#714B67] transition-all text-center p-10">
+                <div @click="view = 'input'; isEdit = false; photoPreview = null; formData = { tipe: 'Perorangan', bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] }" 
+     class="section-card cursor-pointer border-2 border-transparent hover:border-[#714B67] transition-all text-center p-10">
+
                     <h3 class="text-xl font-bold text-blue-600">Input Data Peserta Baru</h3>
                     <p class="text-gray-400 text-sm mt-2">Daftarkan mahasiswa/siswa ke sistem.</p>
                 </div>
@@ -52,9 +54,11 @@
 
         <template x-if="view === 'input'">
             <div>
-                <button @click="view = 'menu'" class="mb-6 flex items-center text-[#714B67] font-bold hover:underline">
-                    ← Kembali ke Menu Utama
-                </button>
+                <button @click="window.location.href='index.html'" 
+        class="mb-6 flex items-center text-[#714B67] font-bold hover:underline">
+    ← Kembali ke Menu Utama
+</button>
+
 
                 <form @submit.prevent="handleSubmit" :class="loading ? 'opacity-50 pointer-events-none' : ''">
                     <div class="section-card">
@@ -168,7 +172,19 @@
                                 </div>
                                 <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="md:col-span-2"><label class="label-text">Nama Lengkap</label><input type="text" x-model="formData.nama" class="input-field" required></div>
-                                    <div><label class="label-text">NIM / NISN</label><input type="text" x-model="formData.nim" class="input-field" required></div>
+                                    <div>
+    <label class="label-text">NIM / NISN</label>
+    <input type="text" 
+           x-model="formData.nim" 
+           class="input-field" 
+           :class="isEdit ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''"
+           :disabled="isEdit" 
+           required>
+    <template x-if="isEdit">
+        <span class="text-[10px] text-amber-600 mt-1">* NIM tidak dapat diubah</span>
+    </template>
+</div>
+
                                     <div><label class="label-text">No. KTP</label><input type="number" x-model="formData.ktp" class="input-field" required></div>
                                     <div><label class="label-text">Agama</label>
                                         <select x-model="formData.agama" class="input-field">
@@ -288,38 +304,42 @@
             kelompok: [],
 
             // FUNGSI INIT: Berjalan otomatis saat halaman dibuka
-            init() {
+          init() {
     const params = new URLSearchParams(window.location.search);
     const nimToEdit = params.get('nim');
     const action = params.get('action');
 
     if (action === 'edit' && nimToEdit) {
         this.loading = true;
+        this.isEdit = true; // Langsung set true agar kolom NIM terkunci saat loading
         this.progressText = "Sedang memuat data peserta...";
-        this.view = 'input'; // Paksa pindah ke tampilan form
+        this.view = 'input'; 
 
         fetch(`${this.config.scriptUrl}?action=read`)
             .then(res => res.json())
             .then(data => {
-                console.log("Data diterima dari server:", data); // Untuk debug
-                
-                // Cari data yang NIM-nya cocok (pakai == agar aman antara string/number)
+                // Cari data yang NIM-nya cocok
                 const item = data.find(i => i.nim == nimToEdit);
 
                 if (item) {
-                    console.log("Data ditemukan:", item);
-                    // Isi form secara otomatis dengan data dari server
+                    // Gabungkan data lama dengan data baru dari server
                     this.formData = { ...this.formData, ...item };
-                    if (item.pasFotoPreview) this.photoPreview = item.pasFotoPreview;
-                    // Khusus untuk tanggal, pastikan formatnya YYYY-MM-DD agar muncul di input date
+                    
+                    // Load preview foto jika ada
+                    if (item.pasFotoPreview) {
+                        this.photoPreview = item.pasFotoPreview;
+                    }
+                    
+                    // Konversi semua tanggal ke format YYYY-MM-DD agar muncul di input type="date"
                     if (item.tanggalLahir) this.formData.tanggalLahir = this.formatDateForInput(item.tanggalLahir);
                     if (item.startDate) this.formData.startDate = this.formatDateForInput(item.startDate);
                     if (item.endDate) this.formData.endDate = this.formatDateForInput(item.endDate);
                     
-                    this.isEdit = true;
                 } else {
                     alert("Maaf, data dengan NIM tersebut tidak ditemukan di database.");
+                    this.isEdit = false;
                     this.view = 'menu';
+                    window.location.href = 'index.html'; // Bersihkan URL
                 }
                 this.loading = false;
             })
@@ -327,10 +347,16 @@
                 console.error("Gagal mengambil data:", err);
                 alert("Gagal mengambil data dari server.");
                 this.loading = false;
+                this.isEdit = false;
                 this.view = 'menu';
             });
+    } else {
+        // Jika tidak ada parameter edit, pastikan status dalam keadaan default
+        this.isEdit = false;
+        this.view = 'menu';
     }
-},
+}
+  ,
 
 // Tambahkan fungsi pembantu ini di bawah init() atau di dalam return app()
 formatDateForInput(dateStr) {

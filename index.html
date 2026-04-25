@@ -296,7 +296,7 @@
     if (action === 'edit' && nimToEdit) {
         this.loading = true;
         this.progressText = "Sedang memuat data peserta...";
-        this.view = 'form'; // Paksa pindah ke tampilan form
+        this.view = 'input'; // Paksa pindah ke tampilan form
 
         fetch(`${this.config.scriptUrl}?action=read`)
             .then(res => res.json())
@@ -413,18 +413,31 @@ formatDateForInput(dateStr) {
                 } catch (e) { alert("Error: " + e); this.loading = false; }
             },
             async sendToAppsScript(payload) {
-                const body = new FormData();
-                body.append("targetSheet", this.config.targetSheet);
-                
-                // Jika sedang mode edit, kirimkan penanda action ke server
-                if (this.isEdit) body.append("action", "edit");
+    // Tambahkan action edit jika isEdit true
+    const finalPayload = { 
+        ...payload, 
+        targetSheet: this.config.targetSheet,
+        action: this.isEdit ? "edit" : "insert" // Beri tahu server ini edit atau daftar baru
+    };
 
-                for (let key in payload) {
-                    if (key === 'dokumenList') body.append(key, JSON.stringify(payload[key]));
-                    else if (payload[key]) body.append(key, payload[key]);
-                }
-                return fetch(this.config.scriptUrl, { method: 'POST', body: body, mode: 'no-cors' });
-            }
+    // Gunakan URLSearchParams untuk POST yang lebih kompatibel dengan doGet/doPost Apps Script sederhana
+    const queryString = new URLSearchParams();
+    for (let key in finalPayload) {
+        if (key === 'dokumenList') {
+            queryString.append(key, JSON.stringify(finalPayload[key]));
+        } else {
+            queryString.append(key, finalPayload[key]);
+        }
+    }
+
+    return fetch(this.config.scriptUrl, {
+        method: 'POST',
+        body: queryString,
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    });
+}
         }
     }
 </script>

@@ -267,116 +267,152 @@
         </template>
     </div>
 
-    <script>
-        function app() {
-            return {
-                view: 'menu', loading: false, progressText: '', photoPreview: null,
-                options: {
-                    kota: ["Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"],
-                    universitas: ["ATRO Persada Nusantara Bekasi","Institut Teknologi Bandung (ITB)","Politeknik PIKSI Ganesha","Politkenik Al Islam Bandung","Universitas Indonesia (UI)","Sekolah Tinggi Farmasi Indonesia (STFI)","Universitas Muhammadiyah Bandung (UMB)","Universitas Wahid Hasyim Semarang (UNWAHAS)","UIN Sunan Gunung Djati Bandung","Poltekkes Semarang","Poltekkes Tasikmalaya","SMKN 7 Bandung","SMK Nusa Bhakti Bandung","Universitas Diponegoro (UNDIP)","Universitas Islam Bandung (UNISBA)","Universitas Maranatha","Universitas Sriwijaya","Universitas Telkom","Stikes Karsa Husada Garut","Universitas Logistik dan Bisnis Internasional (ULBI)","Universitas Bandung","Stikep PPNI Jabar","Stikes Budi Luhur","Stikes RS Dustira","Stikes Dharma Husada Bandung (DHB)","Inkes Rajawali","Inkes Immanuel","Inkes Pelamonia Makasar","Poltekkes Palu","Poltekkes Bandung","Politeknik Cendrawasih Palu","Universitas Padjajaran (UNPAD)","Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam","UNISA Bandung","Universitas Bhakti Kencana (UBK)","Universitas Pendidikan Indonesia (UPI)","Unversitas Jendral Ahmad Yani (UNJANI)","Universitas Borromeus","Universitas Muhammadiyah Ahmad Dahlan (UM-AD) Palembang","Universitas Dehasen (UNIVED) Bengkulu","STIKES Marendeng Majene"],
-                    jurusan: ["Keperawatan Regular","Keperawatan Non-Regular","Keperawatan RPL","Profesi Ners","Profesi Ners Non-Regular","Kebidanan Regular","Kebidanan Non-regular","Kebidanan RPL","Profesi Bidan Regular","Profesi Bidan Non-Regular","Kedokteran","Kedokteran / PSPD","PPDS Anak","PPDS Anaestesi","PPDS Bedah","PPDS Obgyn","PPDS KFR","PPDS THT-KL","PPDS Neurologi","PPDS IPD","Kedokteran Gigi","Anestesi Regular","Anestesi RPL","Laboratorium Medis","Gizi","Psikologi","Fisioterapi","Analis Kesehatan","Rekam Medik","Terapi Wicara","Terapi Okupasi","Fisika","Biologi","Radiologi","Farmasi","Apoteker"]
-                },
-                config: {
-                    targetSheet: "GEL6",
-                    scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
-                },
-                formData: { tipe: 'Perorangan', bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
-                kelompok: [],
-                resetKelompok() { this.kelompok = []; },
-                removeMhs(i) { this.kelompok.splice(i, 1); },
-                handlePhoto(e, target) {
-    const file = e.target.files[0];
-    const MAX_PHOTO_SIZE = 400 * 1024; // 400KB dalam bytes
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+   <script>
+    function app() {
+        return {
+            view: 'menu', 
+            loading: false, 
+            isEdit: false, // Tambahan untuk penanda status edit
+            progressText: '', 
+            photoPreview: null,
+            options: {
+                kota: ["Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"],
+                universitas: ["ATRO Persada Nusantara Bekasi","Institut Teknologi Bandung (ITB)","Politeknik PIKSI Ganesha","Politkenik Al Islam Bandung","Universitas Indonesia (UI)","Sekolah Tinggi Farmasi Indonesia (STFI)","Universitas Muhammadiyah Bandung (UMB)","Universitas Wahid Hasyim Semarang (UNWAHAS)","UIN Sunan Gunung Djati Bandung","Poltekkes Semarang","Poltekkes Tasikmalaya","SMKN 7 Bandung","SMK Nusa Bhakti Bandung","Universitas Diponegoro (UNDIP)","Universitas Islam Bandung (UNISBA)","Universitas Maranatha","Universitas Sriwijaya","Universitas Telkom","Stikes Karsa Husada Garut","Universitas Logistik dan Bisnis Internasional (ULBI)","Universitas Bandung","Stikep PPNI Jabar","Stikes Budi Luhur","Stikes RS Dustira","Stikes Dharma Husada Bandung (DHB)","Inkes Rajawali","Inkes Immanuel","Inkes Pelamonia Makasar","Poltekkes Palu","Poltekkes Bandung","Politeknik Cendrawasih Palu","Universitas Padjajaran (UNPAD)","Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam","UNISA Bandung","Universitas Bhakti Kencana (UBK)","Universitas Pendidikan Indonesia (UPI)","Unversitas Jendral Ahmad Yani (UNJANI)","Universitas Borromeus","Universitas Muhammadiyah Ahmad Dahlan (UM-AD) Palembang","Universitas Dehasen (UNIVED) Bengkulu","STIKES Marendeng Majene"],
+                jurusan: ["Keperawatan Regular","Keperawatan Non-Regular","Keperawatan RPL","Profesi Ners","Profesi Ners Non-Regular","Kebidanan Regular","Kebidanan Non-regular","Kebidanan RPL","Profesi Bidan Regular","Profesi Bidan Non-Regular","Kedokteran","Kedokteran / PSPD","PPDS Anak","PPDS Anaestesi","PPDS Bedah","PPDS Obgyn","PPDS KFR","PPDS THT-KL","PPDS Neurologi","PPDS IPD","Kedokteran Gigi","Anestesi Regular","Anestesi RPL","Laboratorium Medis","Gizi","Psikologi","Fisioterapi","Analis Kesehatan","Rekam Medik","Terapi Wicara","Terapi Okupasi","Fisika","Biologi","Radiologi","Farmasi","Apoteker"]
+            },
+            config: {
+                targetSheet: "GEL6",
+                scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
+            },
+            formData: { tipe: 'Perorangan', bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
+            kelompok: [],
 
-    if (file) {
-        // Validasi Tipe File
-        if (!allowedTypes.includes(file.type)) {
-            alert("Format foto harus JPG, JPEG, atau PNG!");
-            e.target.value = "";
-            return;
-        }
+            // FUNGSI INIT: Berjalan otomatis saat halaman dibuka
+            init() {
+                const params = new URLSearchParams(window.location.search);
+                const nimToEdit = params.get('nim');
+                const action = params.get('action');
 
-        // Validasi Ukuran File
-        if (file.size > MAX_PHOTO_SIZE) {
-            alert("Ukuran foto terlalu besar! Maksimal adalah 100KB. Silakan kompres foto Anda terlebih dahulu.");
-            e.target.value = ""; // Reset input
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (f) => { 
-            this.photoPreview = f.target.result; 
-            target.pasFotoData = f.target.result.split(',')[1]; 
-        };
-        reader.readAsDataURL(file);
-    }
-},
-                handleFile(e, target) {
-    const files = Array.from(e.target.files);
-    const MAX_SIZE = 4 * 1024 * 1024; // 4MB dalam bytes
-    
-    target.dokumenList = []; // Reset list
-    
-    files.forEach(file => {
-        // Cek apakah file adalah PDF
-        if (file.type !== "application/pdf") {
-            alert(`File "${file.name}" bukan PDF!`);
-            return;
-        }
-
-        // Cek ukuran file
-        if (file.size > MAX_SIZE) {
-            alert(`File "${file.name}" terlalu besar! Maksimal adalah 3MB.`);
-            // Reset input file secara fisik agar tidak terkirim
-            e.target.value = ""; 
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (f) => { 
-            target.dokumenList.push({ 
-                name: file.name, 
-                base64: f.target.result.split(',')[1] 
-            }); 
-        };
-        reader.readAsDataURL(file);
-    });
-},
-                validateAge() {
-                    const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
-                    if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
-                },
-                validateDates() {
-                    if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) { alert("Tanggal tidak valid!"); this.formData.endDate = ''; }
-                },
-                async handleSubmit() {
-                    if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { alert("Tambahkan minimal 1 anggota!"); return; }
+                if (action === 'edit' && nimToEdit) {
                     this.loading = true;
-                    try {
-                        if (this.formData.tipe === 'Perorangan') {
-                            this.progressText = "Mengirim data...";
-                            await this.sendToAppsScript(this.formData);
-                        } else {
-                            for (let [i, mhs] of this.kelompok.entries()) {
-                                this.progressText = `Mengirim Anggota ${i+1}/${this.kelompok.length}...`;
-                                await this.sendToAppsScript({ ...this.formData, ...mhs });
+                    this.progressText = "Mengambil data peserta...";
+                    this.view = 'form'; // Langsung buka view form
+                    
+                    fetch(`${this.config.scriptUrl}?action=read&t=${new Date().getTime()}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const item = data.find(i => i.nim.toString() === nimToEdit.toString());
+                            if (item) {
+                                // Auto-fill form dengan data dari spreadsheet
+                                this.formData.nama = item.nama;
+                                this.formData.nim = item.nim;
+                                this.formData.namaInstitusi = item.namaInstitusi;
+                                this.formData.jurusan = item.jurusan;
+                                this.formData.startDate = item.startDate;
+                                this.formData.endDate = item.endDate;
+                                this.isEdit = true; // Tandai sedang mode edit
+                            } else {
+                                alert("Data tidak ditemukan!");
+                                this.view = 'menu';
                             }
-                        }
-                        alert("Berhasil Terkirim!"); window.location.reload();
-                    } catch (e) { alert("Error: " + e); this.loading = false; }
-                },
-                async sendToAppsScript(payload) {
-                    const body = new FormData();
-                    body.append("targetSheet", this.config.targetSheet);
-                    for (let key in payload) {
-                        if (key === 'dokumenList') body.append(key, JSON.stringify(payload[key]));
-                        else if (payload[key]) body.append(key, payload[key]);
-                    }
-                    return fetch(this.config.scriptUrl, { method: 'POST', body: body, mode: 'no-cors' });
+                            this.loading = false;
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            this.loading = false;
+                            this.view = 'menu';
+                        });
                 }
+            },
+
+            resetKelompok() { this.kelompok = []; },
+            removeMhs(i) { this.kelompok.splice(i, 1); },
+            handlePhoto(e, target) {
+                const file = e.target.files[0];
+                const MAX_PHOTO_SIZE = 400 * 1024;
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (file) {
+                    if (!allowedTypes.includes(file.type)) {
+                        alert("Format foto harus JPG, JPEG, atau PNG!");
+                        e.target.value = "";
+                        return;
+                    }
+                    if (file.size > MAX_PHOTO_SIZE) {
+                        alert("Ukuran foto terlalu besar! Maksimal adalah 400KB.");
+                        e.target.value = "";
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (f) => { 
+                        this.photoPreview = f.target.result; 
+                        target.pasFotoData = f.target.result.split(',')[1]; 
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+            handleFile(e, target) {
+                const files = Array.from(e.target.files);
+                const MAX_SIZE = 4 * 1024 * 1024; 
+                target.dokumenList = [];
+                files.forEach(file => {
+                    if (file.type !== "application/pdf") {
+                        alert(`File "${file.name}" bukan PDF!`);
+                        return;
+                    }
+                    if (file.size > MAX_SIZE) {
+                        alert(`File "${file.name}" terlalu besar! Maksimal 4MB.`);
+                        e.target.value = ""; 
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (f) => { 
+                        target.dokumenList.push({ 
+                            name: file.name, 
+                            base64: f.target.result.split(',')[1] 
+                        }); 
+                    };
+                    reader.readAsDataURL(file);
+                });
+            },
+            validateAge() {
+                const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
+                if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
+            },
+            validateDates() {
+                if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) { alert("Tanggal tidak valid!"); this.formData.endDate = ''; }
+            },
+            async handleSubmit() {
+                if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { alert("Tambahkan minimal 1 anggota!"); return; }
+                this.loading = true;
+                try {
+                    if (this.formData.tipe === 'Perorangan') {
+                        this.progressText = this.isEdit ? "Memperbarui data..." : "Mengirim data...";
+                        await this.sendToAppsScript(this.formData);
+                    } else {
+                        for (let [i, mhs] of this.kelompok.entries()) {
+                            this.progressText = `Mengirim Anggota ${i+1}/${this.kelompok.length}...`;
+                            await this.sendToAppsScript({ ...this.formData, ...mhs });
+                        }
+                    }
+                    alert(this.isEdit ? "Data Berhasil Diperbarui!" : "Berhasil Terkirim!"); 
+                    window.location.href = 'index.html'; // Refresh ke menu utama
+                } catch (e) { alert("Error: " + e); this.loading = false; }
+            },
+            async sendToAppsScript(payload) {
+                const body = new FormData();
+                body.append("targetSheet", this.config.targetSheet);
+                
+                // Jika sedang mode edit, kirimkan penanda action ke server
+                if (this.isEdit) body.append("action", "edit");
+
+                for (let key in payload) {
+                    if (key === 'dokumenList') body.append(key, JSON.stringify(payload[key]));
+                    else if (payload[key]) body.append(key, payload[key]);
+                }
+                return fetch(this.config.scriptUrl, { method: 'POST', body: body, mode: 'no-cors' });
             }
         }
-    </script>
+    }
+</script>
 </body>
 </html>

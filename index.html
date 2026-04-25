@@ -310,7 +310,7 @@
                     console.log("Data ditemukan:", item);
                     // Isi form secara otomatis dengan data dari server
                     this.formData = { ...this.formData, ...item };
-                    
+                    if (item.pasFotoPreview) this.photoPreview = item.pasFotoPreview;
                     // Khusus untuk tanggal, pastikan formatnya YYYY-MM-DD agar muncul di input date
                     if (item.tanggalLahir) this.formData.tanggalLahir = this.formatDateForInput(item.tanggalLahir);
                     if (item.startDate) this.formData.startDate = this.formatDateForInput(item.startDate);

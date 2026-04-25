@@ -94,6 +94,10 @@
                                     <span x-text="formatDate(item.startDate)"></span> - <span x-text="formatDate(item.endDate)"></span>
                                 </td>
                                 <td class="p-4 text-center">
+                                    <button @click="window.open('index.html?p=index&action=edit&nim=' + item.nim, '_top')" 
+                                    class="text-blue-500 hover:text-blue-700 font-bold text-xs p-2">
+                                        Edit
+                                    </button>
                                     <button @click="hapusData(item.nim, item.nama)" class="text-red-500 hover:text-red-700 font-bold text-xs p-2">
                                         Hapus
                                     </button>

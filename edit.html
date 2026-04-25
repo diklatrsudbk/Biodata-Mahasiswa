@@ -122,19 +122,20 @@
                 },
 
                 initData() {
-                    this.loading = true;
-                    // Jembatan langsung ke Code.gs
-                    google.script.run
-                        .withSuccessHandler((res) => {
-                            this.allData = res || [];
-                            this.loading = false;
-                        })
-                        .withFailureHandler((err) => {
-                            alert("Gagal mengambil data: " + err);
-                            this.loading = false;
-                        })
-                        .getAllData(this.config.targetSheet);
-                },
+    this.loading = true;
+    const url = this.config.scriptUrl + "?action=read";
+
+    fetch(url)
+        .then(response => response.json())
+        .then(res => {
+            this.allData = res || [];
+            this.loading = false;
+        })
+        .catch(err => {
+            console.error("Gagal load:", err);
+            this.loading = false;
+        });
+},
 
                 // Logika Filter
                 get filteredData() {
@@ -161,23 +162,27 @@
                 },
 
                async hapusData(nim, nama) {
-    if (confirm(`Hapus data ${nama} (NIM: ${nim})?`)) {
+    if (confirm(`Hapus data ${nama}?`)) {
         this.loading = true;
-        google.script.run
-            .withSuccessHandler((res) => {
-                this.loading = false;
-                if (res) {
-                    alert("Data berhasil dihapus!");
-                    this.initData(); // Refresh data setelah hapus
-                } else {
-                    alert("Data tidak ditemukan atau gagal dihapus.");
-                }
-            })
-            .withFailureHandler((err) => {
-                this.loading = false;
-                alert("Error: " + err);
-            })
-            .deletePeserta(this.config.targetSheet, nim);
+        
+        // Menggunakan metode POST ke web app untuk hapus
+        const formData = new FormData();
+        formData.append("action", "delete");
+        formData.append("targetSheet", this.config.targetSheet);
+        formData.append("nim", nim);
+
+        fetch(this.config.scriptUrl, {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === "deleted") {
+                alert("Data berhasil dihapus!");
+                this.initData(); // Refresh data
+            }
+        })
+        .catch(err => alert("Gagal hapus: " + err));
     }
 }
             }

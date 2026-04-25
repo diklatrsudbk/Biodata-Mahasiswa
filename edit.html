@@ -160,19 +160,26 @@
                     return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
                 },
 
-                async hapusData(nim, nama) {
-                    if (confirm(`Hapus data ${nama} (NIM: ${nim})?`)) {
-                        this.loading = true;
-                        
-                        // Memanggil fungsi hapus di Code.gs
-                        google.script.run
-                            .withSuccessHandler(() => {
-                                alert("Data berhasil dihapus!");
-                                this.initData(); // Refresh tabel
-                            })
-                            .deletePeserta(this.config.targetSheet, nim);
-                    }
+               async hapusData(nim, nama) {
+    if (confirm(`Hapus data ${nama} (NIM: ${nim})?`)) {
+        this.loading = true;
+        google.script.run
+            .withSuccessHandler((res) => {
+                this.loading = false;
+                if (res) {
+                    alert("Data berhasil dihapus!");
+                    this.initData(); // Refresh data setelah hapus
+                } else {
+                    alert("Data tidak ditemukan atau gagal dihapus.");
                 }
+            })
+            .withFailureHandler((err) => {
+                this.loading = false;
+                alert("Error: " + err);
+            })
+            .deletePeserta(this.config.targetSheet, nim);
+    }
+}
             }
         }
     </script>

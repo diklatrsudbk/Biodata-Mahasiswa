@@ -125,16 +125,27 @@
     this.loading = true;
     const url = this.config.scriptUrl + "?action=read";
 
-    fetch(url)
-        .then(response => response.json())
-        .then(res => {
-            this.allData = res || [];
-            this.loading = false;
-        })
-        .catch(err => {
-            console.error("Gagal load:", err);
-            this.loading = false;
-        });
+    fetch(url, {
+        method: 'GET',
+        mode: 'cors', // Menandakan permintaan lintas domain
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(res => {
+        this.allData = res || [];
+        this.loading = false;
+    })
+    .catch(err => {
+        console.error("Gagal load:", err);
+        this.loading = false;
+        // Jika masih error, tampilkan di UI agar tahu sebabnya
+        alert("Error CORS/Koneksi: Pastikan Deployment sudah 'Anyone'");
+    });
 },
 
                 // Logika Filter

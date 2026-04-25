@@ -125,27 +125,29 @@
     this.loading = true;
     const url = this.config.scriptUrl + "?action=read";
 
-    fetch(url, {
-        method: 'GET',
-        mode: 'cors', // Menandakan permintaan lintas domain
-        headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-        }
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-    })
-    .then(res => {
-        this.allData = res || [];
-        this.loading = false;
-    })
-    .catch(err => {
-        console.error("Gagal load:", err);
-        this.loading = false;
-        // Jika masih error, tampilkan di UI agar tahu sebabnya
-        alert("Error CORS/Koneksi: Pastikan Deployment sudah 'Anyone'");
-    });
+    initData() {
+    this.loading = true;
+    // Tambahkan timestamp agar browser tidak mengambil data lama dari cache
+    const url = this.config.scriptUrl + "?action=read&t=" + new Date().getTime();
+
+    fetch(url)
+        .then(response => {
+            // Google Apps Script akan mengembalikan redirect (302)
+            // fetch secara default akan mengikuti redirect tersebut
+            if (!response.ok) throw new Error('Respons jaringan tidak oke');
+            return response.json();
+        })
+        .then(res => {
+            console.log("Data berhasil diterima:", res);
+            this.allData = res || [];
+            this.loading = false;
+        })
+        .catch(err => {
+            console.error("Gagal load:", err);
+            this.loading = false;
+            // Jika masuk ke sini, kemungkinan besar URL salah atau belum di-deploy ulang
+            alert("Koneksi gagal. Pastikan URL Script benar dan sudah di-Deploy sebagai 'Anyone'.");
+        });
 },
 
                 // Logika Filter

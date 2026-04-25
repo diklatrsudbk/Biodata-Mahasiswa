@@ -289,41 +289,55 @@
 
             // FUNGSI INIT: Berjalan otomatis saat halaman dibuka
             init() {
-                const params = new URLSearchParams(window.location.search);
-                const nimToEdit = params.get('nim');
-                const action = params.get('action');
+    const params = new URLSearchParams(window.location.search);
+    const nimToEdit = params.get('nim');
+    const action = params.get('action');
 
-                if (action === 'edit' && nimToEdit) {
-                    this.loading = true;
-                    this.progressText = "Mengambil data peserta...";
-                    this.view = 'form'; // Langsung buka view form
+    if (action === 'edit' && nimToEdit) {
+        this.loading = true;
+        this.progressText = "Sedang memuat data peserta...";
+        this.view = 'form'; // Paksa pindah ke tampilan form
+
+        fetch(`${this.config.scriptUrl}?action=read`)
+            .then(res => res.json())
+            .then(data => {
+                console.log("Data diterima dari server:", data); // Untuk debug
+                
+                // Cari data yang NIM-nya cocok (pakai == agar aman antara string/number)
+                const item = data.find(i => i.nim == nimToEdit);
+
+                if (item) {
+                    console.log("Data ditemukan:", item);
+                    // Isi form secara otomatis dengan data dari server
+                    this.formData = { ...this.formData, ...item };
                     
-                    fetch(`${this.config.scriptUrl}?action=read&t=${new Date().getTime()}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            const item = data.find(i => i.nim.toString() === nimToEdit.toString());
-                            if (item) {
-                                // Auto-fill form dengan data dari spreadsheet
-                                this.formData.nama = item.nama;
-                                this.formData.nim = item.nim;
-                                this.formData.namaInstitusi = item.namaInstitusi;
-                                this.formData.jurusan = item.jurusan;
-                                this.formData.startDate = item.startDate;
-                                this.formData.endDate = item.endDate;
-                                this.isEdit = true; // Tandai sedang mode edit
-                            } else {
-                                alert("Data tidak ditemukan!");
-                                this.view = 'menu';
-                            }
-                            this.loading = false;
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            this.loading = false;
-                            this.view = 'menu';
-                        });
+                    // Khusus untuk tanggal, pastikan formatnya YYYY-MM-DD agar muncul di input date
+                    if (item.tanggalLahir) this.formData.tanggalLahir = this.formatDateForInput(item.tanggalLahir);
+                    if (item.startDate) this.formData.startDate = this.formatDateForInput(item.startDate);
+                    if (item.endDate) this.formData.endDate = this.formatDateForInput(item.endDate);
+                    
+                    this.isEdit = true;
+                } else {
+                    alert("Maaf, data dengan NIM tersebut tidak ditemukan di database.");
+                    this.view = 'menu';
                 }
-            },
+                this.loading = false;
+            })
+            .catch(err => {
+                console.error("Gagal mengambil data:", err);
+                alert("Gagal mengambil data dari server.");
+                this.loading = false;
+                this.view = 'menu';
+            });
+    }
+},
+
+// Tambahkan fungsi pembantu ini di bawah init() atau di dalam return app()
+formatDateForInput(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toISOString().split('T')[0];
+},
 
             resetKelompok() { this.kelompok = []; },
             removeMhs(i) { this.kelompok.splice(i, 1); },

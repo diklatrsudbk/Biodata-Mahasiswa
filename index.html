@@ -151,14 +151,8 @@
                             
                             <div class="md:col-span-2"><label class="label-text">Tanggal Mulai</label><input type="date" x-model="formData.startDate" class="input-field" required></div>
                             <div class="md:col-span-2"><label class="label-text">Tanggal Selesai</label><input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required></div>
-                                <div class="md:col-span-2" x-show="formData.allowGroup" x-cloak>
-    <label class="label-text">Tipe Pendaftaran</label>
-    <select x-model="formData.tipe" class="input-field" @change="resetKelompok">
-        <option value="Perorangan">Perorangan</option>
-        <option value="Kelompok">Kelompok</option>
-    </select>
-</div>
-                            <div class="md:col-span-2"><label class="label-text">Tipe Pendaftaran</label>
+                                
+                            <div class="md:col-span-2" hidden><label class="label-text">Tipe Pendaftaran</label>
                                 <select x-model="formData.tipe" class="input-field" @change="resetKelompok"><option value="Perorangan">Perorangan</option><option value="Kelompok">Kelompok</option></select>
                             </div>
                         </div>

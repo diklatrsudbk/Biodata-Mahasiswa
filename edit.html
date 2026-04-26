@@ -182,23 +182,34 @@
     if (confirm(`Hapus data ${nama} (NIM: ${nim})?`)) {
         this.loading = true;
         
-        // Kita masukkan action dan nim langsung ke URL (Query String)
-        // Ini jauh lebih stabil untuk Google Apps Script
-        const url = `${this.config.scriptUrl}?action=delete&nim=${nim}&targetSheet=${this.config.targetSheet}`;
+        const finalPayload = { 
+            action: "delete",
+            nim: nim,
+            targetSheet: this.config.targetSheet
+        };
 
-        fetch(url, {
-            method: "POST",
-            mode: "no-cors" // Tetap pakai no-cors tidak masalah jika lewat URL
-        })
-        .then(() => {
-            alert("Permintaan hapus berhasil dikirim.");
-            // Tunggu 1 detik sebelum refresh agar Google punya waktu proses
-            setTimeout(() => { this.initData(); }, 1500);
-        })
-        .catch(err => {
-            alert("Gagal: " + err);
+        try {
+            const response = await fetch(this.config.scriptUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(finalPayload),
+                redirect: 'follow' 
+            });
+
+            const result = await response.json();
+            
+            if (result.status === "deleted") {
+                alert("Data dan folder berhasil dihapus.");
+                this.initData(); // Refresh tabel
+            } else {
+                alert("Gagal menghapus: " + (result.message || "Data tidak ditemukan"));
+                this.loading = false;
+            }
+        } catch (err) {
+            console.error("Error hapus:", err);
+            alert("Terjadi kesalahan koneksi saat menghapus.");
             this.loading = false;
-        });
+        }
     }
 }
     }

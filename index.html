@@ -414,11 +414,12 @@
         action: this.isEdit ? "edit" : "insert"
     };
 
-    // MENGHAPUS mode: 'no-cors' agar error terlihat jelas
     const response = await fetch(this.config.scriptUrl, {
         method: 'POST',
         body: JSON.stringify(finalPayload),
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
+        // Gunakan text/plain agar tidak memicu 'preflight' CORS yang sering bikin gagal
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        redirect: 'follow' // WAJIB ada agar bisa membaca respon setelah redirect Google
     });
 
     const result = await response.json();
@@ -427,8 +428,6 @@
     }
     return result;
 }
-        }
-    }
     </script>
 </body>
 </html>

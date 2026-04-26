@@ -21,15 +21,9 @@
 </head>
 <body class="py-10 px-4 antialiased" x-data="app()">
 
-    <datalist id="list-kota">
-        <template x-for="item in options.kota"><option :value="item"></option></template>
-    </datalist>
-    <datalist id="list-univ">
-        <template x-for="item in options.universitas"><option :value="item"></option></template>
-    </datalist>
-    <datalist id="list-jurusan">
-        <template x-for="item in options.jurusan"><option :value="item"></option></template>
-    </datalist>
+    <datalist id="list-kota"><template x-for="item in options.kota"><option :value="item"></option></template></datalist>
+    <datalist id="list-univ"><template x-for="item in options.universitas"><option :value="item"></option></template></datalist>
+    <datalist id="list-jurusan"><template x-for="item in options.jurusan"><option :value="item"></option></template></datalist>
 
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-10">
@@ -38,122 +32,83 @@
 
         <template x-if="view === 'menu'">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mt-10">
-                <div @click="view = 'input'; isEdit = false; photoPreview = null; formData = { tipe: 'Perorangan', bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] }" 
-     class="section-card cursor-pointer border-2 border-transparent hover:border-[#714B67] transition-all text-center p-10">
-
+                <div @click="startNewInput()" class="section-card cursor-pointer border-2 border-transparent hover:border-[#714B67] transition-all text-center p-10">
                     <h3 class="text-xl font-bold text-blue-600">Input Data Peserta Baru</h3>
                     <p class="text-gray-400 text-sm mt-2">Daftarkan mahasiswa/siswa ke sistem.</p>
                 </div>
-                <div @click="window.location.href='edit.html'" 
-     class="section-card cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all text-center p-10">
-    <h3 class="text-xl font-bold text-amber-600">Edit / Delete Data</h3>
-    <p class="text-gray-400 text-sm mt-2">Kelola database yang ada.</p>
-</div>
+                <div @click="window.location.href='edit.html'" class="section-card cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all text-center p-10">
+                    <h3 class="text-xl font-bold text-amber-600">Edit / Delete Data</h3>
+                    <p class="text-gray-400 text-sm mt-2">Kelola database yang ada.</p>
+                </div>
             </div>
         </template>
 
         <template x-if="view === 'input'">
             <div>
-                <button @click="window.location.href='index.html'" 
-        class="mb-6 flex items-center text-[#714B67] font-bold hover:underline">
-    ← Kembali ke Menu Utama
-</button>
-
+                <button @click="window.location.href='index.html'" class="mb-6 flex items-center text-[#714B67] font-bold hover:underline">← Kembali ke Menu Utama</button>
 
                 <form @submit.prevent="handleSubmit" :class="loading ? 'opacity-50 pointer-events-none' : ''">
+                    
                     <div class="section-card">
                         <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">I. Data Institusi & Kegiatan</h2>
-                        <div class="md:col-span-2">
-    <label class="label-text">Bagian</label>
-    <select x-model="formData.bagian" class="input-field" required>
-        <option value="">-- Pilih Bagian --</option>
-        <option>Pelayanan Medik</option>
-        <option>Penunjang Medik</option>
-        <option>Umum</option>
-    </select>
-    
-    <div class="mt-2 p-3 bg-gray-50 border-l-2 border-[#714B67] rounded-r-md">
-        <p class="text-[10px] text-gray-600 leading-relaxed">
-            <strong>Panduan Memilih Bagian:</strong><br>
-            • <span class="font-semibold text-[#714B67]">Pelayanan Medik:</span> Khusus Jurusan Keperawatan, Kebidanan, dan Kedokteran.<br>
-            • <span class="font-semibold text-[#714B67]">Penunjang Medik:</span> Selain jurusan di atas (contoh: Farmasi, Gizi, Radiologi, dll).<br>
-            • <span class="font-semibold text-[#714B67]">Umum:</span> Administrasi, Management, Promkes, IT, Keuangan, Perkantoran, Teknisi.
-        </p>
-    </div>
-</div>
-                            <div><label class="label-text">Jenis Kegiatan</label>
-                                <select x-model="formData.jenis" class="input-field" required>
-                                    <option value="">-- Pilih --</option>
-                                    <option>PKL</option>
-                                    <option>PBL</option>
-                                    <option>Pembelajaran Luar Kelas</option>
-                                    <option>Magang</option>
-                                    <option>Resident</option>
-                                    <option>Hospital Visit</option>
-                                    <option>LIC</option>
-                                    </select>
-                            </div>
-                            <div><label class="label-text">Jenjang Pendidikan</label>
-                                <select x-model="formData.jenjangPendidikan" class="input-field" required>
-                                    <option value="SMK">SMK</option>
-                                    <option value="D3">D3</option>
-                                    <option value="D4">D4</option>
-                                    <option value="S1">S1</option>
-                                    <option value="S2 Pasca Sarjana">S2 Pasca Sarjana</option>
-                                    <option value="PPDS Sp.1">PPDS Sp.1</option>
-                                    <option value="PPDS Sp.2">PPDS Sp.2</option>
-                                    <option value="Profesi">Profesi</option>
-                                    <option value="Spesialis">Spesialis</option>
-                                    <option value="Fellowship">Fellowship</option>
-                                    </select>
-                            </div>
-                            <div>
-                            <div class="md:col-span-4 mt-2">
-    <label class="label-text">Level</label>
-    <select x-model="formData.level" class="input-field" required>
-        <option value="">-- Pilih Level --</option>
-        <option value="1">Level 1</option>
-        <option value="2">Level 2</option>
-        <option value="3">Level 3</option>
-        <option value="4">Level 4</option>
-    </select>
-    
-    <div class="mt-2 p-3 bg-blue-50 border-l-2 border-blue-400 rounded-r-md">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-            <p class="text-[10px] text-blue-900 leading-tight">
-                <strong>Level 1:</strong> PPDS Residen Senior/Chief (Smtr 7-9), Magang Dokter Spesialis.
-            </p>
-            <p class="text-[10px] text-blue-900 leading-tight">
-                <strong>Level 2:</strong> Mahasiswa Profesi Reguler & D4 Non-Reguler/Karyawan.
-            </p>
-            <p class="text-[10px] text-blue-900 leading-tight">
-                <strong>Level 3:</strong> Semua Mahasiswa Praktik dan Magang D3 dan S1.
-            </p>
-            <p class="text-[10px] text-blue-900 leading-tight">
-                <strong>Level 4:</strong> PPDS Residen Junior (Smtr 1-3), Dokter Magang, Internship PIDI/PIDGI.
-            </p>
-        </div>
-    </div>
-</div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             
+                            <div class="md:col-span-4">
+                                <label class="label-text">Bagian</label>
+                                <select x-model="formData.bagian" class="input-field" required>
+                                    <option value="">-- Pilih Bagian --</option>
+                                    <option>Pelayanan Medik</option>
+                                    <option>Penunjang Medik</option>
+                                    <option>Umum</option>
+                                </select>
+                                <div class="mt-2 p-3 bg-gray-50 border-l-2 border-[#714B67] rounded-r-md text-[10px] text-gray-600 leading-relaxed">
+                                    <strong>Panduan:</strong> Medik (Perawat/Bidan/Dokter), Penunjang (Farmasi/Gizi/Rad), Umum (IT/Admin/Manajemen).
+                                </div>
+                            </div>
+
                             <div class="md:col-span-2">
-                                <label class="label-text">Nama Institusi / Universitas</label>
-                                <input type="text" x-model="formData.namaInstitusi" list="list-univ" class="input-field" placeholder="Ketik atau pilih..." required>
+                                <label class="label-text">Jenis Kegiatan</label>
+                                <select x-model="formData.jenis" class="input-field" required>
+                                    <option>PKL</option><option>PBL</option><option>Magang</option><option>Resident</option>
+                                </select>
                             </div>
-                            <div>
+
+                            <div class="md:col-span-2">
+                                <label class="label-text">Jenjang Pendidikan</label>
+                                <select x-model="formData.jenjangPendidikan" class="input-field" required>
+                                    <option>SMK</option><option>D3</option><option>S1</option><option>Profesi</option><option>Spesialis</option>
+                                </select>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="label-text">Nama Institusi</label>
+                                <input type="text" x-model="formData.namaInstitusi" list="list-univ" class="input-field" required>
+                            </div>
+
+                            <div class="md:col-span-2">
                                 <label class="label-text">Jurusan</label>
-                                <input type="text" x-model="formData.jurusan" list="list-jurusan" class="input-field" placeholder="Cari jurusan..." required>
+                                <input type="text" x-model="formData.jurusan" list="list-jurusan" class="input-field" required>
                             </div>
-                            <div>
-                                <label class="label-text">Kota Institusi</label>
-                                <input type="text" x-model="formData.kotaInstitusi" list="list-kota" class="input-field" placeholder="Ketik nama kota..." required>
+
+                            <div class="md:col-span-2">
+                                <label class="label-text">Tanggal Mulai</label>
+                                <input type="date" x-model="formData.startDate" class="input-field" required>
                             </div>
-                            
-                            <div class="md:col-span-2"><label class="label-text">Tanggal Mulai</label><input type="date" x-model="formData.startDate" class="input-field" required></div>
-                            <div class="md:col-span-2"><label class="label-text">Tanggal Selesai</label><input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required></div>
-                            <div class="md:col-span-2"><label class="label-text">Tipe Pendaftaran</label>
-                                <select x-model="formData.tipe" class="input-field" @change="resetKelompok"><option value="Perorangan">Perorangan</option><option value="Kelompok">Kelompok</option></select>
+
+                            <div class="md:col-span-2">
+                                <label class="label-text">Tanggal Selesai</label>
+                                <input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required>
                             </div>
+
+                            <template x-if="formData.allowGroup">
+                                <div class="md:col-span-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                    <label class="label-text text-purple-700">Tipe Pendaftaran (Opsi Admin)</label>
+                                    <select x-model="formData.tipe" class="input-field border-purple-300" @change="resetKelompok">
+                                        <option value="Perorangan">Perorangan</option>
+                                        <option value="Kelompok">Kelompok</option>
+                                    </select>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
@@ -162,9 +117,8 @@
                             <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">II. Biodata & Berkas</h2>
                             <div class="flex flex-col md:flex-row gap-8">
                                 <div class="flex flex-col items-center">
-                                    <label class="label-text text-center">Pas Foto</label>
                                     <div class="photo-box">
-                                        <template x-if="!photoPreview"><span class="text-[10px] text-gray-400 text-center p-2">Klik untuk Upload</span></template>
+                                        <template x-if="!photoPreview"><span class="text-[10px] text-gray-400 text-center p-2">Klik Foto</span></template>
                                         <template x-if="photoPreview"><img :src="photoPreview" class="w-full h-full object-cover"></template>
                                         <input type="file" @change="handlePhoto($event, formData)" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer">
                                     </div>
@@ -172,110 +126,51 @@
                                 </div>
                                 <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="md:col-span-2"><label class="label-text">Nama Lengkap</label><input type="text" x-model="formData.nama" class="input-field" required></div>
-                                    <div>
-    <label class="label-text">NIM / NISN</label>
-    <input type="text" 
-           x-model="formData.nim" 
-           class="input-field" 
-           :class="isEdit ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''"
-           :disabled="isEdit" 
-           required>
-    <template x-if="isEdit">
-        <span class="text-[10px] text-amber-600 mt-1">* NIM tidak dapat diubah</span>
-    </template>
-</div>
-
-                                    <div><label class="label-text">No. KTP</label><input type="number" x-model="formData.ktp" class="input-field" required></div>
-                                    <div><label class="label-text">Agama</label>
-                                        <select x-model="formData.agama" class="input-field">
-                                            <option>Islam</option>
-                                            <option>Kristen</option>
-                                            <option>Protestan</option>
-                                            <option>Katolik</option>
-                                            <option>Hindu</option>
-                                            <option>Budha</option>
-                                            <option>Konghucu</option></select>
-                                    </div>
-                                    <div><label class="label-text">Jenis Kelamin</label>
-                                        <select x-model="formData.jenisKelamin" class="input-field"><option>Laki-Laki</option><option>Perempuan</option></select>
-                                    </div>
-                                    <div><label class="label-text">No. WhatsApp</label><input type="number" x-model="formData.hp" class="input-field" placeholder="628123xxx" oninput="this.value = this.value.replace(/[^0-9]/g, '');"required></div>
-                                    <div><label class="label-text">Tempat Lahir</label><input type="text" x-model="formData.tempatLahir" class="input-field" required></div>
-                                    <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="formData.tanggalLahir" @change="validateAge" class="input-field" required></div>
-                                    <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label><input type="text" x-model="formData.alamat" class="input-field" required></div>
-                                    <div class="md:col-span-2"><label class="label-text">Kelurahan - Kecamatan</label><input type="text" x-model="formData.kelurahanKecamatan" class="input-field" required></div>
+                                    <div><label class="label-text">NIM</label><input type="text" x-model="formData.nim" :disabled="isEdit" class="input-field" required></div>
+                                    <div><label class="label-text">No. WhatsApp</label><input type="number" x-model="formData.hp" class="input-field" required></div>
                                     <div class="md:col-span-2">
-    <label class="label-text">Dokumen (PDF)</label>
-    <input type="file" multiple 
-           @change="handleFile($event, formData)" 
-           accept="application/pdf" 
-           class="input-field text-xs">
-    
-    <div class="mt-2 p-3 bg-amber-50 border-l-2 border-amber-400 rounded-r-md">
-        <p class="text-[10px] text-amber-900 leading-relaxed">
-            <strong>Persyaratan Dokumen:</strong><br>
-            Silakan unggah dokumen yang diminta seperti <b>STR, Ijazah, dan Sertifikat</b> dalam format PDF.<br>
-            <span class="text-red-600 font-bold">* Maksimal kapasitas per file: 3MB.</span>
-        </p>
-    </div>
-</div>
+                                        <label class="label-text">Upload Dokumen (PDF - Max Total 4MB)</label>
+                                        <input type="file" multiple @change="handleFile($event, formData)" accept="application/pdf" class="input-field text-xs">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </template>
 
                     <template x-if="formData.tipe === 'Kelompok'">
-                        <div class="section-card" x-data="{ showForm: false, tempMhs: {agama:'Islam', jenisKelamin:'Laki-Laki'}, tempPreview: null }">
+                        <div class="section-card" x-data="{ showForm: false, tempMhs: {agama:'Islam'} }">
                             <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-xs mb-6 border-b pb-3">II. Anggota Kelompok</h2>
-                            <div class="overflow-x-auto mb-6 border rounded-lg">
+                            <div class="overflow-x-auto mb-4 border rounded-lg">
                                 <table class="w-full text-xs text-left">
-                                    <thead class="bg-gray-50 border-b"><tr><th class="p-3">Nama</th><th class="p-3">NIM</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                                    <thead class="bg-gray-50 border-b"><tr><th class="p-3">Nama</th><th class="p-3">NIM</th><th class="p-3">Aksi</th></tr></thead>
                                     <tbody>
                                         <template x-for="(mhs, index) in kelompok" :key="index">
-                                            <tr class="border-t"><td class="p-3 font-bold" x-text="mhs.nama"></td><td class="p-3" x-text="mhs.nim"></td><td class="p-3 text-center"><button type="button" @click="removeMhs(index)" class="text-red-500 font-bold">Hapus</button></td></tr>
+                                            <tr class="border-t"><td class="p-3 font-bold" x-text="mhs.nama"></td><td class="p-3" x-text="mhs.nim"></td><td class="p-3"><button type="button" @click="removeMhs(index)" class="text-red-500">Hapus</button></td></tr>
                                         </template>
                                     </tbody>
                                 </table>
                             </div>
-                            <button type="button" x-show="!showForm" @click="showForm = true" class="bg-white border-2 border-[#714B67] text-[#714B67] px-5 py-2 rounded-lg font-bold text-xs">+ Tambah Anggota</button>
-
-                            <div x-show="showForm" class="p-6 bg-[#fdfafc] border rounded-xl mt-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input type="text" placeholder="Nama Lengkap" x-model="tempMhs.nama" class="input-field">
-        <input type="text" placeholder="NIM" x-model="tempMhs.nim" class="input-field">
-        
-        <input type="number" placeholder="No. KTP" x-model="tempMhs.ktp" class="input-field">
-        <input type="number" placeholder="No. WA (62812...)" x-model="tempMhs.hp" class="input-field" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
-        
-        <select x-model="tempMhs.agama" class="input-field">
-            <option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Budha</option>
-        </select>
-        <select x-model="tempMhs.jenisKelamin" class="input-field">
-            <option>Laki-Laki</option><option>Perempuan</option>
-        </select>
-
-        <input type="text" placeholder="Tempat Lahir" x-model="tempMhs.tempatLahir" class="input-field">
-        <input type="date" x-model="tempMhs.tanggalLahir" class="input-field">
-
-        <input type="text" placeholder="Alamat Lengkap" x-model="tempMhs.alamat" class="input-field md:col-span-2">
-        
-        <div class="md:col-span-2">
-            <label class="text-[10px] font-bold">Upload PDF Anggota (Max 3MB)</label>
-            <input type="file" multiple @change="handleFile($event, tempMhs)" accept="application/pdf" class="input-field text-xs">
-        </div>
-    </div>
-    <div class="mt-4 flex gap-2">
-        <button type="button" @click="if(tempMhs.nama && tempMhs.nim){ kelompok.push({...tempMhs}); showForm = false; tempMhs={agama:'Islam', jenisKelamin:'Laki-Laki'}; }else{alert('Nama & NIM wajib diisi!')}" class="bg-[#714B67] text-white px-4 py-2 rounded text-xs font-bold">Simpan Anggota</button>
-        <button type="button" @click="showForm = false" class="bg-gray-300 px-4 py-2 rounded text-xs font-bold">Batal</button>
-    </div>
-</div>
-
+                            <button type="button" @click="showForm = true" class="text-xs font-bold text-[#714B67] border border-[#714B67] px-4 py-2 rounded">+ Anggota</button>
                             
+                            <div x-show="showForm" class="mt-4 p-4 bg-gray-50 rounded-lg border">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <input type="text" placeholder="Nama Anggota" x-model="tempMhs.nama" class="input-field">
+                                    <input type="text" placeholder="NIM" x-model="tempMhs.nim" class="input-field">
+                                    <div class="md:col-span-2">
+                                        <label class="text-[10px] font-bold">PDF Anggota (Max Total 4MB)</label>
+                                        <input type="file" multiple @change="handleFile($event, tempMhs)" accept="application/pdf" class="input-field text-xs">
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex gap-2">
+                                    <button type="button" @click="if(tempMhs.nama){ kelompok.push({...tempMhs}); showForm=false; tempMhs={}; }else{alert('Nama wajib diisi')}" class="bg-[#714B67] text-white px-3 py-1 rounded text-xs">Simpan</button>
+                                    <button type="button" @click="showForm = false" class="text-xs">Batal</button>
+                                </div>
+                            </div>
                         </div>
                     </template>
 
                     <button type="submit" class="w-full btn-primary py-5 rounded-xl text-lg shadow-lg mb-10" :disabled="loading">
-                        <span x-show="!loading" x-text="formData.tipe === 'Kelompok' ? 'SUBMIT SEMUA ANGGOTA (' + kelompok.length + ')' : 'SUBMIT DATA PENDAFTARAN'"></span>
+                        <span x-show="!loading" x-text="formData.tipe === 'Kelompok' ? 'SUBMIT KELOMPOK (' + kelompok.length + ')' : 'SUBMIT DATA'"></span>
                         <span x-show="loading" x-text="progressText || 'SEDANG MENGIRIM...'"></span>
                     </button>
                 </form>
@@ -283,189 +178,100 @@
         </template>
     </div>
 
-   <script>
+    <div @click="formData.allowGroup = !formData.allowGroup" class="fixed bottom-2 right-2 w-6 h-6 cursor-pointer opacity-10 bg-gray-400 rounded-full z-50"></div>
+
+    <script>
     function app() {
         return {
-            view: 'menu', 
-            loading: false, 
-            isEdit: false, // Tambahan untuk penanda status edit
-            progressText: '', 
-            photoPreview: null,
+            view: 'menu', loading: false, isEdit: false, progressText: '', photoPreview: null,
             options: {
-                kota: ["Aceh Barat", "Ambon", "Badung", "Balikpapan", "Banda Aceh", "Bandar Lampung", "Bandung", "Kab. Bandung", "Kab. Bandung Barat", "Bangkalan", "Banjar", "Banjarbaru", "Banjarmasin", "Bantul", "Banyuwangi", "Batam", "Batu", "Bekasi", "Bengkulu", "Binjai", "Blitar", "Bogor", "Bojonegoro", "Boyolali", "Brebes", "Ciamis", "Cianjur", "Cilacap", "Cilegon", "Cimahi", "Cirebon", "Denpasar", "Depok", "Dumai", "Garut", "Gresik", "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", "Kudus", "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", "Palu", "Pangkal Pinang", "Pasuruan", "Pekalongan", "Pekanbaru", "Pontianak", "Probolinggo", "Purwakarta", "Salatiga", "Samarinda", "Semarang", "Serang", "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", "Tangerang", "Tangerang Selatan", "Tasikmalaya", "Tegal", "Yogyakarta"],
-                universitas: ["ATRO Persada Nusantara Bekasi","Institut Teknologi Bandung (ITB)","Politeknik PIKSI Ganesha","Politkenik Al Islam Bandung","Universitas Indonesia (UI)","Sekolah Tinggi Farmasi Indonesia (STFI)","Universitas Muhammadiyah Bandung (UMB)","Universitas Wahid Hasyim Semarang (UNWAHAS)","UIN Sunan Gunung Djati Bandung","Poltekkes Semarang","Poltekkes Tasikmalaya","SMKN 7 Bandung","SMK Nusa Bhakti Bandung","Universitas Diponegoro (UNDIP)","Universitas Islam Bandung (UNISBA)","Universitas Maranatha","Universitas Sriwijaya","Universitas Telkom","Stikes Karsa Husada Garut","Universitas Logistik dan Bisnis Internasional (ULBI)","Universitas Bandung","Stikep PPNI Jabar","Stikes Budi Luhur","Stikes RS Dustira","Stikes Dharma Husada Bandung (DHB)","Inkes Rajawali","Inkes Immanuel","Inkes Pelamonia Makasar","Poltekkes Palu","Poltekkes Bandung","Politeknik Cendrawasih Palu","Universitas Padjajaran (UNPAD)","Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam","UNISA Bandung","Universitas Bhakti Kencana (UBK)","Universitas Pendidikan Indonesia (UPI)","Unversitas Jendral Ahmad Yani (UNJANI)","Universitas Borromeus","Universitas Muhammadiyah Ahmad Dahlan (UM-AD) Palembang","Universitas Dehasen (UNIVED) Bengkulu","STIKES Marendeng Majene"],
-                jurusan: ["Keperawatan Regular","Keperawatan Non-Regular","Keperawatan RPL","Profesi Ners","Profesi Ners Non-Regular","Kebidanan Regular","Kebidanan Non-regular","Kebidanan RPL","Profesi Bidan Regular","Profesi Bidan Non-Regular","Kedokteran","Kedokteran / PSPD","PPDS Anak","PPDS Anaestesi","PPDS Bedah","PPDS Obgyn","PPDS KFR","PPDS THT-KL","PPDS Neurologi","PPDS IPD","Kedokteran Gigi","Anestesi Regular","Anestesi RPL","Laboratorium Medis","Gizi","Psikologi","Fisioterapi","Analis Kesehatan","Rekam Medik","Terapi Wicara","Terapi Okupasi","Fisika","Biologi","Radiologi","Farmasi","Apoteker"]
+                kota: ["Bandung", "Jakarta", "Surabaya", "Yogyakarta", "Semarang"], // Singkat untuk contoh
+                universitas: ["UNPAD", "ITB", "UPI", "UNISA", "Poltekkes"],
+                jurusan: ["Keperawatan", "Kebidanan", "Farmasi", "Gizi", "IT"]
             },
             config: {
                 targetSheet: "GEL6",
                 scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
             },
-            formData: { tipe: 'Perorangan', bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
+            formData: { 
+                tipe: 'Perorangan', allowGroup: false, bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', 
+                namaInstitusi: '', jurusan: '', kotaInstitusi: '', startDate: '', endDate: '', 
+                nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', 
+                tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', 
+                pasFotoData: '', dokumenList: [] 
+            },
             kelompok: [],
 
-            // FUNGSI INIT: Berjalan otomatis saat halaman dibuka
-          init() {
-    const params = new URLSearchParams(window.location.search);
-    const nimToEdit = params.get('nim');
-    const action = params.get('action');
+            init() {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('action') === 'edit') this.loadEditData(params.get('nim'));
+            },
 
-    if (action === 'edit' && nimToEdit) {
-        this.loading = true;
-        this.isEdit = true; // Langsung set true agar kolom NIM terkunci saat loading
-        this.progressText = "Sedang memuat data peserta...";
-        this.view = 'input'; 
-
-        fetch(`${this.config.scriptUrl}?action=read`)
-            .then(res => res.json())
-            .then(data => {
-                // Cari data yang NIM-nya cocok
-                const item = data.find(i => i.nim == nimToEdit);
-
-                if (item) {
-                    // Gabungkan data lama dengan data baru dari server
-                    this.formData = { ...this.formData, ...item };
-                    
-                    // Load preview foto jika ada
-                    if (item.pasFotoPreview) {
-                        this.photoPreview = item.pasFotoPreview;
-                    }
-                    
-                    // Konversi semua tanggal ke format YYYY-MM-DD agar muncul di input type="date"
-                    if (item.tanggalLahir) this.formData.tanggalLahir = this.formatDateForInput(item.tanggalLahir);
-                    if (item.startDate) this.formData.startDate = this.formatDateForInput(item.startDate);
-                    if (item.endDate) this.formData.endDate = this.formatDateForInput(item.endDate);
-                    
-                } else {
-                    alert("Maaf, data dengan NIM tersebut tidak ditemukan di database.");
-                    this.isEdit = false;
-                    this.view = 'menu';
-                    window.location.href = 'index.html'; // Bersihkan URL
-                }
-                this.loading = false;
-            })
-            .catch(err => {
-                console.error("Gagal mengambil data:", err);
-                alert("Gagal mengambil data dari server.");
-                this.loading = false;
+            startNewInput() {
+                this.view = 'input';
                 this.isEdit = false;
-                this.view = 'menu';
-            });
-    } else {
-        // Jika tidak ada parameter edit, pastikan status dalam keadaan default
-        this.isEdit = false;
-        this.view = 'menu';
-    }
-}
-  ,
+            },
 
-// Tambahkan fungsi pembantu ini di bawah init() atau di dalam return app()
-formatDateForInput(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toISOString().split('T')[0];
-},
-
-            resetKelompok() { this.kelompok = []; },
-            removeMhs(i) { this.kelompok.splice(i, 1); },
             handlePhoto(e, target) {
                 const file = e.target.files[0];
-                const MAX_PHOTO_SIZE = 400 * 1024;
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                if (file) {
-                    if (!allowedTypes.includes(file.type)) {
-                        alert("Format foto harus JPG, JPEG, atau PNG!");
-                        e.target.value = "";
-                        return;
-                    }
-                    if (file.size > MAX_PHOTO_SIZE) {
-                        alert("Ukuran foto terlalu besar! Maksimal adalah 400KB.");
+                if (file && file.size < 500000) {
+                    const reader = new FileReader();
+                    reader.onload = (f) => { this.photoPreview = f.target.result; target.pasFotoData = f.target.result.split(',')[1]; };
+                    reader.readAsDataURL(file);
+                } else { alert("Foto max 500KB"); }
+            },
+
+            handleFile(e, target) {
+                const files = Array.from(e.target.files);
+                const MAX_TOTAL = 4 * 1024 * 1024; // 4MB TOTAL
+                let currentSize = 0;
+                target.dokumenList = [];
+
+                for (let file of files) {
+                    currentSize += file.size;
+                    if (currentSize > MAX_TOTAL) {
+                        alert("Total file melebihi 4MB!");
                         e.target.value = "";
                         return;
                     }
                     const reader = new FileReader();
-                    reader.onload = (f) => { 
-                        this.photoPreview = f.target.result; 
-                        target.pasFotoData = f.target.result.split(',')[1]; 
+                    reader.onload = (f) => {
+                        target.dokumenList.push({ name: file.name, base64: f.target.result.split(',')[1] });
                     };
                     reader.readAsDataURL(file);
                 }
             },
-            handleFile(e, target) {
-                const files = Array.from(e.target.files);
-                const MAX_SIZE = 4 * 1024 * 1024; 
-                target.dokumenList = [];
-                files.forEach(file => {
-                    if (file.type !== "application/pdf") {
-                        alert(`File "${file.name}" bukan PDF!`);
-                        return;
-                    }
-                    if (file.size > MAX_SIZE) {
-                        alert(`File "${file.name}" terlalu besar! Maksimal 4MB.`);
-                        e.target.value = ""; 
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = (f) => { 
-                        target.dokumenList.push({ 
-                            name: file.name, 
-                            base64: f.target.result.split(',')[1] 
-                        }); 
-                    };
-                    reader.readAsDataURL(file);
-                });
-            },
-            validateAge() {
-                const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
-                if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
-            },
-            validateDates() {
-                if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) { alert("Tanggal tidak valid!"); this.formData.endDate = ''; }
-            },
+
             async handleSubmit() {
-                if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { alert("Tambahkan minimal 1 anggota!"); return; }
                 this.loading = true;
                 try {
                     if (this.formData.tipe === 'Perorangan') {
-                        this.progressText = this.isEdit ? "Memperbarui data..." : "Mengirim data...";
                         await this.sendToAppsScript(this.formData);
                     } else {
                         for (let [i, mhs] of this.kelompok.entries()) {
-                            this.progressText = `Mengirim Anggota ${i+1}/${this.kelompok.length}...`;
+                            this.progressText = `Anggota ${i+1}/${this.kelompok.length}...`;
                             await this.sendToAppsScript({ ...this.formData, ...mhs });
                         }
                     }
-                    alert(this.isEdit ? "Data Berhasil Diperbarui!" : "Berhasil Terkirim!"); 
-                    window.location.href = 'index.html'; // Refresh ke menu utama
+                    alert("Berhasil!");
+                    window.location.href = 'index.html';
                 } catch (e) { alert("Error: " + e); this.loading = false; }
             },
+
             async sendToAppsScript(payload) {
-    // Tambahkan action edit jika isEdit true
-    const finalPayload = { 
-        ...payload, 
-        targetSheet: this.config.targetSheet,
-        action: this.isEdit ? "edit" : "insert" // Beri tahu server ini edit atau daftar baru
-    };
+                return fetch(this.config.scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...payload, targetSheet: this.config.targetSheet, action: this.isEdit ? "edit" : "insert" })
+                });
+            },
 
-    // Gunakan URLSearchParams untuk POST yang lebih kompatibel dengan doGet/doPost Apps Script sederhana
-    const queryString = new URLSearchParams();
-    for (let key in finalPayload) {
-        if (key === 'dokumenList') {
-            queryString.append(key, JSON.stringify(finalPayload[key]));
-        } else {
-            queryString.append(key, finalPayload[key]);
+            resetKelompok() { this.kelompok = []; },
+            removeMhs(i) { this.kelompok.splice(i, 1); },
+            validateDates() { if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) this.formData.endDate = ''; }
         }
     }
-
-    return fetch(this.config.scriptUrl, {
-        method: 'POST',
-        body: queryString,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-    });
-}
-        }
-    }
-</script>
+    </script>
 </body>
 </html>

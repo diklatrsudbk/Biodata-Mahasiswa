@@ -402,8 +402,8 @@
                             await this.sendToAppsScript({ ...this.formData, ...mhs });
                         }
                     }
-                    alert("Berhasil!"); 
-                    window.location.href = 'index.html';
+                    alert(this.isEdit ? "Data Berhasil Diperbarui!" : "Berhasil Terkirim!"); 
+                    window.location.href = 'index.html'; // Refresh ke menu utama
                 } catch (e) { alert("Error: " + e); this.loading = false; }
             },
 

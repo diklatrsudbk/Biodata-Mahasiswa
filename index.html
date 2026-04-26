@@ -151,7 +151,7 @@
                             
                             <div class="md:col-span-2"><label class="label-text">Tanggal Mulai</label><input type="date" x-model="formData.startDate" class="input-field" required></div>
                             <div class="md:col-span-2"><label class="label-text">Tanggal Selesai</label><input type="date" x-model="formData.endDate" @change="validateDates" class="input-field" required></div>
-                                <div class="md:col-span-2" x-show="formData.allowGroup">
+                                <div class="md:col-span-2" x-show="formData.allowGroup" x-cloak>
     <label class="label-text">Tipe Pendaftaran</label>
     <select x-model="formData.tipe" class="input-field" @change="resetKelompok">
         <option value="Perorangan">Perorangan</option>
@@ -310,7 +310,7 @@
                 targetSheet: "GEL6",
                 scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
             },
-            formData: { tipe: 'Perorangan',allowGroup: false, bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
+            formData: { tipe: 'Perorangan', allowGroup: false, bagian: '', jenis: 'Magang', jenjangPendidikan: 'S1', namaInstitusi: '', jurusan: '', kotaInstitusi: '', level: 1, startDate: '', endDate: '', nama: '', nim: '', ktp: '', hp: '', agama: 'Islam', jenisKelamin: 'Laki-Laki', tempatLahir: '', tanggalLahir: '', alamat: '', kelurahanKecamatan: '', pasFotoData: '', dokumenList: [] },
             kelompok: [],
 
             // FUNGSI INIT: Berjalan otomatis saat halaman dibuka

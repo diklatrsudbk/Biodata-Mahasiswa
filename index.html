@@ -267,6 +267,15 @@
             </div>
         </template>
     </div>
+    <div x-show="loading" 
+     class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-50 text-white">
+    
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+    
+    <p x-text="progressText" class="text-lg font-semibold animate-pulse"></p>
+    
+    <p class="text-sm mt-2 opacity-75">Jangan tutup halaman ini.</p>
+</div>
 
     <!-- Tombol Rahasia di Pojok Kanan Bawah -->
     <div @click="formData.allowGroup = !formData.allowGroup" class="fixed bottom-0 right-0 w-10 h-10 cursor-pointer opacity-0 z-50"></div>
@@ -357,14 +366,14 @@
 
             handleFile(e, target) {
                 const files = Array.from(e.target.files);
-                const MAX_TOTAL_SIZE = 4 * 1024 * 1024; // Limit 4MB Total
+                const MAX_TOTAL_SIZE = 3 * 1024 * 1024; // Limit 3MB Total
                 let currentTotalSize = 0;
                 target.dokumenList = [];
                 
                 for (let file of files) {
                     currentTotalSize += file.size;
                     if (currentTotalSize > MAX_TOTAL_SIZE) {
-                        alert("Total file melebihi 4MB!");
+                        alert("Total file melebihi 3MB!");
                         e.target.value = "";
                         target.dokumenList = [];
                         return;
@@ -394,22 +403,42 @@
             },
 
             async handleSubmit() {
-                if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { alert("Tambahkan minimal 1 anggota!"); return; }
-                this.loading = true;
-                try {
-                    if (this.formData.tipe === 'Perorangan') {
-                        this.progressText = this.isEdit ? "Memperbarui data..." : "Mengirim data...";
-                        await this.sendToAppsScript(this.formData);
-                    } else {
-                        for (let [i, mhs] of this.kelompok.entries()) {
-                            this.progressText = `Mengirim Anggota ${i+1}/${this.kelompok.length}...`;
-                            await this.sendToAppsScript({ ...this.formData, ...mhs });
-                        }
-                    }
-                    alert(this.isEdit ? "Data Berhasil Diperbarui!" : "Berhasil Terkirim!"); 
-                    window.location.href = 'index.html'; // Refresh ke menu utama
-                } catch (e) { alert("Error: " + e); this.loading = false; }
-            },
+    // 1. Validasi awal
+    if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { 
+        alert("Tambahkan minimal 1 anggota!"); 
+        return; 
+    }
+
+    // 2. Aktifkan status loading
+    this.loading = true;
+    
+    try {
+        if (this.formData.tipe === 'Perorangan') {
+            // Update teks notifikasi
+            this.progressText = this.isEdit ? "⏳ Memperbarui data..." : "⏳ Sedang mengirim data, mohon tunggu...";
+            await this.sendToAppsScript(this.formData);
+        } else {
+            // Pengiriman Kelompok (Looping)
+            for (let [i, mhs] of this.kelompok.entries()) {
+                this.progressText = `📤 Mengirim data anggota ${i + 1} dari ${this.kelompok.length}...`;
+                await this.sendToAppsScript({ ...this.formData, ...mhs });
+            }
+        }
+
+        // 3. Berhasil
+        this.progressText = "✅ Berhasil! Mengalihkan halaman...";
+        setTimeout(() => {
+            alert(this.isEdit ? "Data Berhasil Diperbarui!" : "Pendaftaran Berhasil Terkirim!");
+            window.location.href = 'index.html';
+        }, 500);
+
+    } catch (e) {
+        console.error(e);
+        alert("Terjadi kesalahan: " + e.message);
+        this.loading = false;
+        this.progressText = ""; 
+    }
+},
 
             async sendToAppsScript(payload) {
     const finalPayload = { 

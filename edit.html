@@ -10,30 +10,56 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
         [x-cloak] { display: none !important; }
-        .table-container { background: white; border-radius: 1rem; shadow: 0 4px 20px rgba(0,0,0,0.04); overflow: hidden; }
+        .table-container { background: white; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); overflow: hidden; }
         .search-input { border: 1px solid #dee2e6; padding: 0.6rem 1rem; border-radius: 0.5rem; outline: none; transition: all 0.2s; }
         .search-input:focus { border-color: #714B67; box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.1); }
+        
+        /* Animasi Custom Spinner */
+        .loader-ring {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #714B67;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="py-10 px-4" x-data="editApp()" x-init="initData()">
 
-    <div class="max-w-6xl mx-auto">
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <div class="flex items-center gap-4 text-left">
-            <img src="rsudbk.png" 
-                 alt="Logo RSUD BK" 
-                 class="h-16 w-auto object-contain"> 
-
-            <div>
-                <h1 class="text-2xl font-extrabold text-[#212529]">Database Peserta 2026</h1>
-                <p class="text-sm text-gray-500">Kelola, filter, dan hapus data pendaftaran</p>
-            </div>
+    <div x-show="loading" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm text-white" 
+         x-cloak>
+        <div class="text-center p-6 bg-white rounded-2xl shadow-2xl">
+            <div class="loader-ring mx-auto mb-4"></div>
+            <p x-text="progressText" class="text-gray-800 font-bold text-lg"></p>
+            <p class="text-gray-500 text-xs mt-2 italic text-center">Mohon jangan segarkan halaman ini</p>
         </div>
-            <button @click="window.location.href='index.html'" 
-        class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg font-bold text-sm transition">
-    ← Kembali ke Menu
-</button>
+    </div>
 
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div class="flex items-center gap-4 text-left">
+                <img src="rsudbk.png" alt="Logo" class="h-16 w-auto object-contain"> 
+                <div>
+                    <h1 class="text-2xl font-extrabold text-[#212529]">Database Peserta 2026</h1>
+                    <p class="text-sm text-gray-500">Kelola, filter, dan hapus data pendaftaran</p>
+                </div>
+            </div>
+            <button @click="window.location.href='index.html'" 
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded-lg font-bold text-sm transition">
+                ← Kembali ke Menu
+            </button>
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100">
@@ -44,7 +70,7 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Filter Jurusan</label>
-                    <select x-model="filters.jurusan" class="search-input w-full bg-white">
+                    <select x-model="filters.jurusan" class="search-input w-full bg-white text-sm">
                         <option value="">Semua Jurusan</option>
                         <template x-for="j in uniqueJurusan" :key="j">
                             <option :value="j" x-text="j"></option>
@@ -53,7 +79,7 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Filter Institusi</label>
-                    <select x-model="filters.institusi" class="search-input w-full bg-white">
+                    <select x-model="filters.institusi" class="search-input w-full bg-white text-sm">
                         <option value="">Semua Institusi</option>
                         <template x-for="i in uniqueInstitusi" :key="i">
                             <option :value="i" x-text="i"></option>
@@ -76,9 +102,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-if="loading">
+                        <template x-if="loading && allData.length === 0">
                             <tr>
-                                <td colspan="5" class="p-10 text-center text-gray-400">Sedang memuat data...</td>
+                                <td colspan="5" class="p-10 text-center text-gray-400">
+                                    <span class="animate-pulse">Menghubungkan ke server...</span>
+                                </td>
                             </tr>
                         </template>
                         
@@ -94,7 +122,7 @@
                                     <div class="font-bold text-[#714B67]" x-text="item.nama"></div>
                                     <div class="text-[11px] text-gray-500" x-text="'NIM: ' + item.nim"></div>
                                 </td>
-                                <td class="p-4 text-gray-600" x-text="item.namaInstitusi"></td>
+                                <td class="p-4 text-gray-600 text-xs" x-text="item.namaInstitusi"></td>
                                 <td class="p-4">
                                     <span class="bg-purple-50 text-purple-700 px-2 py-1 rounded text-[10px] font-bold" x-text="item.jurusan"></span>
                                 </td>
@@ -103,7 +131,7 @@
                                 </td>
                                 <td class="p-4 text-center">
                                     <button @click="window.open('index.html?p=index&action=edit&nim=' + item.nim, '_top')" 
-                                    class="text-blue-500 hover:text-blue-700 font-bold text-xs p-2">
+                                            class="text-blue-500 hover:text-blue-700 font-bold text-xs p-2">
                                         Edit
                                     </button>
                                     <button @click="hapusData(item.nim, item.nama)" class="text-red-500 hover:text-red-700 font-bold text-xs p-2">
@@ -136,6 +164,7 @@
 
         initData() {
             this.loading = true;
+            this.progressText = "Memuat data dari server..."; // Notifikasi saat load
             const url = this.config.scriptUrl + "?action=read&t=" + new Date().getTime();
 
             fetch(url)
@@ -150,7 +179,7 @@
                 .catch(err => {
                     console.error("Gagal load:", err);
                     this.loading = false;
-                    alert("Koneksi gagal. Pastikan Script sudah di-Deploy sebagai 'Anyone'.");
+                    alert("Koneksi gagal.");
                 });
         },
 
@@ -185,39 +214,40 @@
         },
 
         async hapusData(nim, nama) {
-    if (confirm(`Hapus data ${nama} (NIM: ${nim})?`)) {
-        this.loading = true;
-        
-        const finalPayload = { 
-            action: "delete",
-            nim: nim,
-            targetSheet: this.config.targetSheet
-        };
+            if (confirm(`Hapus data ${nama} (NIM: ${nim})?`)) {
+                this.loading = true;
+                this.progressText = `Sedang menghapus data ${nama}...`; // Notifikasi saat hapus
+                
+                const finalPayload = { 
+                    action: "delete",
+                    nim: nim,
+                    targetSheet: this.config.targetSheet
+                };
 
-        try {
-            const response = await fetch(this.config.scriptUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(finalPayload),
-                redirect: 'follow' 
-            });
+                try {
+                    const response = await fetch(this.config.scriptUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(finalPayload),
+                        redirect: 'follow' 
+                    });
 
-            const result = await response.json();
-            
-            if (result.status === "deleted") {
-                alert("Data dan folder berhasil dihapus.");
-                this.initData(); // Refresh tabel
-            } else {
-                alert("Gagal menghapus: " + (result.message || "Data tidak ditemukan"));
-                this.loading = false;
+                    const result = await response.json();
+                    
+                    if (result.status === "deleted") {
+                        this.progressText = "Berhasil dihapus! Memperbarui tabel...";
+                        this.initData(); 
+                    } else {
+                        alert("Gagal menghapus: " + (result.message || "Data tidak ditemukan"));
+                        this.loading = false;
+                    }
+                } catch (err) {
+                    console.error("Error hapus:", err);
+                    alert("Terjadi kesalahan koneksi.");
+                    this.loading = false;
+                }
             }
-        } catch (err) {
-            console.error("Error hapus:", err);
-            alert("Terjadi kesalahan koneksi saat menghapus.");
-            this.loading = false;
         }
-    }
-}
     }
 }
     </script>

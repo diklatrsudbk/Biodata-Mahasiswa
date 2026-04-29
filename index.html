@@ -247,7 +247,7 @@
                                     <input type="date" x-model="tempMhs.tanggalLahir" class="input-field">
                                     <input type="text" placeholder="Alamat Lengkap" x-model="tempMhs.alamat" class="input-field md:col-span-2">
                                     <div class="md:col-span-2">
-                                        <label class="text-[10px] font-bold">Upload PDF Anggota (Total Max 4MB)</label>
+                                        <label class="text-[10px] font-bold">Upload PDF Anggota (Total Max 3MB)</label>
                                         <input type="file" multiple @change="handleFile($event, tempMhs)" accept="application/pdf" class="input-field text-xs">
                                     </div>
                                 </div>
@@ -348,10 +348,10 @@
 
             handlePhoto(e, target) {
                 const file = e.target.files[0];
-                const MAX_PHOTO_SIZE = 400 * 1024;
+                const MAX_PHOTO_SIZE = 200 * 1024;
                 if (file) {
                     if (file.size > MAX_PHOTO_SIZE) {
-                        alert("Ukuran foto maksimal 400KB.");
+                        alert("Ukuran foto maksimal 200KB.");
                         e.target.value = "";
                         return;
                     }

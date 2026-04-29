@@ -50,19 +50,15 @@
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 
 <body class="py-10 px-4" x-data="editApp()" x-init="initData()">
 
-    <!-- LOADING -->
+    <!-- Loading -->
     <div
         x-show="loading"
         x-transition:enter="transition ease-out duration-300"
@@ -77,7 +73,10 @@
         <div class="text-center p-6 bg-white rounded-2xl shadow-2xl">
             <div class="loader-ring mx-auto mb-4"></div>
 
-            <p x-text="progressText" class="text-gray-800 font-bold text-lg"></p>
+            <p
+                x-text="progressText"
+                class="text-gray-800 font-bold text-lg"
+            ></p>
 
             <p class="text-gray-500 text-xs mt-2 italic text-center">
                 Mohon jangan segarkan halaman ini
@@ -87,7 +86,7 @@
 
     <div class="max-w-6xl mx-auto">
 
-        <!-- HEADER -->
+        <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
 
             <div class="flex items-center gap-4 text-left">
@@ -116,7 +115,7 @@
             </button>
         </div>
 
-        <!-- FILTER -->
+        <!-- Filter -->
         <div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100">
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -171,7 +170,7 @@
             </div>
         </div>
 
-        <!-- TABLE -->
+        <!-- Table -->
         <div class="table-container border">
 
             <div class="overflow-x-auto">
@@ -179,7 +178,6 @@
                 <table class="w-full text-sm text-left">
 
                     <thead class="bg-gray-50 text-gray-600 border-b">
-
                         <tr>
                             <th class="p-4 font-semibold">Nama & NIM</th>
                             <th class="p-4 font-semibold">Institusi</th>
@@ -187,14 +185,12 @@
                             <th class="p-4 font-semibold">Periode</th>
                             <th class="p-4 font-semibold text-center">Aksi</th>
                         </tr>
-
                     </thead>
 
                     <tbody>
 
-                        <!-- LOADING TABLE -->
+                        <!-- Loading -->
                         <template x-if="loading && allData.length === 0">
-
                             <tr>
                                 <td colspan="5" class="p-10 text-center text-gray-400">
                                     <span class="animate-pulse">
@@ -202,27 +198,23 @@
                                     </span>
                                 </td>
                             </tr>
-
                         </template>
 
-                        <!-- EMPTY -->
+                        <!-- Empty -->
                         <template x-if="!loading && filteredData.length === 0">
-
                             <tr>
                                 <td colspan="5" class="p-10 text-center text-gray-400">
                                     Data tidak ditemukan.
                                 </td>
                             </tr>
-
                         </template>
 
-                        <!-- DATA -->
+                        <!-- Data -->
                         <template x-for="(item, index) in filteredData" :key="index">
 
                             <tr class="border-b hover:bg-gray-50 transition">
 
                                 <td class="p-4">
-
                                     <div
                                         class="font-bold text-[#714B67]"
                                         x-text="item.nama"
@@ -232,7 +224,6 @@
                                         class="text-[11px] text-gray-500"
                                         x-text="'NIM: ' + item.nim"
                                     ></div>
-
                                 </td>
 
                                 <td
@@ -241,20 +232,16 @@
                                 ></td>
 
                                 <td class="p-4">
-
                                     <span
                                         class="bg-purple-50 text-purple-700 px-2 py-1 rounded text-[10px] font-bold"
                                         x-text="item.jurusan"
                                     ></span>
-
                                 </td>
 
                                 <td class="p-4 text-xs text-gray-500">
-
                                     <span x-text="formatDate(item.startDate)"></span>
                                     -
                                     <span x-text="formatDate(item.endDate)"></span>
-
                                 </td>
 
                                 <td class="p-4 text-center">
@@ -284,277 +271,261 @@
                 </table>
 
             </div>
-
         </div>
-
     </div>
 
-    <script>
+<script>
+function editApp() {
 
-        function editApp() {
+    return {
 
-            return {
+        loading: false,
+        progressText: '',
 
-                loading: false,
+        allData: [],
 
-                progressText: '',
+        filters: {
+            search: '',
+            jurusan: '',
+            institusi: ''
+        },
 
-                allData: [],
+        config: {
+            targetSheet: "GEL6",
+            scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
+        },
 
-                filters: {
-                    search: '',
-                    jurusan: '',
-                    institusi: ''
-                },
+        async initData() {
 
-                config: {
-                    targetSheet: "GEL6",
+            this.loading = true;
+            this.progressText = "Memuat data dari server...";
 
-                    scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
-                },
+            try {
 
-                async initData() {
+                const url =
+                    this.config.scriptUrl +
+                    "?action=read&t=" +
+                    Date.now();
 
-                    this.loading = true;
+                const response = await fetch(url);
 
-                    this.progressText = "Memuat data dari server...";
-
-                    try {
-
-                        const url =
-                            this.config.scriptUrl +
-                            "?action=read&t=" +
-                            Date.now();
-
-                        const response = await fetch(url);
-
-                        if (!response.ok) {
-                            throw new Error("Respons jaringan gagal");
-                        }
-
-                        const text = await response.text();
-
-                        let result;
-
-                        try {
-
-                            result = JSON.parse(text);
-
-                        } catch (err) {
-
-                            console.error("Response bukan JSON:", text);
-
-                            throw new Error("Format response invalid");
-                        }
-
-                        this.allData = Array.isArray(result)
-                            ? result
-                            : [];
-
-                    } catch (err) {
-
-                        console.error("Gagal load:", err);
-
-                        alert("Koneksi gagal: " + err.message);
-
-                    } finally {
-
-                        this.loading = false;
-
-                        this.progressText = '';
-                    }
-                },
-
-                get filteredData() {
-
-                    return this.allData.filter(item => {
-
-                        const nama =
-                            item.nama
-                                ? item.nama.toLowerCase()
-                                : '';
-
-                        const nim =
-                            item.nim
-                                ? item.nim.toString().toLowerCase()
-                                : '';
-
-                        const searchTxt =
-                            this.filters.search.toLowerCase();
-
-                        const matchSearch =
-                            nama.includes(searchTxt) ||
-                            nim.includes(searchTxt);
-
-                        const matchJurusan =
-                            this.filters.jurusan === '' ||
-                            item.jurusan === this.filters.jurusan;
-
-                        const matchInstitusi =
-                            this.filters.institusi === '' ||
-                            item.namaInstitusi === this.filters.institusi;
-
-                        return (
-                            matchSearch &&
-                            matchJurusan &&
-                            matchInstitusi
-                        );
-                    });
-                },
-
-                get uniqueJurusan() {
-
-                    return [
-                        ...new Set(
-                            this.allData
-                                .map(i => i.jurusan)
-                                .filter(Boolean)
-                        )
-                    ].sort();
-                },
-
-                get uniqueInstitusi() {
-
-                    return [
-                        ...new Set(
-                            this.allData
-                                .map(i => i.namaInstitusi)
-                                .filter(Boolean)
-                        )
-                    ].sort();
-                },
-
-                formatDate(dateStr) {
-
-                    if (!dateStr) return '-';
-
-                    try {
-
-                        const d =
-                            new Date(dateStr + 'T00:00:00');
-
-                        return d.toLocaleDateString(
-                            'id-ID',
-                            {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                            }
-                        );
-
-                    } catch (e) {
-
-                        return '-';
-                    }
-                },
-
-                async hapusData(nim, nama) {
-
-                    const confirmDelete =
-                        confirm(
-                            `Hapus data ${nama} (NIM: ${nim})?`
-                        );
-
-                    if (!confirmDelete) return;
-
-                    this.loading = true;
-
-                    this.progressText =
-                        `Sedang menghapus data ${nama}...`;
-
-                    const finalPayload = {
-                        action: "delete",
-                        nim: nim,
-                        targetSheet: this.config.targetSheet
-                    };
-
-                    try {
-
-                        const response =
-                            await fetch(
-                                this.config.scriptUrl +
-                                '?t=' +
-                                Date.now(),
-                                {
-                                    method: 'POST',
-
-                                    headers: {
-                                        'Content-Type':
-                                            'text/plain;charset=utf-8'
-                                    },
-
-                                    body:
-                                        JSON.stringify(finalPayload),
-
-                                    redirect: 'follow'
-                                }
-                            );
-
-                        const text =
-                            await response.text();
-
-                        let result;
-
-                        try {
-
-                            result = JSON.parse(text);
-
-                        } catch (err) {
-
-                            console.error(
-                                "Response bukan JSON:",
-                                text
-                            );
-
-                            throw new Error(
-                                "Server mengembalikan response tidak valid"
-                            );
-                        }
-
-                        if (result.status === "deleted") {
-
-                            this.progressText =
-                                "Berhasil dihapus! Memperbarui tabel...";
-
-                            await this.initData();
-
-                        } else {
-
-                            alert(
-                                "Gagal menghapus: " +
-                                (
-                                    result.message ||
-                                    "Data tidak ditemukan"
-                                )
-                            );
-
-                            this.loading = false;
-                        }
-
-                    } catch (err) {
-
-                        console.error(
-                            "Error hapus:",
-                            err
-                        );
-
-                        alert(
-                            "Terjadi kesalahan koneksi: " +
-                            err.message
-                        );
-
-                        this.loading = false;
-
-                    } finally {
-
-                        this.progressText = '';
-                    }
+                if (!response.ok) {
+                    throw new Error("Respons jaringan gagal");
                 }
 
+                const text = await response.text();
+
+                let result;
+
+                try {
+                    result = JSON.parse(text);
+                } catch (err) {
+                    console.error("Response bukan JSON:", text);
+                    throw new Error("Format response invalid");
+                }
+
+                this.allData = Array.isArray(result)
+                    ? result
+                    : [];
+
+            } catch (err) {
+
+                console.error("Gagal load:", err);
+
+                alert(
+                    "Koneksi gagal:\n" +
+                    err.message
+                );
+
+            } finally {
+
+                this.loading = false;
+                this.progressText = '';
+
+            }
+        },
+
+        get filteredData() {
+
+            return this.allData.filter(item => {
+
+                const nama =
+                    item.nama
+                        ? item.nama.toLowerCase()
+                        : '';
+
+                const nim =
+                    item.nim
+                        ? item.nim.toString().toLowerCase()
+                        : '';
+
+                const searchTxt =
+                    this.filters.search.toLowerCase();
+
+                const matchSearch =
+                    nama.includes(searchTxt) ||
+                    nim.includes(searchTxt);
+
+                const matchJurusan =
+                    this.filters.jurusan === '' ||
+                    item.jurusan === this.filters.jurusan;
+
+                const matchInstitusi =
+                    this.filters.institusi === '' ||
+                    item.namaInstitusi === this.filters.institusi;
+
+                return (
+                    matchSearch &&
+                    matchJurusan &&
+                    matchInstitusi
+                );
+
+            });
+
+        },
+
+        get uniqueJurusan() {
+
+            return [
+                ...new Set(
+                    this.allData
+                        .map(i => i.jurusan)
+                        .filter(Boolean)
+                )
+            ].sort();
+
+        },
+
+        get uniqueInstitusi() {
+
+            return [
+                ...new Set(
+                    this.allData
+                        .map(i => i.namaInstitusi)
+                        .filter(Boolean)
+                )
+            ].sort();
+
+        },
+
+        formatDate(dateStr) {
+
+            if (!dateStr) return '-';
+
+            try {
+
+                const d =
+                    new Date(dateStr + 'T00:00:00');
+
+                return d.toLocaleDateString(
+                    'id-ID',
+                    {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    }
+                );
+
+            } catch (e) {
+
+                return '-';
+
+            }
+        },
+
+        async hapusData(nim, nama) {
+
+            const confirmDelete =
+                confirm(
+                    `Hapus data ${nama} (NIM: ${nim}) ?`
+                );
+
+            if (!confirmDelete) return;
+
+            this.loading = true;
+
+            this.progressText =
+                `Sedang menghapus data ${nama}...`;
+
+            const finalPayload = {
+                action: "delete",
+                nim: nim,
+                targetSheet: this.config.targetSheet
             };
+
+            try {
+
+                const response = await fetch(
+                    this.config.scriptUrl + '?t=' + Date.now(),
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8'
+                        },
+
+                        body: JSON.stringify(finalPayload),
+
+                        redirect: 'follow'
+                    }
+                );
+
+                const text = await response.text();
+
+                let result;
+
+                try {
+
+                    result = JSON.parse(text);
+
+                } catch (err) {
+
+                    console.error(
+                        "Response bukan JSON:",
+                        text
+                    );
+
+                    throw new Error(
+                        "Server mengembalikan response tidak valid"
+                    );
+                }
+
+                if (result.status === "deleted") {
+
+                    this.progressText =
+                        "Berhasil dihapus! Memperbarui tabel...";
+
+                    await this.initData();
+
+                } else {
+
+                    throw new Error(
+                        result.message ||
+                        "Data tidak ditemukan"
+                    );
+
+                }
+
+            } catch (err) {
+
+                console.error("Error hapus:", err);
+
+                alert(
+                    "Terjadi kesalahan:\n" +
+                    err.message
+                );
+
+            } finally {
+
+                this.loading = false;
+                this.progressText = '';
+
+            }
         }
 
-    </script>
+    }
+}
+</script>
 
 </body>
 </html>

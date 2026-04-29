@@ -70,7 +70,7 @@
                             <div class="md:col-span-2">
                                 <label class="label-text">Bagian</label>
                                 <select x-model="formData.bagian" class="input-field" required>
-                                    <option value="" disable selected hidden>-- Pilih Bagian --</option>
+                                    <option value="" disabled selected hidden>-- Pilih Bagian --</option>
                                     <option>Pelayanan Medik</option>
                                     <option>Penunjang Medik</option>
                                     <option>Umum</option>
@@ -87,7 +87,7 @@
                             </div>
                             <div><label class="label-text">Jenis Praktik</label>
                                 <select x-model="formData.jenis" class="input-field" required>
-                                    <option value="" disable selected hidden>-- Pilih --</option>
+                                    <option value="" disabled selected hidden>-- Pilih --</option>
                                     <option>PKL</option>
                                     <option>PBL</option>
                                     <option>Pembelajaran Luar Kelas</option>
@@ -114,7 +114,7 @@
                             <div class="md:col-span-2">
                                 <label class="label-text">Level</label>
                                 <select x-model="formData.level" class="input-field" required>
-                                    <option value="" disable selected hidden>-- Pilih Level --</option>
+                                    <option value="" disabled selected hidden>-- Pilih Level --</option>
                                     <option value="1">Level 1</option>
                                     <option value="2">Level 2</option>
                                     <option value="3">Level 3</option>
@@ -462,13 +462,7 @@
         this.formData.endDate = '';
     }
 },
-if (
-    !this.formData.tanggalLahir ||
-    !this.formData.startDate ||
-    !this.formData.endDate
-) {
-    return;
-}
+
             async handleSubmit() {
     // 1. Validasi awal
     if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { 
@@ -522,11 +516,22 @@ if (
         redirect: 'follow' // WAJIB ada agar bisa membaca respon setelah redirect Google
     });
 
-    const result = await response.json();
-    if (result.status === "error") {
-        throw new Error(result.message);
-    }
-    return result;
+    const text = await response.text();
+
+let result;
+
+try {
+    result = JSON.parse(text);
+} catch (err) {
+    console.error("Response bukan JSON:", text);
+    throw new Error("Server mengembalikan response tidak valid");
+}
+
+if (result.status === "error") {
+    throw new Error(result.message);
+}
+
+return result;
 }
         }
     }

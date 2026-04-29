@@ -338,10 +338,17 @@
             },
 
             formatDateForInput(dateStr) {
-                if (!dateStr) return '';
-                const date = new Date(dateStr);
-                return date.toISOString().split('T')[0];
-            },
+    if (!dateStr) return '';
+
+    // Hindari bug timezone
+    const date = new Date(dateStr);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+},
 
             resetKelompok() { this.kelompok = []; },
             removeMhs(i) { this.kelompok.splice(i, 1); },
@@ -394,14 +401,74 @@
             },
 
             validateAge() {
-                const age = new Date().getFullYear() - new Date(this.formData.tanggalLahir).getFullYear();
-                if (age < 14) { alert("Minimal 14 tahun!"); this.formData.tanggalLahir = ''; }
-            },
+    if (!this.formData.tanggalLahir) return;
 
-            validateDates() {
-                if (new Date(this.formData.startDate) > new Date(this.formData.endDate)) { alert("Tanggal tidak valid!"); this.formData.endDate = ''; }
-            },
+    const birthDate = new Date(this.formData.tanggalLahir);
+    const today = new Date();
 
+    // Tidak boleh tanggal masa depan
+    if (birthDate > today) {
+        alert("Tanggal lahir tidak boleh lebih dari hari ini!");
+        this.formData.tanggalLahir = '';
+        return;
+    }
+
+    // Hitung umur akurat
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+        age--;
+    }
+
+    if (age < 14) {
+        alert("Usia minimal 14 tahun!");
+        this.formData.tanggalLahir = '';
+    }
+},
+
+           validateDates() {
+    const start = this.formData.startDate;
+    const end = this.formData.endDate;
+
+    // Jika salah satu kosong → skip
+    if (!start || !end) return;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    // Reset jam supaya aman
+    startDate.setHours(0,0,0,0);
+    endDate.setHours(0,0,0,0);
+
+    // Tanggal selesai tidak boleh sebelum mulai
+    if (endDate < startDate) {
+        alert("Tanggal selesai tidak boleh sebelum tanggal mulai!");
+        this.formData.endDate = '';
+        return;
+    }
+
+    // Optional:
+    // Batasi maksimal magang 1 tahun
+    const maxEnd = new Date(startDate);
+    maxEnd.setFullYear(maxEnd.getFullYear() + 1);
+
+    if (endDate > maxEnd) {
+        alert("Durasi maksimal 1 tahun!");
+        this.formData.endDate = '';
+    }
+},
+if (
+    !this.formData.tanggalLahir ||
+    !this.formData.startDate ||
+    !this.formData.endDate
+) {
+    return;
+}
             async handleSubmit() {
     // 1. Validasi awal
     if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { 

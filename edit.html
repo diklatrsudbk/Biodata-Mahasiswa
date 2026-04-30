@@ -56,8 +56,7 @@
     </style>
 </head>
 
-<body class="py-10 px-4" x-data="editApp()" x-init="initData()">
-
+<body class="py-10 px-4" x-data="editApp()" x-init="init()">
     <!-- Loading -->
     <div
         x-show="loading"
@@ -210,7 +209,7 @@
                         </template>
 
                         <!-- Data -->
-                        <template x-for="(item, index) in filteredData" :key="index">
+                        <template x-for="item in filteredData" :key="item.nim">
 
                             <tr class="border-b hover:bg-gray-50 transition">
 
@@ -239,9 +238,9 @@
                                 </td>
 
                                 <td class="p-4 text-xs text-gray-500">
-                                    <span x-text="formatDate(item.startDate)"></span>
+                                    <span x-text="item.startDateFormatted"></span>
                                     -
-                                    <span x-text="formatDate(item.endDate)"></span>
+                                    <span x-text="item.endDateFormatted"></span>
                                 </td>
 
                                 <td class="p-4 text-center">
@@ -283,6 +282,12 @@ function editApp() {
         progressText: '',
 
         allData: [],
+        filteredData: [],
+
+        uniqueJurusan: [],
+        uniqueInstitusi: [],
+
+        searchTimeout: null,
 
         filters: {
             search: '',
@@ -302,35 +307,51 @@ function editApp() {
 
             try {
 
-                const url =
-                    this.config.scriptUrl +
-                    "?action=read&t=" +
-                    Date.now();
-
-                const response = await fetch(url);
+                const response = await fetch(
+                    this.config.scriptUrl + "?action=read",
+                    {
+                        method: 'GET',
+                        cache: 'no-store'
+                    }
+                );
 
                 if (!response.ok) {
-                    throw new Error("Respons jaringan gagal");
+                    throw new Error("Gagal mengambil data");
                 }
 
-                const text = await response.text();
+                const result = await response.json();
 
-                let result;
-
-                try {
-                    result = JSON.parse(text);
-                } catch (err) {
-                    console.error("Response bukan JSON:", text);
-                    throw new Error("Format response invalid");
+                if (!Array.isArray(result)) {
+                    throw new Error("Format data tidak valid");
                 }
 
-                this.allData = Array.isArray(result)
-                    ? result
-                    : [];
+                this.allData = result.map(item => {
+
+                    return {
+                        ...item,
+
+                        _nama:
+                            (item.nama || '').toLowerCase(),
+
+                        _nim:
+                            String(item.nim || '').toLowerCase(),
+
+                        startDateFormatted:
+                            this.formatDate(item.startDate),
+
+                        endDateFormatted:
+                            this.formatDate(item.endDate)
+                    };
+
+                });
+
+                this.generateFilterOptions();
+
+                this.applyFilters();
 
             } catch (err) {
 
-                console.error("Gagal load:", err);
+                console.error(err);
 
                 alert(
                     "Koneksi gagal:\n" +
@@ -345,33 +366,43 @@ function editApp() {
             }
         },
 
-        get filteredData() {
+        generateFilterOptions() {
 
-            return this.allData.filter(item => {
+            this.uniqueJurusan = [
+                ...new Set(
+                    this.allData
+                        .map(i => i.jurusan)
+                        .filter(Boolean)
+                )
+            ].sort();
 
-                const nama =
-                    item.nama
-                        ? item.nama.toLowerCase()
-                        : '';
+            this.uniqueInstitusi = [
+                ...new Set(
+                    this.allData
+                        .map(i => i.namaInstitusi)
+                        .filter(Boolean)
+                )
+            ].sort();
 
-                const nim =
-                    item.nim
-                        ? item.nim.toString().toLowerCase()
-                        : '';
+        },
 
-                const searchTxt =
-                    this.filters.search.toLowerCase();
+        applyFilters() {
+
+            const search =
+                this.filters.search.toLowerCase();
+
+            this.filteredData = this.allData.filter(item => {
 
                 const matchSearch =
-                    nama.includes(searchTxt) ||
-                    nim.includes(searchTxt);
+                    item._nama.includes(search) ||
+                    item._nim.includes(search);
 
                 const matchJurusan =
-                    this.filters.jurusan === '' ||
+                    !this.filters.jurusan ||
                     item.jurusan === this.filters.jurusan;
 
                 const matchInstitusi =
-                    this.filters.institusi === '' ||
+                    !this.filters.institusi ||
                     item.namaInstitusi === this.filters.institusi;
 
                 return (
@@ -384,27 +415,30 @@ function editApp() {
 
         },
 
-        get uniqueJurusan() {
+        watchFilters() {
 
-            return [
-                ...new Set(
-                    this.allData
-                        .map(i => i.jurusan)
-                        .filter(Boolean)
-                )
-            ].sort();
+            this.$watch(
+                'filters.search',
+                () => {
 
-        },
+                    clearTimeout(this.searchTimeout);
 
-        get uniqueInstitusi() {
+                    this.searchTimeout = setTimeout(() => {
+                        this.applyFilters();
+                    }, 250);
 
-            return [
-                ...new Set(
-                    this.allData
-                        .map(i => i.namaInstitusi)
-                        .filter(Boolean)
-                )
-            ].sort();
+                }
+            );
+
+            this.$watch(
+                'filters.jurusan',
+                () => this.applyFilters()
+            );
+
+            this.$watch(
+                'filters.institusi',
+                () => this.applyFilters()
+            );
 
         },
 
@@ -426,7 +460,7 @@ function editApp() {
                     }
                 );
 
-            } catch (e) {
+            } catch {
 
                 return '-';
 
@@ -447,16 +481,10 @@ function editApp() {
             this.progressText =
                 `Sedang menghapus data ${nama}...`;
 
-            const finalPayload = {
-                action: "delete",
-                nim: nim,
-                targetSheet: this.config.targetSheet
-            };
-
             try {
 
                 const response = await fetch(
-                    this.config.scriptUrl + '?t=' + Date.now(),
+                    this.config.scriptUrl,
                     {
                         method: 'POST',
 
@@ -464,51 +492,40 @@ function editApp() {
                             'Content-Type': 'text/plain;charset=utf-8'
                         },
 
-                        body: JSON.stringify(finalPayload),
-
-                        redirect: 'follow'
+                        body: JSON.stringify({
+                            action: "delete",
+                            nim: nim,
+                            targetSheet: this.config.targetSheet
+                        })
                     }
                 );
 
-                const text = await response.text();
-
-                let result;
-
-                try {
-
-                    result = JSON.parse(text);
-
-                } catch (err) {
-
-                    console.error(
-                        "Response bukan JSON:",
-                        text
-                    );
-
-                    throw new Error(
-                        "Server mengembalikan response tidak valid"
-                    );
-                }
+                const result = await response.json();
 
                 if (result.status === "deleted") {
 
-                    this.progressText =
-                        "Berhasil dihapus! Memperbarui tabel...";
+                    this.allData =
+                        this.allData.filter(
+                            item => item.nim !== nim
+                        );
 
-                    await this.initData();
+                    this.applyFilters();
+
+                    this.progressText =
+                        "Berhasil dihapus";
 
                 } else {
 
                     throw new Error(
                         result.message ||
-                        "Data tidak ditemukan"
+                        "Gagal menghapus data"
                     );
 
                 }
 
             } catch (err) {
 
-                console.error("Error hapus:", err);
+                console.error(err);
 
                 alert(
                     "Terjadi kesalahan:\n" +
@@ -521,6 +538,14 @@ function editApp() {
                 this.progressText = '';
 
             }
+        },
+
+        init() {
+
+            this.watchFilters();
+
+            this.initData();
+
         }
 
     }

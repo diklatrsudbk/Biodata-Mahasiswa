@@ -58,10 +58,18 @@
 
         <template x-if="view === 'input'">
             <div>
-                <button @click="window.location.href='index.html'" 
-        class="mb-6 flex items-center text-[#714B67] font-bold hover:underline">
-                    ← Kembali ke Menu Utama
-                </button>
+                <button 
+    @click="
+        if (window.history.length > 1) {
+            history.back()
+        } else {
+            window.location.href='index.html'
+        }
+    "
+    class="mb-6 flex items-center text-[#714B67] font-bold hover:underline"
+>
+    ← Kembali
+</button>
 
                 <form @submit.prevent="handleSubmit" :class="loading ? 'opacity-50 pointer-events-none' : ''">
                     <div class="section-card">

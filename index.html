@@ -147,14 +147,104 @@
                                 </div>
                             </div>
                             
-                            <div class="md:col-span-2">
-                                <label class="label-text">Nama Institusi / Universitas</label>
-                                <input type="text" x-model="formData.namaInstitusi" list="list-univ" class="input-field" placeholder="Ketik atau pilih..." required>
-                            </div>
-                            <div>
-                                <label class="label-text">Jurusan</label>
-                                <input type="text" x-model="formData.jurusan" list="list-jurusan" class="input-field" placeholder="Cari jurusan..." required>
-                            </div>
+                           <div
+    x-data="searchableSelect(
+        options.universitas,
+        'namaInstitusi'
+    )"
+    class="relative"
+>
+
+    <label class="label-text">
+        Nama Institusi / Universitas
+    </label>
+
+    <input
+        type="text"
+        x-model="search"
+        @focus="open = true"
+        @input="filterOptions()"
+        @keydown.escape="open = false"
+        autocomplete="off"
+        placeholder="Cari institusi..."
+        class="input-field"
+    >
+
+    <div
+        x-show="open"
+        x-cloak
+        class="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-xl max-h-60 overflow-y-auto"
+    >
+
+        <template x-for="item in filtered" :key="item">
+
+            <div
+                @click="select(item)"
+                class="px-4 py-3 hover:bg-[#714B67] hover:text-white cursor-pointer text-sm transition"
+                x-text="item"
+            ></div>
+
+        </template>
+
+        <div
+            x-show="filtered.length === 0"
+            class="px-4 py-3 text-gray-400 text-sm"
+        >
+            Tidak ditemukan
+        </div>
+
+    </div>
+
+</div>
+                            <div
+    x-data="searchableSelect(
+        options.jurusan,
+        'jurusan'
+    )"
+    class="relative"
+>
+
+    <label class="label-text">
+        Jurusan
+    </label>
+
+    <input
+        type="text"
+        x-model="search"
+        @focus="open = true"
+        @input="filterOptions()"
+        @keydown.escape="open = false"
+        autocomplete="off"
+        placeholder="Cari jurusan..."
+        class="input-field"
+    >
+
+    <div
+        x-show="open"
+        x-cloak
+        class="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-xl max-h-60 overflow-y-auto"
+    >
+
+        <template x-for="item in filtered" :key="item">
+
+            <div
+                @click="select(item)"
+                class="px-4 py-3 hover:bg-[#714B67] hover:text-white cursor-pointer text-sm transition"
+                x-text="item"
+            ></div>
+
+        </template>
+
+        <div
+            x-show="filtered.length === 0"
+            class="px-4 py-3 text-gray-400 text-sm"
+        >
+            Tidak ditemukan
+        </div>
+
+    </div>
+
+</div>
                             <div>
                                 <label class="label-text">Kota Institusi</label>
                                 <input type="text" x-model="formData.kotaInstitusi" list="list-kota" class="input-field" placeholder="Ketik nama kota..." required>
@@ -473,6 +563,31 @@
 },
 
             async handleSubmit() {
+                if (
+    !this.options.universitas.includes(
+        this.formData.namaInstitusi
+    )
+) {
+
+    alert(
+        "Silakan pilih institusi dari daftar."
+    );
+
+    return;
+}
+
+if (
+    !this.options.jurusan.includes(
+        this.formData.jurusan
+    )
+) {
+
+    alert(
+        "Silakan pilih jurusan dari daftar."
+    );
+
+    return;
+}
     // 1. Validasi awal
     if (this.formData.tipe === 'Kelompok' && this.kelompok.length < 1) { 
         alert("Tambahkan minimal 1 anggota!"); 
@@ -544,6 +659,49 @@ return result;
 }
         }
     }
+
+        function searchableSelect(options, field) {
+
+    return {
+
+        open: false,
+
+        search: '',
+
+        filtered: options,
+
+        init() {
+
+            this.search =
+                this.$root.__x.$data.formData[field] || '';
+
+        },
+
+        filterOptions() {
+
+            this.open = true;
+
+            this.filtered = options.filter(item =>
+                item
+                    .toLowerCase()
+                    .includes(this.search.toLowerCase())
+            );
+
+        },
+
+        select(item) {
+
+            this.search = item;
+
+            this.$root.__x.$data.formData[field] = item;
+
+            this.open = false;
+
+        }
+
+    }
+
+}
     </script>
 </body>
 </html>

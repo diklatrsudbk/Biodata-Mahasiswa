@@ -315,8 +315,7 @@
   `${this.config.scriptUrl}?action=getByNim&nim=${encodeURIComponent(nimToEdit)}`
 )
                         .then(res => res.json())
-                        .then(data => {
-                            const item = data.find(i => i.nim == nimToEdit);
+                        .then(item => {
                             if (item) {
                                 this.formData = { ...this.formData, ...item };
                                 if (item.pasFotoPreview) this.photoPreview = item.pasFotoPreview;

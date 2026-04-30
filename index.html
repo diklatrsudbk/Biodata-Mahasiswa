@@ -255,7 +255,7 @@
                                     <input type="date" x-model="tempMhs.tanggalLahir" class="input-field">
                                     <input type="text" placeholder="Alamat Lengkap" x-model="tempMhs.alamat" class="input-field md:col-span-2">
                                     <div class="md:col-span-2">
-                                        <label class="text-[10px] font-bold">Upload PDF Anggota (Total Max 3MB)</label>
+                                        <label class="text-[10px] font-bold">Upload PDF Anggota (Total Max 2MB)</label>
                                         <input type="file" multiple @change="handleFile($event, tempMhs)" accept="application/pdf" class="input-field text-xs">
                                     </div>
                                 </div>
@@ -382,7 +382,7 @@
 
             handleFile(e, target) {
                 const files = Array.from(e.target.files);
-                const MAX_TOTAL_SIZE = 3 * 1024 * 1024; // Limit 3MB Total
+                const MAX_TOTAL_SIZE = 2 * 1024 * 1024; // Limit 2MB Total
                 let currentTotalSize = 0;
                 target.dokumenList = [];
                 
@@ -499,7 +499,7 @@
         this.progressText = "✅ Berhasil! Mengalihkan halaman...";
         setTimeout(() => {
             alert(this.isEdit ? "Data Berhasil Diperbarui!" : "Pendaftaran Berhasil Terkirim!");
-            window.location.href = 'index.html';
+            window.location.href = 'edit.html';
         }, 500);
 
     } catch (e) {

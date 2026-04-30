@@ -311,7 +311,9 @@
                     this.progressText = "Sedang memuat data peserta...";
                     this.view = 'input'; 
 
-                    fetch(`${this.config.scriptUrl}?action=read`)
+                    fetch(
+  `${this.config.scriptUrl}?action=getByNim&nim=${encodeURIComponent(nimToEdit)}`
+)
                         .then(res => res.json())
                         .then(data => {
                             const item = data.find(i => i.nim == nimToEdit);

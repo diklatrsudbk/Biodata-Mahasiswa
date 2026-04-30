@@ -149,10 +149,10 @@
                             
                            <div
     x-data="searchableSelect(
-        options.universitas,
-        formData.namaInstitusi,
-        value => formData.namaInstitusi = value
-    )"
+    options.universitas,
+    () => formData.namaInstitusi,
+    value => formData.namaInstitusi = value
+)"
     class="relative"
 >
 
@@ -205,10 +205,10 @@
 
                             <div
     x-data="searchableSelect(
-        options.jurusan,
-        formData.jurusan,
-        value => formData.jurusan = value
-    )"
+    options.jurusan,
+    () => formData.jurusan,
+    value => formData.jurusan = value
+)"
     class="relative"
 >
 
@@ -672,15 +672,30 @@ return result;
         }
     }
 
-        function searchableSelect(options, selectedValue, callback) {
+function searchableSelect(options, selectedValue, callback) {
 
     return {
 
         open: false,
 
-        search: selectedValue || '',
+        search: '',
 
         filtered: [...options],
+
+        init() {
+
+            this.search = selectedValue() || '';
+
+            this.$watch(
+                selectedValue,
+                (value) => {
+
+                    this.search = value || '';
+
+                }
+            );
+
+        },
 
         filterOptions() {
 

@@ -150,7 +150,8 @@
                            <div
     x-data="searchableSelect(
         options.universitas,
-        'namaInstitusi'
+        formData.namaInstitusi,
+        value => formData.namaInstitusi = value
     )"
     class="relative"
 >
@@ -164,7 +165,7 @@
         x-model="search"
         @focus="open = true"
         @input="filterOptions()"
-        @keydown.escape="open = false"
+        @click.away="open = false"
         autocomplete="off"
         placeholder="Cari institusi..."
         class="input-field"
@@ -172,11 +173,15 @@
 
     <div
         x-show="open"
+        x-transition
         x-cloak
         class="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-xl max-h-60 overflow-y-auto"
     >
 
-        <template x-for="item in filtered" :key="item">
+        <template
+            x-for="item in filtered"
+            :key="item"
+        >
 
             <div
                 @click="select(item)"
@@ -196,10 +201,13 @@
     </div>
 
 </div>
+
+
                             <div
     x-data="searchableSelect(
         options.jurusan,
-        'jurusan'
+        formData.jurusan,
+        value => formData.jurusan = value
     )"
     class="relative"
 >
@@ -213,7 +221,7 @@
         x-model="search"
         @focus="open = true"
         @input="filterOptions()"
-        @keydown.escape="open = false"
+        @click.away="open = false"
         autocomplete="off"
         placeholder="Cari jurusan..."
         class="input-field"
@@ -221,11 +229,15 @@
 
     <div
         x-show="open"
+        x-transition
         x-cloak
         class="absolute z-50 mt-1 w-full bg-white border rounded-xl shadow-xl max-h-60 overflow-y-auto"
     >
 
-        <template x-for="item in filtered" :key="item">
+        <template
+            x-for="item in filtered"
+            :key="item"
+        >
 
             <div
                 @click="select(item)"
@@ -660,22 +672,15 @@ return result;
         }
     }
 
-        function searchableSelect(options, field) {
+        function searchableSelect(options, selectedValue, callback) {
 
     return {
 
         open: false,
 
-        search: '',
+        search: selectedValue || '',
 
-        filtered: options,
-
-        init() {
-
-            this.search =
-                this.$root.__x.$data.formData[field] || '';
-
-        },
+        filtered: [...options],
 
         filterOptions() {
 
@@ -684,7 +689,9 @@ return result;
             this.filtered = options.filter(item =>
                 item
                     .toLowerCase()
-                    .includes(this.search.toLowerCase())
+                    .includes(
+                        this.search.toLowerCase()
+                    )
             );
 
         },
@@ -693,7 +700,7 @@ return result;
 
             this.search = item;
 
-            this.$root.__x.$data.formData[field] = item;
+            callback(item);
 
             this.open = false;
 

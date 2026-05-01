@@ -305,7 +305,16 @@
                                     <div><label class="label-text">Jenis Kelamin</label>
                                         <select x-model="formData.jenisKelamin" class="input-field"><option>Laki-Laki</option><option>Perempuan</option></select>
                                     </div>
-                                    <div><label class="label-text">No. WhatsApp</label><input type="number" x-model="formData.hp" class="input-field" placeholder="628123xxx" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required></div>
+                                    <div><label class="label-text">No. WhatsApp</label><input
+    type="text"
+    x-model="formData.hp"
+    class="input-field"
+    placeholder="08xxxxxxxxxx"
+    inputmode="numeric"
+    maxlength="15"
+    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+    required
+></div>
                                     <div><label class="label-text">Tempat Lahir</label><input type="text" x-model="formData.tempatLahir" class="input-field" required></div>
                                     <div><label class="label-text">Tgl Lahir</label><input type="date" x-model="formData.tanggalLahir" @change="validateAge" class="input-field" required></div>
                                     <div class="md:col-span-2"><label class="label-text">Alamat Lengkap</label>

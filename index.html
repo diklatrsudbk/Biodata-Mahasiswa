@@ -19,7 +19,11 @@
         .btn-primary:hover { background-color: #5a3b52; transform: translateY(-2px); }
     </style>
 </head>
-<body class="py-10 px-4 antialiased" x-data="app()">
+<body
+    class="py-10 px-4 antialiased"
+    x-data="app()"
+    x-init="init()"
+>
 
     <datalist id="list-kota">
         <template x-for="item in options.kota"><option :value="item"></option></template>
@@ -58,16 +62,13 @@
 
         <template x-if="view === 'input'">
             <div>
-                <button 
-    @click="
+                <button @click="
         if (window.history.length > 1) {
             history.back()
         } else {
             window.location.href='edit.html'
-        }
-    "
-    class="mb-6 flex items-center text-[#714B67] font-bold hover:underline"
->
+        } "
+    class="mb-6 flex items-center text-[#714B67] font-bold hover:underline" >
     ← Kembali
 </button>
 
@@ -113,8 +114,8 @@
                                     <option value="S1">S1</option>
                                     <option value="S2 Pasca Sarjana">S2 Pasca Sarjana</option>
                                     <option value="Profesi">Profesi</option>
-                                    <option value="Spesialis">Spesialis 1</option>
-                                    <option value="Spesialis">Spesialis 2</option>
+                                    <option value="Spesialis 1">Spesialis 1</option>
+                                    <option value="Spesialis 2">Spesialis 2</option>
                                     <option value="Fellowship">Fellowship</option>
                                 </select>
                             </div>
@@ -508,7 +509,7 @@
                 for (let file of files) {
                     currentTotalSize += file.size;
                     if (currentTotalSize > MAX_TOTAL_SIZE) {
-                        alert("Total file melebihi 3MB!");
+                        alert("Total file melebihi 2MB!");
                         e.target.value = "";
                         target.dokumenList = [];
                         return;
@@ -701,18 +702,22 @@ function searchableSelect(options, selectedValue, callback) {
 
         init() {
 
-            this.search = selectedValue() || '';
+    this.search = selectedValue() || '';
 
-            this.$watch(
-                selectedValue,
-                (value) => {
+    this.filterOptions();
 
-                    this.search = value || '';
+    this.$watch(
+        selectedValue,
+        (value) => {
 
-                }
-            );
+            this.search = value || '';
 
-        },
+            this.filterOptions();
+
+        }
+    );
+
+},
 
         filterOptions() {
 

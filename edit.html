@@ -391,12 +391,22 @@
                 generateFilterOptions() {
 
                     this.uniqueJurusan = [
-                        ...new Set(
-                            this.allData
-                                .map(i => i.jurusan)
-                                .filter(Boolean)
-                        )
-                    ].sort();
+    ...new Set(
+        this.allData
+            .map(i => {
+
+                const jenjang =
+                    i.jenjangPendidikan || '';
+
+                const jurusan =
+                    i.jurusan || '';
+
+                return `${jenjang} - ${jurusan}`;
+
+            })
+            .filter(Boolean)
+    )
+].sort();
 
                     this.uniqueInstitusi = [
                         ...new Set(
@@ -419,9 +429,12 @@
                             item._nama.includes(search) ||
                             item._nim.includes(search);
 
-                        const matchJurusan =
-                            !this.filters.jurusan ||
-                            item.jurusan === this.filters.jurusan;
+                        const gabunganJurusan =
+    `${item.jenjangPendidikan || ''} - ${item.jurusan || ''}`;
+
+const matchJurusan =
+    !this.filters.jurusan ||
+    gabunganJurusan === this.filters.jurusan;
 
                         const matchInstitusi =
                             !this.filters.institusi ||

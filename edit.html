@@ -393,71 +393,68 @@
 
                 generateFilterOptions() {
 
-                    this.uniqueJurusan = [
-    ...new Set(
-        this.allData
-            .map(i => {
+    this.uniqueJurusan = [
+        ...new Set(
+            this.allData
+                .map(i => {
 
-                const jenjang =
-                    i.jenjangPendidikan || '';
+                    const jenjang =
+                        i.jenjangPendidikan || '';
 
-                const jurusan =
-                    i.jurusan || '';
+                    const jurusan =
+                        i.jurusan || '';
 
-                return `${jenjang} - ${jurusan}`;
+                    return jenjang
+                        ? `${jenjang} - ${jurusan}`
+                        : jurusan;
 
-            })
-            .filter(Boolean)
-    )
-].sort();
+                })
+                .filter(Boolean)
+        )
+    ].sort();
 
-                    this.uniqueInstitusi = [
-                        ...new Set(
-                            this.allData
-                                .map(i => i.namaInstitusi)
-                                .filter(Boolean)
-                        )
-                    ].sort();
+    this.uniqueInstitusi = [
+        ...new Set(
+            this.allData
+                .map(i => i.namaInstitusi)
+                .filter(Boolean)
+        )
+    ].sort();
 
-                },
+},
 
                 applyFilters() {
 
-                    const search =
-                        this.filters.search.toLowerCase();
+    const search =
+        this.filters.search.toLowerCase();
 
-                    this.filteredData = this.allData.filter(item => {
+    this.filteredData = this.allData.filter(item => {
 
-                        const matchSearch =
-                            item._nama.includes(search) ||
-                            item._nim.includes(search);
+        const matchSearch =
+            item._nama.includes(search) ||
+            item._nim.includes(search);
 
-                        const gabunganJurusan =
-    `${item.jenjangPendidikan || ''} - ${item.jurusan || ''}`;
+        const gabunganJurusan =
+            `${item.jenjangPendidikan || ''} - ${item.jurusan || ''}`;
 
-const matchJurusan =
-    !this.filters.jurusan ||
-    gabunganJurusan === this.filters.jurusan;
+        const matchJurusan =
+            !this.filters.jurusan ||
+            gabunganJurusan === this.filters.jurusan;
 
-const matchJurusan =
-    !this.filters.jurusan ||
-    gabunganJurusan === this.filters.jurusan;
+        const matchInstitusi =
+            !this.filters.institusi ||
+            item.namaInstitusi === this.filters.institusi;
 
-                        const matchInstitusi =
-                            !this.filters.institusi ||
-                            item.namaInstitusi === this.filters.institusi;
+        return (
+            matchSearch &&
+            matchJurusan &&
+            matchInstitusi
+        );
 
-                        return (
-                            matchSearch &&
-                            matchJurusan &&
-                            matchInstitusi
-                        );
+    });
 
-                    });
-
-                    this.currentPage = 1;
-
-                },
+    this.currentPage = 1;
+},
 
                 get paginatedData() {
 

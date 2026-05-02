@@ -704,7 +704,7 @@ function searchableSelect(options, selectedValue, callback) {
 
     this.search = selectedValue() || '';
 
-    this.filterOptions();
+    this.filterOptions(false);
 
     this.$watch(
         selectedValue,
@@ -712,7 +712,7 @@ function searchableSelect(options, selectedValue, callback) {
 
             this.search = value || '';
 
-            this.filterOptions();
+            this.filterOptions(false);
 
         }
     );

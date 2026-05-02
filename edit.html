@@ -350,17 +350,10 @@
 
                         this.allData = result.map(item => {
 
-    const jenjang =
-        item.jenjangPendidikan ||
-        item.jenjangpend ||
-        item["jenjang pend"] ||
-        '';
+    console.log(item);
 
     return {
         ...item,
-
-        // normalisasi jenjang
-        jenjangFix: jenjang,
 
         _nama:
             (item.nama || '').toLowerCase(),
@@ -406,7 +399,7 @@
             .map(i => {
 
                 const jenjang =
-                    i.jenjangFix || '';
+                    i.jenjangPendidikan || '';
 
                 const jurusan =
                     i.jurusan || '';
@@ -440,7 +433,11 @@
                             item._nim.includes(search);
 
                         const gabunganJurusan =
-`${item.jenjangFix || ''} - ${item.jurusan || ''}`;
+    `${item.jenjangPendidikan || ''} - ${item.jurusan || ''}`;
+
+const matchJurusan =
+    !this.filters.jurusan ||
+    gabunganJurusan === this.filters.jurusan;
 
 const matchJurusan =
     !this.filters.jurusan ||

@@ -342,6 +342,7 @@
                         }
 
                         const result = await response.json();
+                        console.log(result[0]);
 
                         if (!Array.isArray(result)) {
                             throw new Error("Format data tidak valid");

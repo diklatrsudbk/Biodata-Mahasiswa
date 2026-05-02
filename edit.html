@@ -396,7 +396,9 @@
             .map(i => {
 
                 const jenjang =
-                    i.jenjangPendidikan || '';
+    i.jenjangPendidikan ||
+    i["jenjangpend"] ||
+    '';
 
                 const jurusan =
                     i.jurusan || '';
@@ -430,7 +432,7 @@
                             item._nim.includes(search);
 
                         const gabunganJurusan =
-    `${item.jenjangPendidikan || ''} - ${item.jurusan || ''}`;
+    `${item.jenjangPendidikan || item["jenjangpend"] || ''} - ${item.jurusan || ''}`;
 
 const matchJurusan =
     !this.filters.jurusan ||

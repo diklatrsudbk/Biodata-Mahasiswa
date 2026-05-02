@@ -719,19 +719,19 @@ function searchableSelect(options, selectedValue, callback) {
 
 },
 
-        filterOptions() {
+        filterOptions(show = true) {
 
-            this.open = true;
+    this.open = show;
 
-            this.filtered = options.filter(item =>
-                item
-                    .toLowerCase()
-                    .includes(
-                        this.search.toLowerCase()
-                    )
-            );
+    this.filtered = options.filter(item =>
+        item
+            .toLowerCase()
+            .includes(
+                this.search.toLowerCase()
+            )
+    );
 
-        },
+},
 
         select(item) {
 

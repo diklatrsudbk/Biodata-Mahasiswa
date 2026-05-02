@@ -349,23 +349,32 @@
 
                         this.allData = result.map(item => {
 
-                            return {
-                                ...item,
+    const jenjang =
+        item.jenjangPendidikan ||
+        item.jenjangpend ||
+        item["jenjang pend"] ||
+        '';
 
-                                _nama:
-                                    (item.nama || '').toLowerCase(),
+    return {
+        ...item,
 
-                                _nim:
-                                    String(item.nim || '').toLowerCase(),
+        // normalisasi jenjang
+        jenjangFix: jenjang,
 
-                                startDateFormatted:
-                                    this.formatDate(item.startDate),
+        _nama:
+            (item.nama || '').toLowerCase(),
 
-                                endDateFormatted:
-                                    this.formatDate(item.endDate)
-                            };
+        _nim:
+            String(item.nim || '').toLowerCase(),
 
-                        });
+        startDateFormatted:
+            this.formatDate(item.startDate),
+
+        endDateFormatted:
+            this.formatDate(item.endDate)
+    };
+
+});
 
                         this.generateFilterOptions();
 
@@ -396,9 +405,7 @@
             .map(i => {
 
                 const jenjang =
-    i.jenjangPendidikan ||
-    i["jenjangpend"] ||
-    '';
+                    i.jenjangFix || '';
 
                 const jurusan =
                     i.jurusan || '';
@@ -432,7 +439,7 @@
                             item._nim.includes(search);
 
                         const gabunganJurusan =
-    `${item.jenjangPendidikan || item["jenjangpend"] || ''} - ${item.jurusan || ''}`;
+`${item.jenjangFix || ''} - ${item.jurusan || ''}`;
 
 const matchJurusan =
     !this.filters.jurusan ||

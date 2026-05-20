@@ -257,7 +257,7 @@
                                     <div class="photo-box">
                                         <template x-if="!photoPreview"><span class="text-[10px] text-gray-400 text-center p-2">Klik untuk Upload</span></template>
                                         <template x-if="photoPreview"><img :src="photoPreview" class="w-full h-full object-cover"></template>
-                                        <input type="file" @change="uploadPhoto($event)" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer">
+                                        <input type="file" @change="uploadPhoto($event)" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer" required>
                                     </div>
                                     <button x-show="photoPreview" @click="photoPreview = null" type="button" class="text-[10px] text-red-500 mt-2">Hapus</button>
                                 </div>

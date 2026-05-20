@@ -73,7 +73,7 @@
          class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm text-white"
          x-cloak>
         <div class="text-center p-6 bg-white rounded-2xl shadow-2xl">
-            <div class="loader-ring mx-auto mb-4"></div>
+            <div class="loader-ring mx-auto mb-4 shadow-lg"></div>
 
             <p x-text="progressText"
                class="text-gray-800 font-bold text-lg"></p>
@@ -90,7 +90,7 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
 
             <div class="flex items-center gap-4 text-left">
-                <img src="rsudbk.png"
+                <img src="assets/img/rsudbk.png"
                      alt="Logo"
                      class="h-16 w-auto object-contain">
 
@@ -112,7 +112,7 @@
         </div>
 
         <!-- Filter -->
-        <div class="bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-100">
+        <div class="bg-white/90 backdrop-blur p-6 rounded-2xl shadow-sm mb-6 border border-gray-100">
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -165,7 +165,7 @@
 
             <div class="overflow-x-auto">
 
-                <table class="w-full text-sm text-left">
+                <table class="min-w-[1000px] w-full text-sm text-left">
 
                     <thead class="bg-gray-50 text-gray-600 border-b">
                         <tr>
@@ -234,13 +234,13 @@
 
                                 <td class="p-4 text-center">
 
-                                    <button @click="window.open('index.html?action=edit&nim=' + encodeURIComponent(item.nim), '_top')"
-                                            class="text-blue-500 hover:text-blue-700 font-bold text-xs p-2">
+                                    <button @click="window.open('input_biodata.html?action=edit&nim=' + encodeURIComponent(item.nim), '_top')"
+                                            class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-lg font-bold text-xs transition">
                                         Edit
                                     </button>
 
                                     <button @click="hapusData(item.nim, item.nama)"
-                                            class="text-red-500 hover:text-red-700 font-bold text-xs p-2">
+                                            class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold text-xs transition">
                                         Hapus
                                     </button>
 
@@ -310,7 +310,7 @@
                 searchTimeout: null,
 
                 currentPage: 1,
-                perPage: 50,
+                perPage: 15,
 
                 filters: {
                     search: '',
@@ -379,10 +379,10 @@
 
                         console.error(err);
 
-                        alert(
-                            "Koneksi gagal:\n" +
-                            err.message
-                        );
+                        showToast(
+                        err.message,
+                        'error'
+                            );
 
                     } finally {
 
@@ -503,7 +503,7 @@
 
                             this.searchTimeout = setTimeout(() => {
                                 this.applyFilters();
-                            }, 250);
+                            }, 400);
 
                         }
                     );
@@ -605,10 +605,10 @@
 
                         console.error(err);
 
-                        alert(
-                            "Terjadi kesalahan:\n" +
-                            err.message
-                        );
+                        showToast(
+    err.message,
+    'error'
+);
 
                     } finally {
 

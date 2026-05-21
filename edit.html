@@ -331,12 +331,14 @@
                     try {
 
                         const response = await fetch(
-                            this.config.scriptUrl + "?action=read",
-                            {
-                                method: 'GET',
-                                cache: 'no-store'
-                            }
-                        );
+    this.config.scriptUrl +
+    "?action=read&targetSheet=" +
+    this.config.targetSheet,
+    {
+        method: 'GET',
+        cache: 'no-store'
+    }
+);
 
                         if (!response.ok) {
                             throw new Error("Gagal mengambil data");

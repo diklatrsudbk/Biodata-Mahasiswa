@@ -2,6 +2,8 @@ function defaultFormData(){
 
     return {
 
+        id: '',
+
         allowGroup:false,
 
         tipe:'Perorangan',

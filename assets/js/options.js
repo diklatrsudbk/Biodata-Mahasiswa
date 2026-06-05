@@ -21,7 +21,7 @@ const OPTIONS = {
 
     jurusan: [
         "Keperawatan Regular","Keperawatan Non-Regular","Keperawatan RPL","Profesi Ners","Profesi Ners Non-Regular","Kebidanan Regular","Kebidanan Non-regular","Kebidanan RPL","Profesi Bidan Regular",
-        "Profesi Bidan Non-Regular","Kedokteran","Kedokteran / PSPD","PPDS Anak","PPDS Anaestesi","PPDS Bedah","PPDS Obgyn","PPDS KFR","PPDS THT-KL","PPDS Neurologi","PPDS IPD","Kedokteran Gigi","Anestesi Regular",
+        "Profesi Bidan Non-Regular","Kedokteran","Kedokteran / PSPD","Kedokteran PIDI","Kedokteran PIDGI","PPDS Anak","PPDS Anaestesi","PPDS Bedah","PPDS Obgyn","PPDS KFR","PPDS THT-KL","PPDS Neurologi","PPDS IPD","PPDS DVE","Kedokteran Gigi","Anestesi Regular",
         "Anestesi RPL","Laboratorium Medis","Gizi","Psikologi","Fisioterapi","Analis Kesehatan","Rekam Medik","Terapi Wicara","Terapi Okupasi","Fisika","Biologi","Radiologi","Farmasi","Computer Science","Apoteker",
         "Kesehatan Lingkungan (KESLING)", "Kesehatan Masyarakat"
     ]

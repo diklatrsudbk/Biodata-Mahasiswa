@@ -16,7 +16,7 @@ function app() {
 
         config: {
 
-            targetSheet: "GEL7",
+            targetSheet: "GEL8",
 
             scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
 

@@ -207,6 +207,10 @@ function app() {
 
                 };
 
+                console.log("DEBUG: Nilai this.isEdit:", this.isEdit);
+        console.log("DEBUG: Payload lengkap:", payload);
+        console.log("DEBUG: ID yang dikirim:", payload.id);
+
 
 
 

@@ -14,7 +14,7 @@ const OPTIONS = {
         "Stikes Budi Luhur","Stikes RS Dustira","Stikes Dharma Husada Bandung (DHB)","Inkes Rajawali","Inkes Immanuel","Inkes Pelamonia Makasar","Poltekkes Palu","Poltekkes Bandung",
         "Politeknik Cendrawasih Palu","Universitas Padjajaran (UNPAD)","Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam","UNISA Bandung","Universitas Bhakti Kencana (UBK)",
         "Universitas Pendidikan Indonesia (UPI)","Universitas Jenderal Achmad Yani (UNJANI)","Universitas Borromeus","Universitas Muhammadiyah Ahmad Dahlan (UM-AD) Palembang","Universitas Dehasen (UNIVED) Bengkulu",
-        "Stikes Marendeng Majene"
+        "Stikes Marendeng Majene","Pelatihan NICU"
     ],
 
     jurusan: [

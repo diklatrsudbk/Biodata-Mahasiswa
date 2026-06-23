@@ -128,14 +128,7 @@
         </div>
 
         <div class="card mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Cari Peserta</label>
-                    <div class="relative">
-                        <input type="text" x-model="search" placeholder="Cari nama peserta atau NIM..." class="w-full border border-slate-200 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-[#714B67]">
-                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">🔍</div>
-                    </div>
-                </div>
+            
 
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Pilih Gelombang Data</label>
@@ -165,8 +158,16 @@
                     <p class="text-sm text-slate-500 mt-1">Total <span class="font-semibold" x-text="filteredData.length"></span> data ditampilkan</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                    <button @click="window.location.href = 'input_biodata.html?sheet=' + selectedGelombang" class="bg-[#714B67] text-white px-5 py-3 rounded-xl font-semibold hover:opacity-90 transition">+ Tambah Peserta</button>
+                    <button @click="window.location.href = 'input_peserta.html?sheet=' + selectedGelombang" class="bg-[#714B67] text-white px-5 py-3 rounded-xl font-semibold hover:opacity-90 transition">+ Tambah Peserta</button>
                     <button @click="loadData(true)" class="bg-slate-100 text-slate-700 px-5 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">↻ Reload</button>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Cari Peserta</label>
+                    <div class="relative">
+                        <input type="text" x-model="search" placeholder="Cari nama peserta atau NIM..." class="w-full border border-slate-200 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-[#714B67]">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">🔍</div>
+                    </div>
+                </div>
                     <button @click="printByGelombang()" class="bg-slate-100 text-slate-700 px-5 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">🪪 Print ID Card</button>
                 </div>
             </div>

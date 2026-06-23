@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Print ID Card</title>
+
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    background:#dcdcdc;
+    font-family:'Poppins',sans-serif;
+}
+
+/* =========================
+A4
+========================= */
+.sheet{
+    width:21cm;
+    height:29.7cm;
+    margin:auto;
+    background:white;
+    box-sizing:border-box;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-start;
+    align-content:flex-start;
+    padding-top:1cm;
+    padding-left:1cm;
+    page-break-after:always;
+    column-gap:0;
+    row-gap:0;
+}
+
+/* =========================
+CARD
+========================= */
+.id-card{
+    width:5.5cm;
+    height:8.5cm;
+    position:relative;
+    overflow:hidden;
+    box-sizing:border-box;
+    flex:0 0 auto;
+}
+
+/* =========================
+LEVEL
+========================= */
+.level{
+    z-index:2;
+    position:absolute;
+    top:0.3cm;
+    right:0.35cm;
+    font-size:28pt;
+    font-weight:800;
+    color:white;
+    line-height:1;
+}
+.level-1{ color:#0B632A; }
+.level-2{ color:#084DBD; }
+.level-3{ color:#B8860B; }
+.level-4{ color:#8B0000; }
+
+/* =========================
+FOTO BULAT
+========================= */
+.foto-wrapper{
+    z-index:2;
+    position:absolute;
+    top:1.46cm;
+    left:0.24cm;
+    width:2.55cm;
+    height:2.55cm;
+    border-radius:50%;
+    overflow:hidden;
+    background:white;
+    border:3px solid rgba(255,255,255,.9);
+}
+.foto{
+    z-index:2;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+.info-wrapper{
+    z-index:2;
+    position:absolute;
+    top:1.9cm;
+    left:3.05cm;
+    width:2.2cm;
+    display:flex;
+    flex-direction:column;
+    gap:0.12cm;
+}
+.nama{
+    font-size:9pt;
+    font-weight:800;
+    line-height:1.05;
+    color:#111;
+    word-break:break-word;
+    overflow-wrap:break-word;
+}
+.jurusan{
+    font-size:8pt;
+    font-weight:600;
+    line-height:1.1;
+    word-break:break-word;
+}
+.nim{
+    font-size:6pt;
+    color:#111;
+    line-height:1.1;
+}
+.periode{
+    font-size:5.7pt;
+    line-height:1.1;
+    color:#111;
+}
+
+/* =========================
+LOGO
+========================= */
+.logo{
+    z-index:2;
+    position:absolute;
+    bottom:1.6cm;
+    left:0.95cm;
+    width:1cm;
+    height:1cm;
+    object-fit:contain;
+    text-shadow: 0 1px 2px rgba(3, 3, 3, 0.514);
+}
+
+/* =========================
+INSTITUSI
+========================= */
+.institusi{
+    z-index:2;
+    position:absolute;
+    bottom:0.7cm;
+    left:0.7cm;
+    width:1.5cm;
+    text-align:center;
+    font-size:5pt;
+    font-weight:500;
+    color:white;
+    line-height:1.1;
+    text-shadow: 0 1px 2px rgba(7, 6, 6, 0.25);
+}
+.institusi-level-1{ color:#ffffff; }
+.institusi-level-2{ color:#ffffff; }
+.institusi-level-3{ color:#222222; }
+.institusi-level-4{ color:#ffffff; }
+
+/* =========================
+QR
+========================= */
+.qr{
+    z-index:2;
+    position:absolute;
+    bottom:0.81cm;
+    right: 0.31cm;
+    width:2.3cm;
+    height:2.3cm;
+    background:white;
+    padding:2px;
+    border-radius:8px;
+}
+.bg-template{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:1;
+}
+
+/* =========================
+PRINT
+========================= */
+@media print{
+    .id-card::after{
+        content:'';
+        position:absolute;
+        inset:0;
+        border:0.3px dashed rgba(0,0,0,.35);
+        pointer-events:none;
+        z-index:99;
+    }
+    body{ background:white; }
+    .toolbar{ display:none !important; }
+    .sheet{ margin:0; }
+}
+
+@page{
+    size:A4 portrait;
+    margin:0;
+}
+
+.toolbar{
+    position:sticky;
+    top:0;
+    z-index:999;
+    background:white;
+    padding:14px;
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+.toolbar select, .toolbar input[type="date"]{
+    height:42px;
+    padding:0 12px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-family:'Poppins',sans-serif;
+    box-sizing: border-box;
+}
+.toolbar button{
+    height:42px;
+    padding:0 18px;
+    border:none;
+    border-radius:10px;
+    background:#714B67;
+    color:white;
+    font-weight:700;
+    cursor:pointer;
+}
+.ts-control{
+    min-width:280px;
+    min-height:44px;
+    border-radius:10px !important;
+    padding:6px !important;
+    font-family:'Poppins',sans-serif;
+}
+.date-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11pt;
+    font-weight: 500;
+}
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+    <select id="customName" multiple></select>
+
+    <select id="filterLevel">
+        <option value="">Semua Level</option>
+        <option value="1">Level 1</option>
+        <option value="2">Level 2</option>
+        <option value="3">Level 3</option>
+        <option value="4">Level 4</option>
+    </select>
+
+    <select id="filterInstitusi">
+        <option value="">Semua Institusi</option>
+    </select>
+
+    <select id="filterJurusan">
+        <option value="">Semua Jurusan</option>
+    </select>
+
+    <div class="date-group">
+        <input type="date" id="filterStartDate" title="Tanggal Mulai">
+        <span>s/d</span>
+        <input type="date" id="filterEndDate" title="Tanggal Selesai">
+    </div>
+
+    <button onclick="applyFilter()">🔍 Terapkan</button>
+    <button onclick="window.print()">🖨 Print</button>
+</div>
+
+<div id="sheetContainer"></div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const mode = params.get('mode') || 'single';
+const selectedSheet = params.get('sheet') || 'GEL8';
+const nim = params.get('nim');
+const level = params.get('level');
+const jurusan = params.get('jurusan');
+
+const scriptUrl = "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec";
+const sheetContainer = document.getElementById('sheetContainer');
+
+let allData = [];
+let tomSelectInstance;
+
+/* =========================
+TEMPLATE BY LEVEL
+========================= */
+function getTemplate(level){
+    if(!level) return '../assets/IDcard/biru.jpg';
+    level = level.toString();
+    if(level === '1') return '../assets/IDcard/hijau.jpg';
+    if(level === '2') return '../assets/IDcard/biru.jpg';
+    if(level === '3') return '../assets/IDcard/kuning.jpg';
+    if(level === '4') return '../assets/IDcard/merah.jpg';
+    return '../assets/IDcard/biru.jpg';
+}
+
+/* =========================
+LOGO INSTITUSI
+========================= */
+function getLogo(institusi){
+    if(!institusi) return '../assets/img/default.png';
+    const cleanName = institusi.trim().replaceAll('/', '-').replaceAll('\\', '-');
+    return `../assets/img/${cleanName}.png`;
+}
+
+/* =========================
+LOAD DATA
+========================= */
+async function loadData(){
+    try{
+        const response = await fetch(`${scriptUrl}?action=read&sheet=${selectedSheet}`);
+        const data = await response.json();
+        
+        allData = Array.isArray(data) ? data : (data.data || []);
+        console.log("Data loaded:", allData);
+
+
+        loadDropdowns(allData);
+
+        let filteredData = [...allData];
+
+        if(mode === 'single' && nim){
+            filteredData = filteredData.filter(item => item.nim == nim);
+        }
+        if(mode === 'level' && level){
+            filteredData = filteredData.filter(item => item.level == level);
+        }
+        if(mode === 'jurusan' && jurusan){
+            filteredData = filteredData.filter(item => item.jurusan == jurusan);
+        }
+
+        renderCards(filteredData);
+
+    } catch(err){
+        console.error(err);
+        alert('Gagal load data pendaftaran');
+    }
+}
+
+/* =========================
+RENDER CARDS
+========================= */
+function renderCards(data){
+    sheetContainer.innerHTML = '';
+    if(data.length === 0){
+        sheetContainer.innerHTML = '<div style="text-align:center; padding: 50px; font-weight:600;">Tidak ada data yang sesuai filter.</div>';
+        return;
+    }
+
+    for(let i = 0; i < data.length; i += 9){
+        const chunk = data.slice(i, i + 9);
+        let pageHTML = `<div class="sheet">`;
+
+        chunk.forEach(item => {
+            pageHTML += `
+            <div class="id-card">
+                <img class="bg-template" src="${getTemplate(item.level)}">
+                <div class="level">${item.level || '-'}</div>
+                <div class="foto-wrapper">
+                    <img class="foto" src="${item.pasFotoPreview || 'https://placehold.co/300x400'}">
+                </div>
+                <div class="info-wrapper">
+                    <div class="nama">${item.nama || '-'}</div>
+                    <div class="jurusan level-${item.level || 0}">
+                        ${(item.jenjangPendidikan || '')} | ${(item.jurusan || '-')}
+                    </div>
+                    <div class="nim"><strong>NIM</strong> ${item.nim || '-'}</div>
+                    <div class="periode">
+                        <strong>PERIODE :</strong> ${item.startDate || '-'} - ${item.endDate || '-'}
+                    </div>
+                </div>
+                <img class="logo" src="${getLogo(item.namaInstitusi)}" onerror="this.onerror=null; this.src='https://placehold.co/100x100?text=No+Logo'">
+                <div class="institusi institusi-level-${item.level || 0}">
+                    ${item.namaInstitusi || '-'}
+                </div>
+                <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${item.nim}">
+            </div>`;
+        });
+
+        pageHTML += `</div>`;
+        sheetContainer.innerHTML += pageHTML;
+    }
+}
+
+function loadDropdowns(data){
+    const institusiSelect = document.getElementById('filterInstitusi');
+    institusiSelect.innerHTML = '<option value="">Semua Institusi</option>';
+    const institusiSet = [...new Set(data.map(item => item.namaInstitusi).filter(Boolean))].sort();
+    institusiSet.forEach(val => {
+        institusiSelect.innerHTML += `<option value="${val}">${val}</option>`;
+    });
+
+    const jurusanSelect = document.getElementById('filterJurusan');
+    jurusanSelect.innerHTML = '<option value="">Semua Jurusan</option>';
+    const jurusanSet = [...new Set(data.map(item => item.jurusan).filter(Boolean))].sort();
+    jurusanSet.forEach(val => {
+        jurusanSelect.innerHTML += `<option value="${val}">${val}</option>`;
+    });
+
+    const nameSelect = document.getElementById('customName');
+    nameSelect.innerHTML = '';
+    const uniqueNama = [...new Set(data.map(item => item.nama).filter(Boolean))].sort();
+    uniqueNama.forEach(nama => {
+        nameSelect.innerHTML += `<option value="${nama}">${nama}</option>`;
+    });
+
+    if (tomSelectInstance) {
+        tomSelectInstance.destroy();
+    }
+
+    tomSelectInstance = new TomSelect('#customName', {
+        plugins: ['remove_button'],
+        create: false,
+        persist: false,
+        maxItems: null,
+        placeholder: 'Cari nama peserta...'
+    });
+}
+
+// Fungsi bantu untuk mengubah string tanggal/timestamp dari Sheets menjadi Objek Date JS
+// Mengubah data mentah Sheets "10/06/2026 14:58:33" menjadi "2026-06-10" (Aman dari timezone)
+// Fungsi pembaca tanggal pendaftaran mentah dari Sheet
+function parseSheetDateToISO(dateStr) {
+    if (!dateStr) return null;
+    
+    // Ambil tanggalnya saja di depan (membuang jam seperti 14:58:33)
+    const dateOnly = dateStr.toString().trim().split(' ')[0];
+    
+    // Belah berdasarkan karakter garis miring (/)
+    const parts = dateOnly.split('/');
+    if (parts.length === 3) {
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2];
+        
+        // Hasil akhir disamakan dengan input HTML kalender: YYYY-MM-DD
+        return `${year}-${month}-${day}`;
+    }
+    return null;
+}
+
+function applyFilter(){
+    const customNames = tomSelectInstance ? tomSelectInstance.getValue() : [];
+    const levelFilter = document.getElementById('filterLevel').value;
+    const institusiFilter = document.getElementById('filterInstitusi').value;
+    const jurusanFilter = document.getElementById('filterJurusan').value;
+    
+    // Format otomatis dari input kalender HTML sudah YYYY-MM-DD
+    const startDateVal = document.getElementById('filterStartDate').value; 
+    const endDateVal = document.getElementById('filterEndDate').value;     
+
+    let filtered = [...allData];
+
+    // 1. FILTER DROPDOWN
+    if(levelFilter){
+        filtered = filtered.filter(item => item.level == levelFilter);
+    }
+    if(institusiFilter){
+        filtered = filtered.filter(item => item.namaInstitusi == institusiFilter);
+    }
+    if(jurusanFilter){
+        filtered = filtered.filter(item => item.jurusan == jurusanFilter);
+    }
+    if(customNames && customNames.length > 0){
+        const selectedNames = customNames.map(name => name.toLowerCase());
+        filtered = filtered.filter(item => item.nama && selectedNames.includes(item.nama.toLowerCase()));
+    }
+    
+    // 2. FILTER RENTANG TANGGALDAFTAR (Pasti Akurat karena format dari Apps Script sudah YYYY-MM-DD)
+    if(startDateVal || endDateVal) {
+        filtered = filtered.filter(item => {
+            const itemDate = item.tanggaldaftar; // Isinya contoh: "2026-06-10"
+            
+            if(!itemDate) return false;
+            
+            if (startDateVal && itemDate < startDateVal) return false;
+            if (endDateVal && itemDate > endDateVal) return false;
+            
+            return true;
+        });
+    }
+
+    renderCards(filtered);
+}
+
+
+async function waitImagesLoaded(){
+    const images = document.images;
+    const promises = [];
+    for(let img of images){
+        if(img.complete) continue;
+        promises.push(new Promise(resolve => {
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+        }));
+    }
+    await Promise.allSettled(promises);
+}
+
+async function startPrint(){
+    await loadData();
+    await waitImagesLoaded();
+    console.log('Preview cetak ID Card siap!');
+}
+
+startPrint();
+</script>
+
+</body>
+</html>

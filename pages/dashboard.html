@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+<style>
+
+body{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    background:#f5f7fb;
+}
+
+[x-cloak]{
+    display:none!important;
+}
+
+</style>
+
+</head>
+
+<body
+x-data="{
+    sidebarOpen:false
+}"
+>
+
+<!-- OVERLAY -->
+
+<div
+    x-show="sidebarOpen"
+    x-transition.opacity
+    @click="sidebarOpen=false"
+    class="fixed inset-0 bg-black/40 z-40 lg:hidden"
+    x-cloak
+></div>
+
+<div class="min-h-screen flex">
+
+    <!-- SIDEBAR -->
+
+    <aside
+        class="fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 p-6 flex flex-col transform transition-all duration-300 ease-out"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    >
+
+        <!-- CLOSE MOBILE -->
+
+        <div class="flex justify-end lg:hidden mb-4">
+
+            <button
+                @click="sidebarOpen=false"
+                class="w-10 h-10 rounded-xl hover:bg-slate-100"
+            >
+                ✕
+            </button>
+
+        </div>
+
+        <!-- LOGO -->
+
+        <div class="text-center pb-6 border-b border-slate-200">
+
+            <img
+                src="../assets/img/rsudbk.png"
+                alt="RSUDBK"
+                class="w-32 mx-auto mb-4"
+            >
+
+            <h2 class="font-extrabold text-xl text-slate-800">
+                RSUDBK
+            </h2>
+
+            <p class="text-sm text-slate-500 leading-relaxed">
+                Sistem Biodata<br>
+                Peserta Didik
+            </p>
+
+        </div>
+
+        <!-- PROFILE -->
+
+        <div class="mt-6 bg-slate-50 rounded-2xl p-4">
+
+            <div class="flex items-center gap-3">
+
+                <div
+                    class="w-12 h-12 rounded-full bg-[#714B67] text-white flex items-center justify-center font-bold"
+                >
+                    A
+                </div>
+
+                <div>
+
+                    <h4 class="font-semibold text-slate-800">
+                        Administrator
+                    </h4>
+
+                    <p class="text-xs text-slate-500">
+                        admin@rsudbk.id
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- MENU -->
+
+        <nav class="mt-8 space-y-2">
+
+            <a
+                href="dashboard.html"
+                @click="sidebarOpen=false"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#714B67] text-white font-semibold"
+            >
+                📊 Dashboard
+            </a>
+
+            <a
+                href="peserta.html"
+                @click="sidebarOpen=false"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 transition"
+            >
+                👥 Data Peserta Didik
+            </a>
+
+            <a
+                href="setting.html"
+                @click="sidebarOpen=false"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 transition"
+            >
+                ⚙️ Pengaturan Pendaftaran
+            </a>
+
+        </nav>
+
+        <!-- FOOTER -->
+
+        <div class="mt-auto">
+
+            <button
+                class="w-full bg-red-50 text-red-600 rounded-xl py-3 font-semibold hover:bg-red-100 transition" onclick="logout()"
+            >
+                🚪 Logout
+            </button>
+
+            <p class="text-xs text-slate-400 text-center mt-4">
+                © 2026 RSUDBK
+            </p>
+
+        </div>
+
+    </aside>
+
+    <!-- CONTENT -->
+
+    <main class="flex-1 p-6 lg:p-10">
+
+        <!-- MOBILE HEADER -->
+
+        <div class="flex items-center justify-between mb-6 lg:hidden">
+
+            <button
+                @click="sidebarOpen=true"
+                class="w-11 h-11 rounded-xl border border-slate-200 bg-white"
+            >
+                ☰
+            </button>
+
+            <div class="font-bold text-slate-800">
+                Dashboard
+            </div>
+
+        </div>
+
+        <!-- HEADER -->
+
+        <div class="mb-8">
+
+            <h1 class="text-3xl font-extrabold text-slate-800">
+                Dashboard
+            </h1>
+
+            <p class="text-slate-500 mt-2">
+                Ringkasan data dan aktivitas sistem
+            </p>
+
+        </div>
+
+        <!-- STATISTIK -->
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+
+                <p class="text-slate-500 text-sm">
+                    Total Peserta
+                </p>
+
+                <h2 class="text-3xl font-extrabold text-slate-800 mt-2">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+
+                <p class="text-slate-500 text-sm">
+                    Pendaftaran Hari Ini
+                </p>
+
+                <h2 class="text-3xl font-extrabold text-[#714B67] mt-2">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+
+                <p class="text-slate-500 text-sm">
+                    Dokumen Lengkap
+                </p>
+
+                <h2 class="text-3xl font-extrabold text-slate-800 mt-2">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+
+                <p class="text-slate-500 text-sm">
+                    Gelombang Aktif
+                </p>
+
+                <h2 class="text-3xl font-extrabold text-[#714B67] mt-2">
+                    GEL7
+                </h2>
+
+            </div>
+
+        </div>
+
+        <!-- AKTIVITAS -->
+
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+
+            <h3 class="text-xl font-bold text-slate-800 mb-4">
+                Aktivitas Terbaru
+            </h3>
+
+            <div class="border-b border-slate-100 py-3">
+                Belum ada aktivitas.
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+if(
+    sessionStorage.getItem('dashboardLogin')
+    !== 'true'
+){
+    window.location.href='../index.html';
+}
+
+
+function logout(){
+
+    sessionStorage.removeItem(
+        'dashboardLogin'
+    );
+
+    window.location.href =
+        '../index.html';
+
+}
+
+
+</script>
+
+</body>
+</html>

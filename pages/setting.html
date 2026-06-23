@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+<style>
+
+body{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    background:#f5f7fb;
+}
+
+[x-cloak]{
+    display:none!important;
+}
+
+.card{
+    background:white;
+    border-radius:1.5rem;
+    padding:1.5rem;
+    box-shadow:0 4px 20px rgba(0,0,0,.05);
+}
+
+</style>
+
+</head>
+
+<body
+x-data="pengaturanApp()"
+x-init="init()"
+>
+
+<!-- OVERLAY -->
+
+<div
+    x-show="sidebarOpen"
+    x-transition.opacity
+    @click="sidebarOpen=false"
+    class="fixed inset-0 bg-black/40 z-40 lg:hidden"
+    x-cloak
+></div>
+
+<div class="min-h-screen flex">
+
+    <!-- SIDEBAR -->
+
+    <aside
+        class="fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 p-6 flex flex-col transform transition-all duration-300 ease-out"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    >
+
+        <!-- CLOSE MOBILE -->
+
+        <div class="flex justify-end lg:hidden mb-4">
+
+            <button
+                @click="sidebarOpen=false"
+                class="w-10 h-10 rounded-xl hover:bg-slate-100"
+            >
+                ✕
+            </button>
+
+        </div>
+
+        <!-- LOGO -->
+
+        <div class="text-center pb-6 border-b border-slate-200">
+
+            <img
+                src="../assets/img/rsudbk.png"
+                alt="RSUDBK"
+                class="w-32 mx-auto mb-4"
+            >
+
+            <h2 class="font-extrabold text-xl text-slate-800">
+                RSUDBK
+            </h2>
+
+            <p class="text-sm text-slate-500 leading-relaxed">
+                Sistem Biodata<br>
+                Peserta Didik
+            </p>
+
+        </div>
+
+        <!-- PROFILE -->
+
+        <div class="mt-6 bg-slate-50 rounded-2xl p-4">
+
+            <div class="flex items-center gap-3">
+
+                <div
+                    class="w-12 h-12 rounded-full bg-[#714B67] text-white flex items-center justify-center font-bold"
+                >
+                    A
+                </div>
+
+                <div>
+
+                    <h4 class="font-semibold text-slate-800">
+                        Administrator
+                    </h4>
+
+                    <p class="text-xs text-slate-500">
+                        admin@rsudbk.id
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- MENU -->
+
+        <nav class="mt-8 space-y-2">
+
+            <a
+                href="dashboard.html"
+                @click="sidebarOpen=false"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 transition"
+                
+            >
+                📊 Dashboard
+            </a>
+
+            <a
+                href="peserta.html"
+                @click="sidebarOpen=false"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 transition"
+            >
+                👥 Data Peserta Didik
+            </a>
+
+            <a
+                href="setting.html"
+                @click="sidebarOpen=false"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#714B67] text-white font-semibold"
+            >
+                ⚙️ Pengaturan Pendaftaran
+            </a>
+
+        </nav>
+
+        <!-- FOOTER -->
+
+        <div class="mt-auto">
+
+            <button
+                class="w-full bg-red-50 text-red-600 rounded-xl py-3 font-semibold hover:bg-red-100 transition" onclick="logout()"
+            >
+                🚪 Logout
+            </button>
+
+            <p class="text-xs text-slate-400 text-center mt-4">
+                © 2026 RSUDBK
+            </p>
+
+        </div>
+
+    </aside>
+
+    <!-- CONTENT -->
+
+    <main class="flex-1 p-6 lg:p-10">
+
+        <div class="lg:hidden mb-6">
+
+            <button
+                @click="sidebarOpen=true"
+                class="w-11 h-11 rounded-xl border border-slate-200 bg-white"
+            >
+                ☰
+            </button>
+
+        </div>
+
+    <!-- HEADER -->
+
+    <div class="mb-8">
+
+        <h1 class="text-3xl font-extrabold text-slate-800">
+            Pengaturan Pendaftaran
+        </h1>
+
+        <p class="text-slate-500 mt-2">
+            Atur gelombang pendaftaran peserta didik
+        </p>
+
+    </div>
+
+    <!-- FORM -->
+
+    <div
+            x-show="activeGelombang && activeGelombang.status"
+            class="bg-white rounded-3xl p-6 shadow-sm mb-6"
+        >
+
+            <h3 class="font-bold text-lg mb-4">
+                Gelombang Aktif
+            </h3>
+
+            <div class="text-3xl font-extrabold text-[#714B67]">
+                <span
+                x-text="activeGelombang?.gelombang || '-'"
+            ></span>
+            </div>
+
+            <p class="text-slate-500 mt-2">
+                Pendaftaran sedang dibuka
+            </p>
+
+        </div>
+
+    <!-- PILIH MODE -->
+
+<div class="flex gap-3 mb-6">
+
+    <button
+        @click="openGelombangBaru()"
+        :class="mode==='baru'
+            ? 'bg-[#714B67] text-white'
+            : 'bg-white text-slate-700'"
+        class="px-5 py-3 rounded-xl font-semibold border"
+    >
+        ➕ Buka Gelombang Baru
+    </button>
+
+    <button
+        @click="mode='lama'"
+        :class="mode==='lama'
+            ? 'bg-[#714B67] text-white'
+            : 'bg-white text-slate-700'"
+        class="px-5 py-3 rounded-xl font-semibold border"
+    >
+        📂 Buka Gelombang Lama
+    </button>
+
+</div>
+
+<!-- FORM GELOMBANG BARU -->
+
+<div
+    x-show="mode==='baru'"
+    class="card mb-8"
+>
+
+    <h2 class="text-xl font-bold mb-6">
+        Buka Gelombang Baru
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-5">
+
+        <div>
+
+            <label class="block text-sm font-semibold mb-2">
+                Nama Gelombang
+            </label>
+
+            <input
+                type="text"
+                x-model="form.gelombang"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3"
+            >
+
+        </div>
+
+        <div>
+
+            <label class="block text-sm font-semibold mb-2">
+                Waktu Mulai
+            </label>
+
+            <input
+                type="datetime-local"
+                x-model="form.mulai"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3"
+            >
+
+        </div>
+
+        <div>
+
+            <label class="block text-sm font-semibold mb-2">
+                Waktu Selesai
+            </label>
+
+            <input
+                type="datetime-local"
+                x-model="form.selesai"
+                :min="form.mulai"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3"
+            >
+
+        </div>
+
+    </div>
+
+    <div class="mt-6">
+
+        <button
+            @click="saveSetting()"
+            class="bg-[#714B67] text-white px-6 py-3 rounded-xl font-semibold"
+        >
+            Simpan Gelombang Baru
+        </button>
+
+    </div>
+
+</div>
+
+<!-- FORM GELOMBANG LAMA -->
+
+<div
+    x-show="mode==='lama'"
+    class="card mb-8"
+>
+
+    <h2 class="text-xl font-bold mb-6">
+        Buka Gelombang Lama
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-5">
+
+        <div>
+
+            <label class="block text-sm font-semibold mb-2">
+                Pilih Gelombang
+            </label>
+
+            <select
+                x-model="form.gelombang"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3"
+            >
+
+                <option value="">
+                    Pilih Gelombang
+                </option>
+
+                <template
+                    x-for="item in settings"
+                    :key="item.gelombang"
+                >
+
+                    <option
+                        :value="item.gelombang"
+                        x-text="item.gelombang"
+                    ></option>
+
+                </template>
+
+            </select>
+
+        </div>
+
+        <div>
+
+            <label class="block text-sm font-semibold mb-2">
+                Waktu Mulai
+            </label>
+
+            <input
+                type="datetime-local"
+                x-model="form.mulai"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3"
+            >
+
+        </div>
+
+        <div>
+
+            <label class="block text-sm font-semibold mb-2">
+                Waktu Selesai
+            </label>
+
+            <input
+                type="datetime-local"
+                x-model="form.selesai"
+                :min="form.mulai"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3"
+            >
+
+        </div>
+
+    </div>
+
+    <div class="mt-6">
+
+        <button
+            @click="saveSetting()"
+            class="bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold"
+        >
+            Aktifkan Gelombang
+        </button>
+
+    </div>
+
+</div>
+
+    <!-- RIWAYAT -->
+
+    <div class="bg-white rounded-3xl p-6 shadow-sm">
+
+            <h3 class="font-bold text-lg mb-4">
+                Riwayat Gelombang
+            </h3>
+
+            <div class="overflow-x-auto">
+            
+
+                <table class="w-full">
+
+                    <thead>
+
+                        <tr class="border-b">
+
+                            <th class="text-left py-3">
+                                Gelombang
+                            </th>
+
+                            <th class="text-left py-3">
+                                Mulai
+                            </th>
+
+                            <th class="text-left py-3">
+                                Selesai
+                            </th>
+
+                            <th class="text-left py-3">
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <template
+                            x-for="item in settings"
+                            :key="item.gelombang"
+                        >
+
+                            <tr class="border-b">
+
+                                <td
+                                    class="py-3 font-semibold"
+                                    x-text="item.gelombang"
+                                ></td>
+
+                                <td
+                                    x-text="item.mulai"
+                                ></td>
+
+                                <td
+                                    x-text="item.selesai"
+                                ></td>
+
+                                <td>
+
+                                    <span
+                                        x-show="item.status==='OPEN'"
+                                        class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs"
+                                    >
+                                        OPEN
+                                    </span>
+
+                                    <span
+                                        x-show="item.status==='CLOSE'"
+                                        class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs"
+                                    >
+                                        CLOSE
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                        </template>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+</main>
+
+</div>
+
+
+<script>
+if(
+    sessionStorage.getItem('dashboardLogin')
+    !== 'true'
+){
+    window.location.href='../index.html';
+}
+
+
+function logout(){
+
+    sessionStorage.removeItem(
+        'dashboardLogin'
+    );
+
+    window.location.href =
+        '../index.html';
+
+}
+
+
+        async function sendToAppsScript(
+            url,
+            payload
+        ){
+
+            const response =
+                await fetch(url,{
+
+                    method:'POST',
+
+                    body:
+                        JSON.stringify(payload)
+
+                });
+
+            return await response.json();
+
+        }
+
+function pengaturanApp(){
+
+    
+
+    return {
+
+        activeGelombang:null,
+        mode:'baru',
+        sidebarOpen:false,
+
+        settings:[],
+
+        form:{
+            gelombang:'',
+            mulai:'',
+            selesai:'',
+            
+        
+        },
+
+        config:{
+            scriptUrl:'https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec'
+        },
+
+        async init(){
+
+            await this.loadActive();
+
+            await this.loadSettings();
+
+            this.generateNextGelombang();
+
+            this.setDefaultDateTime();
+
+        },
+
+        async saveSetting(){
+
+            // ==========================================
+            // VALIDASI WAKTU SEBELUM SUBMIT
+            // ==========================================
+            if(!this.form.mulai || !this.form.selesai){
+                alert('Waktu Mulai dan Waktu Selesai harus diisi!');
+                return; // Stop proses
+            }
+
+            const tglMulai = new Date(this.form.mulai);
+            const tglSelesai = new Date(this.form.selesai);
+
+            if(tglSelesai <= tglMulai){
+                alert('Oops! Waktu Selesai tidak boleh mendahului atau sama dengan Waktu Mulai.');
+                return; // Stop proses, tidak jadi kirim ke backend
+            }
+            // ==========================================
+
+            const payload = {
+                action:'saveSetting',
+                gelombang: this.form.gelombang,
+                mulai: this.form.mulai,
+                selesai: this.form.selesai
+            };
+
+            const result = await sendToAppsScript(
+                this.config.scriptUrl,
+                payload
+            );
+
+            console.log(result);
+
+            if(result.status === 'success'){
+                alert('Berhasil disimpan');
+                await this.loadSettings();
+                await this.loadActive();
+            }else{
+                alert(result.message);
+            }
+        },
+
+        async loadActive(){
+
+            const res =
+                await fetch(
+                    this.config.scriptUrl +
+                    '?action=activeRegistration'
+                );
+
+            this.activeGelombang =
+                await res.json();
+
+        },
+
+        async loadSettings(){
+
+            const response =
+                await fetch(
+                    this.config.scriptUrl +
+                    '?action=getSettings'
+                );
+
+            this.settings =
+                await response.json();
+
+            console.table(
+            this.settings
+        );
+
+        },
+
+        openGelombangBaru(){
+
+            this.mode = 'baru';
+
+            this.generateNextGelombang();
+
+            const now =
+                new Date();
+
+            const besok =
+                new Date();
+
+            besok.setDate(
+                besok.getDate() + 1
+            );
+
+            this.form.mulai =
+                now.toISOString()
+                .slice(0,16);
+
+            this.form.selesai =
+                besok.toISOString()
+                    .slice(0,16);
+
+        },
+
+        generateNextGelombang(){
+
+                    if(
+                        this.settings.length === 0
+                    ){
+
+                        this.form.gelombang =
+                            'GEL1';
+
+                        return;
+
+                    }
+
+                    const last =
+                        this.settings[
+                            this.settings.length - 1
+                        ];
+
+                    const nomor =
+                        parseInt(
+                            last.gelombang.replace(
+                                'GEL',
+                                ''
+                            )
+                        );
+
+                    this.form.gelombang =
+                        'GEL' + (nomor + 1);
+
+                },
+
+                setDefaultDateTime(){
+
+                    const now =
+                        new Date();
+
+                    const end =
+                        new Date(
+                            now.getTime() +
+                            (24 * 60 * 60 * 1000)
+                        );
+
+                    this.form.mulai =
+                        now
+                        .toISOString()
+                        .slice(0,16);
+
+                    this.form.selesai =
+                        end
+                        .toISOString()
+                        .slice(0,16);
+
+                }
+
+    }
+
+}
+</script>
+
+</body>
+</html>

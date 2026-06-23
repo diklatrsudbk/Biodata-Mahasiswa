@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Peserta Didik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="py-10 px-4 antialiased bg-slate-50" x-data="cekPeserta()" x-init="init()">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-[#212529]">Daftar Peserta Terdaftar</h1>
+            <div class="h-1 w-20 bg-[#714B67] mx-auto mt-2 rounded-full"></div>
+            <p class="text-sm text-gray-500 mt-3">Silakan cek nama atau NIM Anda di bawah ini</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-6">
+            <button type="button" onclick="window.location.href='../index.html'" class="flex items-center text-[#714B67] font-bold hover:underline self-start md:self-auto">
+                ← Kembali ke Form Pendaftaran
+            </button>
+            
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div class="w-full sm:w-48">
+                    <select x-model="selectedGelombang" class="w-full px-3 py-2.5 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#714B67] focus:border-transparent text-sm bg-white font-medium text-slate-700">
+                        <option value="">Semua Gelombang</option>
+                        <template x-for="gel in listGelombang" :key="gel">
+                            <option :value="gel" x-text="gel"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="w-full sm:w-72">
+                    <input type="text" x-model="searchQuery" placeholder="Cari Nama, NIM, atau Institusi..." class="w-full px-4 py-2.5 rounded-xl border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#714B67] focus:border-transparent text-sm bg-white">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
+                        <tr>
+                            <th class="p-4 text-center w-12">No</th>
+                            <th class="p-4">Nama Lengkap</th>
+                            <th class="p-4">NIM / NISN</th>
+                            <th class="p-4">Institusi & Jurusan</th>
+                            <th class="p-4 text-center">Jenjang</th>
+                            <th class="p-4 text-center">Periode Praktik</th>
+                            <th class="p-4 text-center">Gelombang</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-600">
+                        <template x-for="(peserta, index) in filteredPeserta" :key="index">
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 text-center font-medium text-slate-400" x-text="index + 1"></td>
+                                <td class="p-4 font-bold text-slate-800" x-text="peserta.nama"></td>
+                                <td class="p-4 text-slate-500 font-mono" x-text="peserta.nim"></td>
+                                <td class="p-4">
+                                    <div class="font-semibold text-slate-700" x-text="peserta.namaInstitusi"></div>
+                                    <div class="text-xs text-gray-400" x-text="peserta.jurusan"></div>
+                                </td>
+                                <td class="p-4 text-center font-medium text-slate-700" x-text="peserta.jenjangPendidikan"></td>
+                                <td class="p-4 text-center text-xs text-slate-600">
+                                    <span class="block font-medium text-slate-700" x-text="peserta.startDate"></span>
+                                    <span class="text-gray-400 text-[10px]">s/d</span>
+                                    <span class="block font-medium text-slate-700" x-text="peserta.endDate"></span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full text-xs font-semibold" x-text="peserta.targetSheet"></span>
+                                </td>
+                            </tr>
+                        </template>
+
+                        <template x-if="filteredPeserta.length === 0 && !loading">
+                            <tr>
+                                <td colspan="7" class="p-10 text-center text-gray-400">
+                                    <div class="text-3xl mb-2">🔍</div>
+                                    <p>Data tidak ditemukan. Coba ganti filter gelombang atau kata kunci pencarian Anda.</p>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-40 text-white">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-3"></div>
+        <p class="text-sm font-medium animate-pulse">Memuat data sistem...</p>
+    </div>
+
+    <script>
+        function cekPeserta() {
+            return {
+                loading: false,
+                searchQuery: '',
+                selectedGelombang: '', // Menyimpan pilihan filter gelombang aktif
+                listPeserta: [],
+                listGelombang: [], // Menyimpan daftar nama gelombang secara unik
+                scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec",
+
+                async init() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch(`${this.scriptUrl}?action=read`); 
+                        const result = await response.json();
+                        
+                        console.log("Data berhasil diambil:", result);
+
+                        if (Array.isArray(result)) {
+                            this.listPeserta = result;
+                        } else if (result.data && Array.isArray(result.data)) {
+                            this.listPeserta = result.data;
+                        } else {
+                            this.listPeserta = result;
+                        }
+
+                        // Membuat daftar opsi gelombang secara dinamis berdasarkan data targetSheet yang unik
+                        if(this.listPeserta.length > 0) {
+                            const sheets = this.listPeserta.map(p => p.targetSheet).filter(Boolean);
+                            this.listGelombang = [...new Set(sheets)]; // Menghilangkan duplikasi nama sheet
+                        }
+                    } catch (err) {
+                        console.error("Gagal mengambil data:", err);
+                    }
+                    this.loading = false;
+                },
+
+                // Fungsi gabungan untuk menyaring Dropdown Gelombang DAN Search Box Text secara bersamaan
+                get filteredPeserta() {
+                    let data = this.listPeserta;
+
+                    // 1. Jalankan filter gelombang jika dropdown dipilih
+                    if (this.selectedGelombang) {
+                        data = data.filter(p => p.targetSheet === this.selectedGelombang);
+                    }
+
+                    // 2. Jalankan filter teks (Nama/NIM/Institusi) jika kolom teks diisi
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        data = data.filter(p => {
+                            return (p.nama && p.nama.toLowerCase().includes(query)) || 
+                                   (p.nim && p.nim.toString().toLowerCase().includes(query)) ||
+                                   (p.namaInstitusi && p.namaInstitusi.toLowerCase().includes(query));
+                        });
+                    }
+
+                    return data;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

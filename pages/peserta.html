@@ -302,7 +302,7 @@ function pesertaApp(){
         loading: false,
         gelombangSistemAktif: '', 
         selectedGelombang: '',     
-        listGelombangMaster: [], // Diubah menjadi array kosong agar diisi dinamis dari database/settings
+        listGelombangMaster: [], 
 
         allData: [],
         uniqueJurusan: [],
@@ -314,69 +314,67 @@ function pesertaApp(){
         },
 
         async init(){
-    this.loading = true;
-    
-    // 1. Ambil daftar semua gelombang dari getSettings untuk isi dropdown secara dinamis
-    try {
-        const resSettings = await fetch(`${this.config.scriptUrl}?action=getSettings`);
-        const dataSettings = await resSettings.json();
-        
-        console.log("Data Settings asli:", dataSettings);
+            this.loading = true;
+            
+            // OPTIMASI: Jalankan getSettings dan activeRegistration secara PARALEL agar loading jauh lebih cepat
+            try {
+                const [resSettings, resActive] = await Promise.all([
+                    fetch(`${this.config.scriptUrl}?action=getSettings`).catch(e => null),
+                    fetch(`${this.config.scriptUrl}?action=activeRegistration`).catch(e => null)
+                ]);
 
-        if (Array.isArray(dataSettings)) {
-            // Mengisi dropdown HANYA dengan gelombang yang terdaftar di Google Sheets (GEL5 - GEL9)
-            this.listGelombangMaster = dataSettings.map(item => item.gelombang).filter(Boolean);
-        } else {
-            // Fallback aman jika data settings gagal dibaca sebagai array
-            this.listGelombangMaster = ['GEL5', 'GEL6', 'GEL7', 'GEL8', 'GEL9'];
-        }
-    } catch (e) {
-        console.error("Gagal memuat list dropdown dari settings:", e);
-        this.listGelombangMaster = ['GEL5', 'GEL6', 'GEL7', 'GEL8', 'GEL9'];
-    }
+                // Proses hasil daftar pilihan sheet / gelombang didapatkan
+                if (resSettings) {
+                    const dataSettings = await resSettings.json();
+                    if (Array.isArray(dataSettings)) {
+                        this.listGelombangMaster = dataSettings.map(item => item.gelombang).filter(Boolean);
+                    }
+                }
 
-    // 2. Ambil informasi Gelombang Aktif menggunakan cara yang sudah berhasil sebelumnya
-    try {
-        const resActive = await fetch(`${this.config.scriptUrl}?action=activeRegistration`);
-        const dataActive = await resActive.json();
-        
-        if (dataActive && dataActive.targetSheet) {
-            this.gelombangSistemAktif = dataActive.targetSheet;
-        } else if (typeof dataActive === 'string') {
-            this.gelombangSistemAktif = dataActive;
-        } else if (dataActive && dataActive.gelombang) {
-            this.gelombangSistemAktif = dataActive.gelombang;
-        } else {
-            this.gelombangSistemAktif = 'GEL8'; // Fallback aman ke GEL8 jika meleset
-        }
-    } catch (e) {
-        console.error("Gagal mendapatkan gelombang aktif:", e);
-        this.gelombangSistemAktif = 'GEL8'; 
-    }
+                // Proses hasil info sheet aktif
+                if (resActive) {
+                    const dataActive = await resActive.json();
+                    if (dataActive && dataActive.targetSheet) {
+                        this.gelombangSistemAktif = dataActive.targetSheet;
+                    } else if (typeof dataActive === 'string') {
+                        this.gelombangSistemAktif = dataActive;
+                    } else if (dataActive && dataActive.gelombang) {
+                        this.gelombangSistemAktif = dataActive.gelombang;
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal memuat konfigurasi awal:", e);
+            }
 
-    // 3. Set gelombang terpilih di tabel (Prioritas: URL parameter -> Gelombang Aktif -> Pilihan pertama)
-    const urlParams = new URLSearchParams(window.location.search);
-    this.selectedGelombang = urlParams.get('sheet') || this.gelombangSistemAktif || 'GEL8';
+            // Set fallback jika listGelombangMaster kosong
+            if (this.listGelombangMaster.length === 0) {
+                this.listGelombangMaster = ['GEL8']; 
+            }
+            if (!this.gelombangSistemAktif) {
+                this.gelombangSistemAktif = this.listGelombangMaster[0] || 'GEL8';
+            }
 
-    // 4. Tarik data utama peserta untuk tabel
-    try {
-        const cacheKey = 'peserta_' + this.selectedGelombang;
-        const cachedData = sessionStorage.getItem(cacheKey);
+            // Set gelombang terpilih di tabel
+            const urlParams = new URLSearchParams(window.location.search);
+            this.selectedGelombang = urlParams.get('sheet') || this.gelombangSistemAktif;
 
-        if(cachedData){
-            this.allData = JSON.parse(cachedData);
-            this.generateUniqueJurusan();
-        } else {
-            await this.loadData();
-        }
-    } catch (errData) {
-        console.error("Gagal memuat data tabel utama:", errData);
-    }
+            // Tarik data utama peserta untuk tabel (Gunakan cache sessionStorage jika ada)
+            try {
+                const cacheKey = 'peserta_' + this.selectedGelombang;
+                const cachedData = sessionStorage.getItem(cacheKey);
 
-    // Matikan status loading, tulisan "Memuat..." akan hilang
-    this.loading = false;
-},
+                if(cachedData){
+                    this.allData = JSON.parse(cachedData);
+                    this.generateUniqueJurusan();
+                } else {
+                    await this.loadData();
+                }
+            } catch (errData) {
+                console.error("Gagal memuat data tabel utama:", errData);
+            }
 
+            this.loading = false;
+        },
 
         get filteredData(){
             return this.allData.filter(item => {
@@ -397,17 +395,24 @@ function pesertaApp(){
 
         async loadData(forceReload = false){
             this.loading = true;
+            
+            // Jika dipaksa reload (seperti klik tombol Reload atau setelah hapus), hapus cache sessionStorage dahulu
+            if (forceReload) {
+                sessionStorage.removeItem('peserta_' + this.selectedGelombang);
+            }
+
             try {
                 const response = await fetch(`${this.config.scriptUrl}?action=read&sheet=${this.selectedGelombang}`);
                 const result = await response.json();
 
                 this.allData = Array.isArray(result) ? result : (result.data || []);
                 
+                // Simpan data terbaru ke cache browser
                 sessionStorage.setItem('peserta_' + this.selectedGelombang, JSON.stringify(this.allData));
                 this.generateUniqueJurusan();
             } catch(err){
                 console.error(err);
-                alert('Gagal mengambil data peserta');
+                alert('Gagal mengambil data peserta terbaru');
             } finally {
                 this.loading = false;
             }
@@ -434,50 +439,49 @@ function pesertaApp(){
             } else {
                 await this.loadData();
             }
+        },
+
+        // Pindahkan fungsi delete ke dalam objek agar memiliki akses penuh ke `this.config.scriptUrl`
+        async deletePeserta(nim, nama) {
+            const konfirmasi = confirm(`⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus "${nama}"?\nTindakan ini akan menghapus data di Spreadsheet dan SELURUH FOLDER BERKAS di Google Drive.`);
+            if (!konfirmasi) return;
+
+            this.loading = true;
+            try {
+                const response = await fetch(this.config.scriptUrl, {
+                    method: "POST",
+                    redirect: "follow", 
+                    body: JSON.stringify({
+                        action: "delete",
+                        nim: nim.toString(),
+                        sheet: this.selectedGelombang // Mengirimkan info sheet yang sedang dibuka ke backend web app
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === "deleted" || result.success === true) {
+                    alert(`Sukses! Data pendaftaran ${nama} telah berhasil dihapus.`);
+                    // Paksa load data baru dari Google Sheets dan bersihkan cache browser
+                    await this.loadData(true);
+                } else {
+                    alert("Gagal menghapus data dari server: " + (result.message || "Respon tidak diketahui"));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Terjadi kesalahan koneksi saat mencoba menghapus data.");
+            } finally {
+                this.loading = false;
+            }
         }
     }
 }
 
-async function deletePeserta(nim, nama) {
-    // Mengambil scriptUrl secara otomatis dari struktur config Alpine.js Anda
-    // Jika fungsi ini ditulis di luar x-data, gunakan versi pengetikan langsung, 
-    // namun jika di dalam methods Alpine, kita panggil via objek datanya.
-    const urlApi = this.config ? this.config.scriptUrl : "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec";
-
-    const konfirmasi = confirm(`⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus "${nama}"?\nTindakan ini akan menghapus data di Spreadsheet dan SELURUH FOLDER BERKAS di Google Drive.`);
-    if (!konfirmasi) return;
-
-    try {
-        console.log("Sedang memproses penghapusan ke:", urlApi);
-
-        const response = await fetch(urlApi, {
-            method: "POST",
-            redirect: "follow", 
-            body: JSON.stringify({
-                action: "delete",
-                nim: nim.toString()
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.status === "deleted") {
-            alert(`Sukses! Data pendaftaran ${nama} dan folder Drive-nya telah berhasil dihapus.`);
-            
-            // Mengamankan pemanggilan reload data tabel Alpine.js secara independen
-            const alpineComponent = document.querySelector('[x-data]');
-            if (alpineComponent && alpineComponent.__x && typeof alpineComponent.__x.$data.loadData === 'function') {
-                alpineComponent.__x.$data.loadData();
-            } else if (typeof loadData === "function") {
-                loadData();
-            } else {
-                window.location.reload(); 
-            }
-        }
-
-    } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan koneksi saat mencoba menghapus data ke server.");
+// Untuk menjembatani tombol hapus bawaan HTML jika dipanggil langsung tanpa keyword `this` di element
+function deletePeserta(nim, nama) {
+    const alpineComponent = document.querySelector('[x-data]');
+    if (alpineComponent && alpineComponent.__x) {
+        alpineComponent.__x.$data.deletePeserta(nim, nama);
     }
 }
 

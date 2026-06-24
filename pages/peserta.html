@@ -464,16 +464,15 @@ async function deletePeserta(nim, nama) {
         if (result.status === "deleted") {
             alert(`Sukses! Data pendaftaran ${nama} dan folder Drive-nya telah berhasil dihapus.`);
             
-            // Mengingat Anda memakai Alpine.js, muat ulang data bisa memicu fungsi internal
-            if (typeof this.loadData === "function") {
-                this.loadData(); 
+            // Mengamankan pemanggilan reload data tabel Alpine.js secara independen
+            const alpineComponent = document.querySelector('[x-data]');
+            if (alpineComponent && alpineComponent.__x && typeof alpineComponent.__x.$data.loadData === 'function') {
+                alpineComponent.__x.$data.loadData();
             } else if (typeof loadData === "function") {
                 loadData();
             } else {
                 window.location.reload(); 
             }
-        } else {
-            alert("Gagal menghapus data: " + (result.message || "Ditolak oleh server"));
         }
 
     } catch (err) {

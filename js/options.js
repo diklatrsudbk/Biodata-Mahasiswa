@@ -6,7 +6,7 @@ const OPTIONS = {
         "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", "Kudus", 
         "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", "Palu", "Pasuruan", "Pekalongan", "Pekanbaru", 
         "Pontianak", "Probolinggo", "Purwakarta", "Samarinda", "Semarang", "Serang", "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", "Tangerang", "Tangerang Selatan", "Tasikmalaya", 
-        "Tegal", "Yogyakarta", "Desa Ahuhu"
+        "Tegal", "Yogyakarta","Desa Ahuhu"
     ],
 
 

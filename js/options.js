@@ -6,7 +6,7 @@ const OPTIONS = {
         "Jakarta Barat", "Jakarta Pusat", "Jakarta Selatan", "Jakarta Timur", "Jakarta Utara", "Jambi", "Jayapura", "Jember", "Jombang", "Karawang", "Kediri", "Kendari", "Klaten", "Kudus", 
         "Kupang", "Lamongan", "Madiun", "Magelang", "Makassar", "Malang", "Manado", "Mataram", "Medan", "Metro", "Mojokerto", "Padang", "Palangka Raya", "Palembang", "Palu", "Pasuruan", "Pekalongan", "Pekanbaru", 
         "Pontianak", "Probolinggo", "Purwakarta", "Samarinda", "Semarang", "Serang", "Sidoarjo", "Solo (Surakarta)", "Subang", "Sukabumi", "Sumedang", "Surabaya", "Tangerang", "Tangerang Selatan", "Tasikmalaya", 
-        "Tegal", "Yogyakarta"
+        "Tegal", "Yogyakarta", "Desa Ahuhu"
     ],
 
 
@@ -17,7 +17,7 @@ const OPTIONS = {
         "Universitas Telkom","Stikes Karsa Husada Garut","Universitas Logistik dan Bisnis Internasional (ULBI)","Universitas Bandung","Stikep PPNI Jabar","Stikes Budi Luhur","Stikes RS Dustira",
         "Stikes Dharma Husada Bandung (DHB)","Inkes Rajawali","Inkes Immanuel","Inkes Pelamonia Makasar","Poltekkes Palu","Poltekkes Bandung","Politeknik Cendrawasih Palu","Universitas Padjajaran (UNPAD)",
         "Universitas Pasundan (UNPAS)","Universitas Sali Al-Aitam","UNISA Bandung","Universitas Bhakti Kencana (UBK)","Universitas Pendidikan Indonesia (UPI)","Universitas Jenderal Achmad Yani (UNJANI)",
-        "Universitas Borromeus","Universitas Muhammadiyah Ahmad Dahlan (UM-AD) Palembang","Universitas Dehasen (UNIVED) Bengkulu","Stikes Marendeng Majene","Poltekkes Surakarta", "Pelatihan NICU"
+        "Universitas Borromeus","Universitas Muhammadiyah Ahmad Dahlan (UM-AD) Palembang","Universitas Dehasen (UNIVED) Bengkulu","Stikes Marendeng Majene","Poltekkes Surakarta", "Pelatihan NICU", "Akademi Kebidanan Konawe"
     ],
 
     jurusan: [

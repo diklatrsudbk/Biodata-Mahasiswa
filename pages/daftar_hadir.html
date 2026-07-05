@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Hadir Resmi</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    @media print {
+      body { background-color: transparent; }
+      .no-print { display: none; }
+    }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 antialiased py-6 px-4">
+
+  <div x-data="presenceApp()" x-init="init()" class="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-md border border-gray-200">
+    
+    <template x-if="loading">
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="animate-spin inline-block w-9 h-9 border-[3px] border-current border-t-transparent text-blue-600 rounded-full mb-3"></div>
+        <p class="text-gray-500 text-sm font-medium">Memuat format dokumen...</p>
+      </div>
+    </template>
+
+    <template x-if="!loading && activeEvent.status !== 'OPEN'">
+      <div class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="text-red-500 text-6xl mb-4">🔒</div>
+        <h2 class="text-xl font-bold text-gray-800">Gerbang Presensi Ditutup</h2>
+        <p class="text-gray-500 text-sm mt-2 max-w-sm">Saat ini tidak ada agenda kegiatan resmi yang sedang aktif di sistem.</p>
+      </div>
+    </template>
+
+    <template x-if="!loading && activeEvent.status === 'OPEN'">
+      <div>
+        
+        <div class="text-center border-b-4 border-double border-gray-900 pb-4 mb-6">
+          <h1 class="text-base md:text-lg font-bold tracking-wide uppercase leading-tight text-gray-900">PEMERINTAH KOTA BANDUNG</h1>
+          <h2 class="text-lg md:text-xl font-extrabold tracking-wide uppercase leading-tight text-gray-900">RUMAH SAKIT UMUM DAERAH</h2>
+          <h2 class="text-xl md:text-2xl font-black tracking-wider uppercase leading-none text-blue-900 mb-1">BANDUNG KIWARI</h2>
+          <p class="text-[11px] text-gray-600 leading-normal">
+            Jl. KH. Wahid Hasyim Nomor. 311 Tlp. (022) 8603777 Fax. (022) 5221531 Bandung 40234
+          </p>
+          <p class="text-[11px] text-gray-600 leading-none mt-0.5">
+            Email: <span class="text-blue-600 underline">sekretariat@rsudbandungkiwari.or.id</span> | Website: <span class="text-blue-600 underline">www.rsudbandungkiwari.or.id</span>
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <div class="flex">
+            <span class="w-32 font-semibold text-gray-600">Hari / Tanggal</span>
+            <span class="mr-2">:</span>
+            <span class="text-gray-900 font-medium" x-text="formatDateString(activeEvent.mulai)"></span>
+          </div>
+          <div class="flex">
+            <span class="w-32 font-semibold text-gray-600">Waktu</span>
+            <span class="mr-2">:</span>
+            <span class="text-gray-900 font-medium" x-text="formatTimeString(activeEvent.mulai, activeEvent.selesai)"></span>
+          </div>
+          <div class="flex">
+            <span class="w-32 font-semibold text-gray-600">Tempat</span>
+            <span class="mr-2">:</span>
+            <span class="text-gray-900 font-medium" x-text="activeEvent.tempat || 'RSUD Bandung Kiwari'"></span>
+          </div>
+          <div class="flex">
+            <span class="w-32 font-semibold text-gray-600">Acara</span>
+            <span class="mr-2">:</span>
+            <span class="text-gray-900 font-bold text-blue-900" x-text="activeEvent.acara"></span>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b border-gray-200 pb-3 mb-4">
+          <h3 class="text-center sm:text-left text-base font-bold tracking-widest text-gray-900 uppercase">DAFTAR HADIR</h3>
+          
+          <button @click="openModal()" class="no-print w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition-all shadow-md shadow-blue-100 flex items-center justify-center gap-2 active:scale-[0.98]">
+            ➕ Confirm Kehadiran
+          </button>
+        </div>
+
+        <div class="overflow-x-auto border border-gray-300 rounded-xl">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-100 text-gray-800 font-bold text-xs border-b border-gray-300">
+                <th class="py-3 px-3 w-12 text-center border-r border-gray-300">NO</th>
+                <th class="py-3 px-3 border-r border-gray-300">NAMA PESERTA</th>
+                
+                <template x-if="activeEvent.template === 'Template1'">
+                  <th class="py-3 px-3 border-r border-gray-300">ASAL INSTITUSI</th>
+                </template>
+                <template x-if="activeEvent.template === 'Template1'">
+                  <th class="py-3 px-3 border-r border-gray-300">JURUSAN</th>
+                </template>
+                <template x-if="activeEvent.template === 'Template1'">
+                  <th class="py-3 px-3 border-r border-gray-300">NO. TELP</th>
+                </template>
+
+                <template x-if="activeEvent.template === 'Template2'">
+                  <th class="py-3 px-3 border-r border-gray-300">UNIT / BAGIAN</th>
+                </template>
+
+                <th class="py-3 px-3 text-center w-32">TANDA TANGAN</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 text-xs">
+              <template x-if="attendanceList.length === 0">
+                <tr>
+                  <td :colspan="activeEvent.template === 'Template1' ? 6 : 4" class="text-center py-10 text-gray-400 italic">Belum ada daftar riwayat kehadiran untuk agenda ini.</td>
+                </tr>
+              </template>
+
+              <template x-for="(row, index) in attendanceList" :key="index">
+                <tr class="hover:bg-gray-50/70 transition-colors">
+                  <td class="py-3 px-3 text-center font-medium text-gray-500 border-r border-gray-300" x-text="index + 1"></td>
+                  <td class="py-3 px-3 font-semibold text-gray-900 border-r border-gray-300" x-text="row.nama"></td>
+                  
+                  <template x-if="activeEvent.template === 'Template1'">
+                    <td class="py-3 px-3 border-r border-gray-300">
+                      <span x-text="row.institusi || '-'"></span>
+                      <template x-if="row.institusi && row.institusi.includes('(Belum Terdaftar Biodata)')">
+                        <span class="block text-[10px] text-red-600 font-bold mt-0.5 animate-pulse">⚠️ Belum Mengisi Biodata </span>
+                      </template>
+                    </td>
+                  </template>
+                  <template x-if="activeEvent.template === 'Template1'">
+                    <td class="py-3 px-3 text-gray-600 border-r border-gray-300" x-text="row.jurusan || '-'"></td>
+                  </template>
+                  <template x-if="activeEvent.template === 'Template1'">
+                    <td class="py-3 px-3 text-gray-600 border-r border-gray-300" x-text="row.noTelp || '-'"></td>
+                  </template>
+                  
+                  <template x-if="activeEvent.template === 'Template2'">
+                    <td class="py-3 px-3 text-gray-600 border-r border-gray-300" x-text="row.bagian || '-'"></td>
+                  </template>
+
+                  <td class="py-2 px-4 text-center">
+                    <div class="flex justify-center items-center">
+                      <template x-if="row.ttd && (row.ttd.startsWith('data:image') || row.ttd.startsWith('http'))">
+                        <img :src="row.ttd" alt="TTD" class="h-8 max-w-[80px] object-contain border border-gray-100 rounded bg-white p-0.5 shadow-sm">
+                      </template>
+                      <template x-if="!row.ttd || row.ttd === '' || row.ttd === '[Tanpa TTD]'">
+                        <span class="text-xs text-gray-400 italic">Belum Absen</span>
+                      </template>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <div x-show="showModal" class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs" x-transition x-cloak>
+      <div @click.outside="closeModal()" class="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md overflow-hidden max-h-[92vh] flex flex-col" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0 scale-95">
+        
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/60">
+          <h2 class="font-bold text-gray-900 text-sm tracking-wide uppercase">Form Konfirmasi Kehadiran</h2>
+          <button type="button" @click="closeModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl p-1 outline-none">&times;</button>
+        </div>
+
+        <div class="p-5 overflow-y-auto space-y-4 flex-1">
+          <form @submit.prevent="submitForm()" class="space-y-4">
+            
+            <template x-if="activeEvent.template === 'Template1'">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">NIM Peserta Didik *</label>
+                <div class="relative">
+                  <input type="text" x-model="formData.nim" @input.debounce.400ms="searchIdentitas()" placeholder="Masukkan NIM Anda..." required
+                         class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-700">
+                  <span x-show="loadingIdentitas" class="absolute right-3 top-3.5 animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent" x-cloak></span>
+                </div>
+                
+                <div class="mt-2 text-[11px]">
+                  <template x-if="formData.nim.trim().length >= 3 && !loadingIdentitas && identitasDitemukan">
+                    <span class="text-green-600 font-semibold">✅ NIM Terverifikasi!.</span>
+                  </template>
+                  <template x-if="formData.nim.trim().length >= 3 && !loadingIdentitas && !identitasDitemukan">
+                    <span class="text-red-600 font-bold block bg-red-50 p-2 rounded-lg border border-red-100 mt-1">
+                      ⚠️ Catatan: Anda belum terdaftar di database master diklat. Silakan isi Biodata secepatnya!
+                    </span>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">Nama Lengkap *</label>
+              <input type="text" x-model="formData.nama" required :disabled="activeEvent.template === 'Template1' && identitasDitemukan" placeholder="Ketik nama lengkap" 
+                     :class="activeEvent.template === 'Template1' && identitasDitemukan ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-800'"
+                     class="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+            </div>
+
+            <template x-if="activeEvent.template === 'Template1'">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">Asal Institusi / Sekolah *</label>
+                  <input type="text" x-model="formData.institusi" required :disabled="identitasDitemukan" placeholder="Contoh: Universitas ..." 
+                         :class="identitasDitemukan ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-800'"
+                         class="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">Jurusan *</label>
+                  <input type="text" x-model="formData.jurusan" required :disabled="identitasDitemukan" placeholder="Contoh: Farmasi / Kedokteran" 
+                         :class="identitasDitemukan ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-800'"
+                         class="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">No. HP / WhatsApp *</label>
+                  <input type="tel" x-model="formData.noTelp" required :disabled="identitasDitemukan" placeholder="Contoh: 0812345..." 
+                         :class="identitasDitemukan ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-800'"
+                         class="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+                </div>
+              </div>
+            </template>
+
+            <template x-if="activeEvent.template === 'Template2'">
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5 tracking-wide">Unit Kerja / Bagian *</label>
+                <input type="text" x-model="formData.bagian" required placeholder="Contoh: Pelayanan Medik / SDM" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all">
+              </div>
+            </template>
+
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-xs font-semibold text-gray-600 tracking-wide">Swipe Tanda Tangan Anda *</label>
+                <button type="button" @click="clearCanvas()" class="text-[11px] font-medium text-red-500 hover:text-red-600 transition-colors outline-none">
+                  🔄 Bersihkan
+                </button>
+              </div>
+              <div class="border border-dashed border-gray-300 bg-gray-50 rounded-xl overflow-hidden">
+                <canvas id="sigCanvas" class="w-full h-36 block touch-none cursor-crosshair bg-gray-50"></canvas>
+              </div>
+            </div>
+
+            <div class="pt-2 flex items-center justify-end gap-2 border-t border-gray-100 mt-4">
+              <button type="button" @click="closeModal()" class="px-4 py-2.5 text-xs font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Batal</button>
+              <button type="submit" :disabled="submitting" class="px-5 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl disabled:bg-blue-300 shadow-md transition-all">
+                <span x-text="submitting ? 'Menyimpan...' : 'Kirim Kehadiran'"></span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec";
+
+    function presenceApp() {
+      return {
+        loading: true,
+        submitting: false,
+        showModal: false,
+        activeEvent: { status: 'CLOSE' },
+        attendanceList: [],
+        formData: { nim: '', nama: '', institusi: '', jurusan: '', noTelp: '', bagian: '' },
+        loadingIdentitas: false,
+        identitasDitemukan: false,
+        canvas: null,
+        ctx: null,
+        drawing: false,
+        hasSigned: false,
+
+        async init() {
+          try {
+            const response = await fetch(`${WEB_APP_URL}?action=getActiveEvent`);
+            const resData = await response.json();
+            this.activeEvent = resData;
+            this.attendanceList = resData.logKehadiran || [];
+          } catch (error) {
+            alert("Gagal memuat status format presensi resmi.");
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async searchIdentitas() {
+          const cleanNim = this.formData.nim.trim();
+          if (cleanNim.length < 3) {
+            this.identitasDitemukan = false;
+            this.formData.nama = '';
+            this.formData.institusi = '';
+            this.formData.jurusan = '';
+            this.formData.noTelp = '';
+            return;
+          }
+          
+          this.loadingIdentitas = true;
+          try {
+            const currentSheet = this.activeEvent.targetSheet || 'ALL_SHEETS';
+            const url = `${WEB_APP_URL}?action=getByNim&nim=${encodeURIComponent(cleanNim)}&sheet=${encodeURIComponent(currentSheet)}`;
+            
+            const response = await fetch(url);
+            const result = await response.json();
+            
+            if (result && result.nama) {
+              this.formData.nama = result.nama || '';
+              this.formData.institusi = result.namaInstitusi || ''; 
+              this.formData.jurusan = result.jurusan || '';         
+              this.formData.noTelp = result.hp ? String(result.hp) : ''; 
+              
+              if(result.bagian) this.formData.bagian = result.bagian;
+              
+              this.identitasDitemukan = true;
+            } else {
+              // Reset data jika NIM tidak valid agar diisi ulang secara manual
+              this.identitasDitemukan = false;
+              this.formData.nama = '';
+              this.formData.institusi = '';
+              this.formData.jurusan = '';
+              this.formData.noTelp = '';
+            }
+          } catch (e) {
+            console.error("Gagal getByNim:", e);
+            this.identitasDitemukan = false;
+          } finally {
+            this.loadingIdentitas = false;
+          }
+        },
+
+        formatDateString(isoString) {
+          if (!isoString) return "-";
+          const date = new Date(isoString);
+          return date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        },
+
+        formatTimeString(startIso, endIso) {
+          if (!startIso) return "-";
+          const start = new Date(startIso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          const end = endIso ? new Date(endIso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'Selesai';
+          return `${start} WIB - ${end} WIB`;
+        },
+
+        openModal() {
+          this.showModal = true;
+          this.identitasDitemukan = false;
+          this.loadingIdentitas = false;
+          this.hasSigned = false;
+          setTimeout(() => { this.setupSignatureCanvas(); }, 200);
+        },
+
+        closeModal() {
+          if (this.submitting) return;
+          this.showModal = false;
+          this.formData = { nim: '', nama: '', institusi: '', jurusan: '', noTelp: '', bagian: '' };
+          this.hasSigned = false;
+          if (this.ctx && this.canvas) this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        },
+
+        setupSignatureCanvas() {
+          this.canvas = document.getElementById('sigCanvas');
+          if (!this.canvas) return;
+          this.ctx = this.canvas.getContext('2d');
+          const rect = this.canvas.getBoundingClientRect();
+          this.canvas.width = rect.width;
+          this.canvas.height = rect.height;
+          this.ctx.strokeStyle = '#0f172a';
+          this.ctx.lineWidth = 2.5;
+          this.ctx.lineCap = 'round';
+          this.ctx.lineJoin = 'round';
+
+          const getPos = (e) => {
+            const r = this.canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - r.left, y: clientY - r.top };
+          };
+
+          this.canvas.addEventListener('mousedown', (e) => {
+            this.drawing = true;
+            const pos = getPos(e);
+            this.ctx.beginPath();
+            this.ctx.moveTo(pos.x, pos.y);
+          });
+
+          this.canvas.addEventListener('mousemove', (e) => {
+            if (!this.drawing) return;
+            const pos = getPos(e);
+            this.ctx.lineTo(pos.x, pos.y);
+            this.ctx.stroke();
+            this.hasSigned = true;
+          });
+
+          window.addEventListener('mouseup', () => { this.drawing = false; });
+
+          this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.drawing = true;
+            const pos = getPos(e);
+            this.ctx.beginPath();
+            this.ctx.moveTo(pos.x, pos.y);
+          }, { passive: false });
+
+          this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!this.drawing) return;
+            const pos = getPos(e);
+            this.ctx.lineTo(pos.x, pos.y);
+            this.ctx.stroke();
+            this.hasSigned = true;
+          }, { passive: false });
+
+          window.addEventListener('touchend', () => { this.drawing = false; });
+        },
+
+        clearCanvas() {
+          if (!this.canvas) return;
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          this.hasSigned = false;
+        },
+
+        async submitForm() {
+          // VALIDASI TOLAK: Cek Nama & Tanda Tangan wajib diisi
+          if (!this.formData.nama.trim()) {
+            alert("Nama Lengkap tidak boleh kosong!");
+            return;
+          }
+          if (!this.hasSigned) {
+            alert("Gagal: Harap cantumkan tanda tangan Anda terlebih dahulu!");
+            return;
+          }
+
+          this.submitting = true;
+          try {
+            const signatureImageBase64 = this.canvas.toDataURL('image/png');
+
+            // Format penulisan institusi jika diinput manual
+            let finalInstitusi = this.formData.institusi;
+            if (this.activeEvent.template === 'Template1' && !this.identitasDitemukan) {
+              finalInstitusi = `${this.formData.institusi} (Belum Terdaftar Biodata)`;
+            }
+
+            const dataToSubmit = {
+              action: 'submitPresence',
+              ttd: signatureImageBase64,
+              nim: this.formData.nim,
+              nama: this.formData.nama,
+              institusi: finalInstitusi,
+              jurusan: this.formData.jurusan,
+              noTelp: this.formData.noTelp,
+              bagian: this.formData.bagian
+            };
+
+            const response = await fetch(WEB_APP_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(dataToSubmit)
+            });
+
+            const result = await response.json();
+            const isSuccess = (result.status && result.status.toLowerCase() === "success") || 
+                              (result.Status && result.Status.toLowerCase() === "success");
+
+            if (isSuccess) {
+              alert("Konfirmasi kehadiran berhasil disimpan secara resmi!");
+              
+              // Masukkan data baru ke tabel live browser
+              this.attendanceList.push({
+                nama: this.formData.nama,
+                institusi: finalInstitusi || '-',
+                jurusan: this.formData.jurusan || '-',
+                noTelp: this.formData.noTelp || '-',
+                bagian: this.formData.bagian || '-',
+                ttd: signatureImageBase64
+              });
+
+              // DIALOG INPUT MENUTUP OTOMATIS JIKA SUKSES
+              this.showModal = false; 
+              this.formData = { nim: '', nama: '', institusi: '', jurusan: '', noTelp: '', bagian: '' };
+              this.hasSigned = false;
+            } else {
+              alert("Gagal: " + (result.message || "Terjadi kesalahan sistem"));
+            }
+          } catch (error) {
+            alert("Terjadi masalah jaringan saat mengirim presensi.");
+          } finally {
+            this.submitting = false;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

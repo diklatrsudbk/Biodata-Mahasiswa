@@ -98,83 +98,125 @@
             </div>
 
             <!-- ================= TAB CONTENT: PENDAFTARAN ================= -->
-            <div x-show="activeTab === 'pendaftaran'" class="space-y-6" x-cloak>
-                <div x-show="activeGelombang && activeGelombang.status === 'OPEN'" class="bg-white rounded-3xl p-6 shadow-sm border border-l-8 border-l-green-500">
-                    <h3 class="font-bold text-slate-500 text-sm uppercase tracking-wider">Gelombang Pendaftaran Aktif</h3>
-                    <div class="text-3xl font-extrabold text-[#714B67] mt-1" x-text="activeGelombang?.gelombang || '-'"></div>
-                    <p class="text-slate-400 text-sm mt-2 flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span> Pendaftaran online sedang dibuka untuk umum
-                    </p>
-                </div>
+<div x-show="activeTab === 'pendaftaran'" class="space-y-6" x-cloak>
+    
+    <!-- KOTAK INFO PENDAFTARAN AKTIF -->
+    <div>
+        <!-- KONDISI 1: JIKA ADA GELOMBANG YANG SEDANG OPEN -->
+        <div x-show="activeGelombang && activeGelombang.status === 'OPEN'" class="bg-white rounded-3xl p-6 shadow-sm border border-l-8 border-l-green-500">
+            <h3 class="font-bold text-slate-500 text-sm uppercase tracking-wider">Gelombang Pendaftaran Aktif</h3>
+            <div class="text-3xl font-extrabold text-[#714B67] mt-1" x-text="activeGelombang?.gelombang || '-'"></div>
+            <p class="text-slate-400 text-sm mt-2 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span> Pendaftaran online sedang dibuka untuk umum
+            </p>
+        </div>
 
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                    <h3 class="font-bold text-lg text-slate-800 mb-4">Daftar & Kontrol Gelombang (Sheet)</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-100 text-slate-400 text-sm font-semibold">
-                                    <th class="py-4 px-2">Nama Gelombang (Sheet)</th>
-                                    <th class="py-4 px-2">Waktu Buka</th>
-                                    <th class="py-4 px-2">Waktu Selesai</th>
-                                    <th class="py-4 px-2">Status Berjalan</th>
-                                    <th class="py-4 px-2 text-center">Aksi (Buka/Tutup)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-slate-700 text-sm">
-                                <template x-for="item in settings" :key="item.gelombang">
-                                    <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
-                                        <td class="py-4 px-2 font-bold text-slate-800" x-text="item.gelombang"></td>
-                                        <td class="py-4 px-2" x-text="formatTanggal(item.mulai)"></td>
-                                        <td class="py-4 px-2" x-text="formatTanggal(item.selesai)"></td>
-                                        <td class="py-4 px-2">
-                                            <span x-show="item.status==='OPEN'" class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">OPEN</span>
-                                            <span x-show="item.status==='CLOSE'" class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">CLOSE</span>
-                                        </td>
-                                        <td class="py-4 px-2 text-center">
-                                            <div class="flex items-center justify-center">
-                                                <button 
-                                                    @click="toggleStatus(item)"
-                                                    :class="item.status === 'OPEN' ? 'bg-green-500' : 'bg-slate-300'"
-                                                    class="w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out relative focus:outline-none"
-                                                >
-                                                    <span 
-                                                        :class="item.status === 'OPEN' ? 'translate-x-6' : 'translate-x-0'"
-                                                        class="block w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 ease-in-out"
-                                                    ></span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </template>
-                                <tr x-show="settings.length === 0">
-                                    <td colspan="5" class="py-8 text-center text-slate-400 italic">Tidak ada data gelombang ditemukan.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <!-- KONDISI 2: JIKA TIDAK ADA GELOMBANG YANG AKTIF (Menyamakan sistem Acara) -->
+        <div x-show="!activeGelombang || activeGelombang.status === 'CLOSE'" class="bg-slate-50 rounded-3xl p-6 text-center border-2 border-dashed border-slate-200">
+            <div class="text-4xl mb-2">📭</div>
+            <h3 class="font-bold text-slate-700 text-lg">Tidak ada Pendaftaran</h3>
+            <p class="text-slate-400 text-sm mt-1">Seluruh gerbang pendaftaran online terkunci otomatis. Silakan aktifkan gelombang melalui tabel kontrol di bawah.</p>
+        </div>
+    </div>
+
+    <!-- TABEL KONTROL GELOMBANG -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+        <h3 class="font-bold text-lg text-slate-800 mb-4">Daftar & Kontrol Gelombang (Sheet)</h3>
+        <!-- TOMBOL MENUJU FORM INPUT PESERTA (BUKA DI TAB BARU) -->
+            <a href="input_peserta.html" 
+               target="_blank"
+               class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-sm rounded-2xl transition-all duration-200 border border-indigo-100 hover:border-indigo-200 shadow-sm focus:outline-none">
+                📥 <span>Test Page Input Biodata Peserta Didik</span>
+            </a>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100 text-slate-400 text-sm font-semibold">
+                        <th class="py-4 px-2">Nama Gelombang (Klik ke Sheet)</th>
+                        <th class="py-4 px-2">Waktu Buka</th>
+                        <th class="py-4 px-2">Waktu Selesai</th>
+                        <th class="py-4 px-2">Status Berjalan</th>
+                        <th class="py-4 px-2 text-center">Aksi (Buka/Tutup)</th>
+                    </tr>
+                </thead>
+                <tbody class="text-slate-700 text-sm">
+                    <template x-for="item in settings" :key="item.gelombang">
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            
+                            <!-- LINK OTOMATIS KE SPREADSHEET BERDASARKAN GID TAB NYA -->
+                            <td class="py-4 px-2 font-bold">
+                                <a :href="'https://docs.google.com/spreadsheets/d/11XHACwVY5txzZ7NDrfnds6cMlQ8HEhCWdZ-gCfs75oA/edit#gid=' + (item.gid || '0')" 
+                                   target="_blank"
+                                   class="text-green-600 hover:text-green-900 hover:underline inline-flex items-center gap-1 transition"
+                                   title="Klik untuk membuka langsung data sheet gelombang ini">
+                                    <span x-text="item.gelombang"></span>
+                                    <span class="text-xs text-slate-400 font-normal">↗️</span>
+                                </a>
+                            </td>
+                            
+                            <td class="py-4 px-2" x-text="formatTanggal(item.mulai)"></td>
+                            <td class="py-4 px-2" x-text="formatTanggal(item.selesai)"></td>
+                            <td class="py-4 px-2">
+                                <span x-show="item.status==='OPEN'" class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">OPEN</span>
+                                <span x-show="item.status==='CLOSE'" class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">CLOSE</span>
+                            </td>
+                            <td class="py-4 px-2 text-center">
+                                <div class="flex items-center justify-center">
+                                    <button 
+                                        @click="toggleStatus(item)"
+                                        :class="item.status === 'OPEN' ? 'bg-green-500' : 'bg-slate-300'"
+                                        class="w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out relative focus:outline-none"
+                                    >
+                                        <span 
+                                            :class="item.status === 'OPEN' ? 'translate-x-6' : 'translate-x-0'"
+                                            class="block w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 ease-in-out"
+                                        ></span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr x-show="settings.length === 0">
+                        <td colspan="5" class="py-8 text-center text-slate-400 italic">Tidak ada data gelombang ditemukan.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
             <!-- ================= TAB CONTENT: PRESENSI ACARA ================= -->
             <div x-show="activeTab === 'presensi'" class="space-y-6" x-cloak>
+                
+                <!-- KOTAK INFO ACARA AKTIF -->
                 <div x-show="activePresensi && activePresensi.status === 'OPEN'" class="bg-white rounded-3xl p-6 shadow-sm border border-l-8 border-l-indigo-500">
                     <h3 class="font-bold text-slate-500 text-sm uppercase tracking-wider">Acara / Event Presensi Aktif</h3>
+                    
                     <div class="text-3xl font-extrabold text-indigo-700 mt-1" x-text="activePresensi?.namaAcara || activePresensi?.gelombang || '-'"></div>
-                    <p class="text-slate-600 text-sm mt-1">
-                        Tipe Formulir: <span class="font-semibold text-slate-800" x-text="activePresensi?.template || '-'"></span>
-                    </p>
-                    <p class="text-slate-400 text-sm mt-2 flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-indigo-500 inline-block animate-pulse"></span> Gerbang tanda tangan presensi digital sedang menerima respon
-                    </p>
+                    
+                    <!-- LINK AKSES CEPAT (Sudah dihapus link spreadsheet atas) -->
+                    <div class="mt-3 flex flex-wrap gap-4 text-sm font-medium">
+                        <a href="daftar_hadir.html" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition underline decoration-indigo-200 hover:decoration-indigo-600">
+                            📋 Buka Form Daftar Hadir
+                        </a>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-100 space-y-1 text-sm text-slate-600">
+                        <p>Tipe Formulir: <span class="font-semibold text-slate-800" x-text="activePresensi?.template || '-'"></span></p>
+                        <p class="text-slate-400 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500 inline-block animate-pulse"></span> Gerbang tanda tangan presensi digital sedang menerima respon
+                        </p>
+                    </div>
                 </div>
 
+                <!-- TABEL LOG HADIR ACARA -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                     <h3 class="font-bold text-lg text-slate-800 mb-4">Daftar & Kontrol Log Hadir Acara</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-100 text-slate-400 text-sm font-semibold">
-                                    <th class="py-4 px-2">Nama Acara / Event</th>
+                                    <th class="py-4 px-2">Nama Acara / Event (Klik ke Sheet)</th>
                                     <th class="py-4 px-2">Template Data</th>
                                     <th class="py-4 px-2">Jam Mulai</th>
                                     <th class="py-4 px-2">Jam Selesai</th>
@@ -185,7 +227,17 @@
                             <tbody class="text-slate-700 text-sm">
                                 <template x-for="item in presensiSettings" :key="item.namaAcara || item.gelombang">
                                     <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
-                                        <td class="py-4 px-2 font-bold text-slate-800" x-text="item.namaAcara || item.gelombang"></td>
+                                        <!-- PERBAIKAN: Tautan langsung membuka ke Lembar Kerja / Sheet yang spesifik -->
+                                        <!-- PERBAIKAN: Menggunakan ID GID asli dari Google Sheet agar langsung melompat tepat sasaran -->
+                                        <td class="py-4 px-2 font-bold">
+                                            <a :href="'https://docs.google.com/spreadsheets/d/1NYmOAQLo-PAWkmJzvKUoOw57EI07JgFBqUSOrZW1lVs/edit#gid=' + (item.gid || '0')" 
+                                            target="_blank"
+                                            class="text-indigo-600 hover:text-indigo-900 transition hover:underline flex items-center gap-1"
+                                            title="Buka langsung lembar sheet ini">
+                                                <span x-text="item.namaAcara || item.gelombang"></span>
+                                                <span class="text-xs text-slate-400 font-normal">↗️</span>
+                                            </a>
+                                        </td>
                                         <td class="py-4 px-2">
                                             <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600" x-text="item.template || 'Default'"></span>
                                         </td>
@@ -219,8 +271,6 @@
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
 
     <!-- MODAL: TAMBAH GELOMBANG PENDAFTARAN -->
     <div x-show="isModalOpen" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
@@ -272,10 +322,9 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Template Target Kolom</label>
-                        <!-- KODE BARU YANG BENAR -->
-                        <select x-model="formPresensi.template" class="w-full p-2 border rounded-lg">
-                        <option value="Template1">Template: Peserta Didik (Institusi/Sekolah)</option>
-                        <option value="Template2">Template: Karyawan Internal (NIP/Unit Kerja)</option>
+                        <select x-model="formPresensi.template" class="w-full p-2 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-600">
+                            <option value="Template1">Template: Peserta Didik (Institusi/Sekolah)</option>
+                            <option value="Template2">Template: Karyawan Internal (NIP/Unit Kerja)</option>
                         </select>
                     </div>
                     <div>
@@ -333,17 +382,52 @@
                 // Data State Presensi Acara
                 activePresensi: null,
                 presensiSettings: [],
-                formPresensi: { gelombang: '', template: 'Template: Peserta Didik (Institusi/Sekolah)', mulai: '', selesai: '' },
+                formPresensi: { gelombang: '', template: 'Template1', mulai: '', selesai: '' },
 
                 config: {
                     scriptUrl: 'https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec'
                 },
 
                 async init() {
-                    await this.loadActive();
-                    await this.loadSettings();
-                    await this.loadActivePresensi();
-                    await this.loadPresensiSettings();
+                    // Ambil seluruh data dari Google Apps Script secara bersamaan saat halaman dimuat
+                    await Promise.all([
+                        this.loadActive(),
+                        this.loadSettings(),
+                        this.loadActivePresensi(),
+                        this.loadPresensiSettings()
+                    ]);
+
+                    // Jalankan pengecekan kecocokan waktu HANYA SEKALI di awal pembukaan halaman
+                    this.cekWaktuOtomatis();
+                },
+
+                // ================= KONTROL UTAMA: SINKRONISASI WAKTU SAAT PEMBUKAAN HALAMAN =================
+                cekWaktuOtomatis() {
+                    const sekarang = new Date().getTime();
+
+                    // 1. Sinkronisasi Awal Gelombang Pendaftaran
+                    this.settings.forEach(item => {
+                        if (!item.mulai || !item.selesai) return;
+                        const tglMulai = new Date(item.mulai).getTime();
+                        const tglSelesai = new Date(item.selesai).getTime();
+                        
+                        // Set status lokal berdasarkan waktu saat ini
+                        item.status = (sekarang >= tglMulai && sekarang <= tglSelesai) ? 'OPEN' : 'CLOSE';
+                    });
+
+                    // 2. Sinkronisasi Awal Presensi Acara
+                    this.presensiSettings.forEach(item => {
+                        if (!item.mulai || !item.selesai) return;
+                        const tglMulai = new Date(item.mulai).getTime();
+                        const tglSelesai = new Date(item.selesai).getTime();
+                        
+                        // Set status lokal berdasarkan waktu saat ini
+                        item.status = (sekarang >= tglMulai && sekarang <= tglSelesai) ? 'OPEN' : 'CLOSE';
+                    });
+
+                    // Update data tampilan Kotak Card Informasi Aktif di bagian atas
+                    this.activeGelombang = this.settings.find(i => i.status === 'OPEN') || null;
+                    this.activePresensi = this.presensiSettings.find(i => i.status === 'OPEN') || null;
                 },
 
                 // ================= CONTROLLER: PENDAFTARAN =================
@@ -381,6 +465,7 @@
                             this.isModalOpen = false;
                             await this.loadSettings();
                             await this.loadActive();
+                            this.cekWaktuOtomatis(); // Hitung ulang status baris baru
                         } else {
                             alert(result.message);
                         }
@@ -404,11 +489,12 @@
 
                     try {
                         const result = await sendToAppsScript(this.config.scriptUrl, payload);
-                        if (result.status !== 'success') {
-                            alert(result.message);
-                        } else {
-                            item.status = statusBaru;
+                        if (result.status === 'success' || result.status === 'updated') {
+                            item.status = statusBaru; // Ubah permanen di sisi lokal tanpa melompat
                             await this.loadActive();
+                            alert('Status gelombang pendaftaran berhasil diperbarui!');
+                        } else {
+                            alert(result.message);
                         }
                     } catch (error) {
                         alert('Gagal memperbarui status ke server.');
@@ -438,7 +524,7 @@
                 // ================= CONTROLLER: PRESENSI ACARA =================
                 openModalTambahPresensi() {
                     this.formPresensi.gelombang = '';
-                    this.formPresensi.template = 'Template: Peserta Didik (Institusi/Sekolah)';
+                    this.formPresensi.template = 'Template1';
                     
                     const now = new Date();
                     const besok = new Date();
@@ -461,7 +547,7 @@
                     const payload = {
                         action: 'savePresenceSetting', 
                         gelombang: this.formPresensi.gelombang.trim(),
-                        template: this.formPresensi.template,         
+                        template: this.formPresensi.template,          
                         mulai: this.formPresensi.mulai,
                         selesai: this.formPresensi.selesai
                     };
@@ -473,6 +559,7 @@
                             this.isModalPresensiOpen = false;
                             await this.loadPresensiSettings();
                             await this.loadActivePresensi();
+                            this.cekWaktuOtomatis(); // Hitung ulang status baris baru
                         } else {
                             alert(result.message);
                         }
@@ -484,27 +571,31 @@
                 },
 
                 async toggleStatusPresensi(item) {
-                    const targetName = item.namaAcara || item.gelombang;
-                    const statusBaru = item.status === 'OPEN' ? 'CLOSE' : 'OPEN';
-                    const konfirmasi = confirm(`Apakah Anda yakin ingin mengubah status gerbang presensi [${targetName}] menjadi ${statusBaru}?`);
+                    const newStatus = item.status === 'OPEN' ? 'CLOSE' : 'OPEN';
+                    
+                    const konfirmasi = confirm(`Apakah Anda yakin ingin mengubah status acara menjadi ${newStatus}?`);
                     if (!konfirmasi) return;
 
+                    const targetNama = item.namaAcara || item.gelombang;
                     const payload = {
-                        action: 'toggleEventStatus', 
-                        gelombang: targetName,
-                        status: statusBaru
+                        action: "toggleEventStatus", // 👈 SINKRON dengan data.action === "toggleEventStatus" di kode.gs kamu
+                        gelombang: targetNama,
+                        status: newStatus
                     };
 
                     try {
-                        const result = await sendToAppsScript(this.config.scriptUrl, payload);
-                        if (result.status !== 'success') {
-                            alert(result.message);
+                        const res = await sendToAppsScript(this.config.scriptUrl, payload);
+                        
+                        if (res.status === 'success' || res.status === 'updated') {
+                            item.status = newStatus; // Ubah status lokal secara langsung tanpa interupsi
+                            await this.loadActivePresensi(); // Segarkan card info atas
+                            alert('Status acara berhasil diperbarui!');
                         } else {
-                            item.status = statusBaru;
-                            await this.loadActivePresensi();
+                            alert('Gagal mengubah status: ' + (res.message || 'Error server.'));
                         }
-                    } catch (error) {
-                        alert('Gagal memperbarui status presensi.');
+                    } catch (err) {
+                        console.error(err);
+                        alert('Terjadi kesalahan jaringan.');
                     }
                 },
 
@@ -539,6 +630,6 @@
                 }
             }
         }
-    </script>
+</script>
 </body>
 </html>

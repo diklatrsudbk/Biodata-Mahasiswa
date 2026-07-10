@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Biodata Peserta Didik</title>
 
-    <!-- Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -46,8 +45,9 @@
         }
 
         .logo{
-                color:#714B67;
-            }
+            color:#714B67;
+            font-weight: 700;
+        }
 
         .menu{
             display:flex;
@@ -62,8 +62,8 @@
         }
 
         .menu a:hover{
-                color:#714B67;
-            }
+            color:#714B67;
+        }
 
         /* Hero */
         .hero{
@@ -107,9 +107,10 @@
             padding:40px 20px 70px;
         }
 
+        /* Diubah menjadi responsive grid (max 4 kolom jika layar lebar) */
         .cards{
             display:grid;
-            grid-template-columns:repeat(3,1fr);
+            grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
             gap:25px;
         }
 
@@ -152,9 +153,15 @@
             font-size:14px;
         }
 
+        .text-center {
+            text-align: center;
+        }
+        .mb-6 {
+            margin-bottom: 24px;
+        }
+
         /* Mobile */
         @media(max-width:768px){
-
             .navbar{
                 flex-direction:column;
                 gap:15px;
@@ -180,41 +187,30 @@
             .hero h2{
                 font-size:18px;
             }
-
-            .cards{
-                grid-template-columns:1fr;
-            }
         }
 
         .modal-backdrop{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.5);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    z-index:9999;
-}
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,.5);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+            z-index:9999;
+        }
 
-.modal-box{
-    background:#fff;
-    width:100%;
-    max-width:420px;
-    border-radius:24px;
-    padding:30px;
-    box-shadow:0 20px 60px rgba(0,0,0,.2);
-}
-
+        .modal-box{
+            background:#fff;
+            width:100%;
+            max-width:420px;
+            border-radius:24px;
+            padding:30px;
+            box-shadow:0 20px 60px rgba(0,0,0,.2);
+        }
     </style>
 </head>
-<body
-    x-data="{
-        showLogin:false,
-        username:'',
-        password:''
-    }"
->
+<body x-data="appData()">
 
     <header>
         <div class="navbar">
@@ -226,252 +222,100 @@
                 <a href="#" @click.prevent="showLogin=true">Dashboard</a>
                 <a href="pages/input_peserta.html">Input Data</a>
                 <a href="pages/data_peserta.html">Data Peserta</a>
+                <a href="peminjaman_menu.html">Peminjaman</a>
             </nav>
         </div>
     </header>
 
     <section class="hero">
-
-    <img
-        src="assets/img/rsudbk.png"
-        alt="RSUDBK"
-        class="hero-logo"
-    >
-
-    <h1>
-        RSUDBK
-    </h1>
-
-    <h2>
-        Sistem Biodata Peserta Didik
-    </h2>
-
-    <p>
-        Sistem pengelolaan data peserta didik yang terintegrasi dengan
-        Google Spreadsheet dan Google Drive untuk memudahkan proses
-        pendaftaran, pengarsipan dokumen, dan monitoring peserta didik.
-    </p>
-
-</section>
+        <img src="assets/img/rsudbk.png" alt="RSUDBK" class="hero-logo">
+        <h1>RSUDBK</h1>
+        <h2>Sistem Biodata Peserta Didik</h2>
+        <p>
+            Sistem pengelolaan data peserta didik yang terintegrasi dengan
+            Google Spreadsheet dan Google Drive untuk memudahkan proses
+            pendaftaran, pengarsipan dokumen, dan monitoring peserta didik.
+        </p>
+    </section>
 
     <section class="menu-section">
-
         <div class="cards">
-
             <div class="card" @click="showLogin=true" style="cursor:pointer">             
                 <div class="icon">📊</div>
                 <h3>Dashboard</h3>
-                <p>
-                    Lihat ringkasan data peserta didik dan statistik pendaftaran.
-                </p>
+                <p>Lihat ringkasan data peserta didik dan statistik pendaftaran.</p>
             </div>
 
             <a href="pages/input_peserta.html" class="card">
                 <div class="icon">📝</div>
                 <h3>Input Data Peserta Didik</h3>
-                <p>
-                    Tambahkan data peserta didik baru beserta dokumen pendukung.
-                </p>
+                <p>Tambahkan data peserta didik baru beserta dokumen pendukung.</p>
             </a>
 
             <a href="pages/data_peserta.html" class="card">
                 <div class="icon">👥</div>
                 <h3>Data Peserta Didik</h3>
-                <p>
-                    Kelola, cari, dan lihat seluruh data peserta didik yang telah tersimpan.
-                </p>
+                <p>Kelola, cari, dan lihat seluruh data peserta didik yang telah tersimpan.</p>
             </a>
 
+            <a href="pages/peminjaman_menu.html" class="card">
+                <div class="icon">📋</div>
+                <h3>Peminjaman</h3>
+                <p>Ajukan request peminjaman fasilitas atau dokumen peserta didik di sini.</p>
+            </a>
         </div>
-
     </section>
 
     <footer>
         © 2026 Form Biodata Peserta Didik
     </footer>
 
-    <!-- LOGIN MODAL -->
-
-<div
-    x-show="showLogin"
-    x-cloak
-    x-transition
-    class="modal-backdrop"
->
-
-    <div
-    @click.away="showLogin=false"
-    class="modal-box"
->
-
-        <div class="text-center mb-6">
-
-            <div style="font-size:60px;">
-                🔐
+    <div x-show="showLogin" x-cloak x-transition class="modal-backdrop">
+        <div @click.away="showLogin=false" class="modal-box">
+            <div class="text-center mb-6">
+                <div style="font-size:60px;">🔐</div>
+                <h2 style="margin-top:10px;font-size:24px;font-weight:700;">Login Dashboard</h2>
+                <p style="margin-top:8px;color:#64748b;">Masukkan akun administrator</p>
             </div>
 
-            <h2 style="margin-top:10px;font-size:24px;font-weight:700;">
-                Login Dashboard
-            </h2>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;margin-bottom:8px;font-weight:600;">Username</label>
+                <input type="text" x-model="username" placeholder="Masukkan username" style="width:100%; padding:14px; border:1px solid #ddd; border-radius:12px;">
+            </div>
 
-            <p style="margin-top:8px;color:#64748b;">
-                Masukkan akun administrator
-            </p>
+            <div style="margin-bottom:24px;">
+                <label style="display:block;margin-bottom:8px;font-weight:600;">Password</label>
+                <input type="password" x-model="password" placeholder="Masukkan password" style="width:100%; padding:14px; border:1px solid #ddd; border-radius:12px;">
+            </div>
 
+            <div style="display:flex;gap:12px;">
+                <button @click="showLogin=false" style="flex:1; padding:14px; border:none; border-radius:12px; background:#e2e8f0; cursor:pointer;">
+                    Batal
+                </button>
+                <button @click="loginDashboard()" style="flex:1; padding:14px; border:none; border-radius:12px; background:#714B67; color:white; font-weight:600; cursor:pointer;">
+                    Masuk
+                </button>
+            </div>
         </div>
-
-        <div style="margin-bottom:16px;">
-
-            <label style="display:block;margin-bottom:8px;font-weight:600;">
-                Username
-            </label>
-
-            <input
-                type="text"
-                x-model="username"
-                placeholder="Masukkan username"
-                style="
-                    width:100%;
-                    padding:14px;
-                    border:1px solid #ddd;
-                    border-radius:12px;
-                "
-            >
-
-        </div>
-
-        <div style="margin-bottom:24px;">
-
-            <label style="display:block;margin-bottom:8px;font-weight:600;">
-                Password
-            </label>
-
-            <input
-                type="password"
-                x-model="password"
-                placeholder="Masukkan password"
-                style="
-                    width:100%;
-                    padding:14px;
-                    border:1px solid #ddd;
-                    border-radius:12px;
-                "
-            >
-
-        </div>
-
-        <div style="display:flex;gap:12px;">
-
-            <button
-                @click="showLogin=false"
-                style="
-                    flex:1;
-                    padding:14px;
-                    border:none;
-                    border-radius:12px;
-                    background:#e2e8f0;
-                    cursor:pointer;
-                "
-            >
-                Batal
-            </button>
-
-            <button
-                @click="loginDashboard()"
-                style="
-                    flex:1;
-                    padding:14px;
-                    border:none;
-                    border-radius:12px;
-                    background:#714B67;
-                    color:white;
-                    font-weight:600;
-                    cursor:pointer;
-                "
-            >
-                Masuk
-            </button>
-
-        </div>
-
     </div>
 
-</div>
-
-<script>
-
-
-function app(){
-
-    return{
-
-        showLogin:false,
-        username:'',
-        password:'',
-
-        loginDashboard(){
-
-            if(
-                this.username === 'admin' &&
-                this.password === 'rsudbk123'
-            ){
-
-                sessionStorage.setItem(
-                    'dashboardLogin',
-                    'true'
-                );
-
-                window.location.href =
-                    'pages/dashboard.html';
-
-            }else{
-
-                alert(
-                    'Username atau Password salah'
-                );
-
+    <script>
+        // Satukan state Alpine ke dalam satu fungsi bersih
+        function appData() {
+            return {
+                showLogin: false,
+                username: '',
+                password: '',
+                loginDashboard() {
+                    if (this.username === 'admin' && this.password === 'rsudbk123') {
+                        sessionStorage.setItem('dashboardLogin', 'true');
+                        window.location.href = 'pages/dashboard.html';
+                    } else {
+                        alert('Username atau Password salah');
+                    }
+                }
             }
-
         }
-
-    }
-
-}
-
-
-
-function loginDashboard(){
-
-    const username =
-        document.querySelector('[x-model="username"]').value;
-
-    const password =
-        document.querySelector('[x-model="password"]').value;
-
-    if(
-        username === 'admin' &&
-        password === 'rsudbk123'
-    ){
-
-        sessionStorage.setItem(
-            'dashboardLogin',
-            'true'
-        );
-
-        window.location.href =
-            'pages/dashboard.html';
-
-    }else{
-
-        alert(
-            'Username atau Password salah'
-        );
-
-    }
-
-}
-
-</script>
-
+    </script>
 </body>
 </html>

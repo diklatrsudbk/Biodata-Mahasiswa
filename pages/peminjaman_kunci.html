@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peminjaman Kunci Loker - RSUDBK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f5f7fb; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="kunciLokerApp()" x-init="initData()" class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+                <a href="peminjaman_menu.html" class="text-xs font-semibold text-slate-500 hover:text-[#714B67] transition">← Kembali ke Kategori</a>
+                <h1 class="text-2xl font-bold text-slate-800 mt-1">Log Peminjaman Kunci Loker</h1>
+                <p class="text-slate-500 text-xs">Khusus Peserta Didik RSUDBK - Plotting Berdasarkan Ketersediaan Master Data</p>
+            </div>
+            
+            <button @click="openModalAdd()" class="bg-[#714B67] text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition text-sm flex items-center gap-2 self-start sm:self-center shadow-sm">
+                <span>+</span> Request Kunci Loker
+            </button>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 mb-4 border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-3 items-center">
+            <div class="relative flex-1 w-full">
+                <input type="text" x-model="searchQuery" placeholder="Cari Nama Peminjam, NIM, atau Catatan..." 
+                       class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-[#714B67] transition text-sm bg-slate-50/50">
+                <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</div>
+            </div>
+            <button @click="loadLogKunci()" class="w-full sm:w-auto bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-200 transition text-sm whitespace-nowrap">
+                ↻ Reload Data
+            </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 text-xs uppercase font-semibold">
+                            <th class="py-3 px-6">ID / Waktu</th>
+                            <th class="py-3 px-6">Peminjam</th>
+                            <th class="py-3 px-6">Kunci Terplot</th>
+                            <th class="py-3 px-6">Waktu Pinjam</th>
+                            <th class="py-3 px-6 text-center">Status</th>
+                            <th class="py-3 px-6 text-center">Aksi Petugas</th> 
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-slate-600 divide-y divide-slate-50">
+                        <template x-if="loadingTable">
+                            <tr>
+                                <td colspan="6" class="text-center py-12 text-slate-400 text-xs">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-2 border-[#714B67] border-t-transparent mx-auto mb-2"></div>
+                                    Memuat database kunci...
+                                </td>
+                            </tr>
+                        </template>
+
+                        <template x-if="!loadingTable && filteredLog.length === 0">
+                            <tr>
+                                <td colspan="6" class="text-center py-12 text-slate-400 text-xs">Tidak ada data peminjaman ditemukan.</td>
+                            </tr>
+                        </template>
+
+                        <template x-for="row in filteredLog" :key="row.id">
+                            <tr class="hover:bg-slate-50/80 transition border-b border-slate-100">
+                                <td class="py-4 px-6">
+                                    <span class="font-bold text-slate-800 text-xs block" x-text="row.id"></span>
+                                    <span class="text-[11px] text-slate-400 block mt-0.5" x-text="row.timestamp"></span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="font-semibold text-slate-700 block" x-text="row.nama_peminjam"></span>
+                                    <span class="text-xs text-slate-400 block" x-text="row.nim + ' (' + row.jurusan + ')'"></span>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <div class="flex flex-wrap gap-1 mb-1">
+                                        <template x-if="!row.nama_kunci">
+                                            <span class="text-xs text-slate-400 italic">⏳ Belum diplot</span>
+                                        </template>
+                                        <template x-if="row.nama_kunci" x-for="kunci in parseKunci(row.nama_kunci)">
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-bold shadow-sm border"
+          :class="kunci.toUpperCase().trim().startsWith('L') ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-pink-100 text-pink-700 border-pink-200'"
+          x-text="kunci"></span>
+                                        </template>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 block mt-1 bg-slate-50 p-1.5 rounded border border-slate-100" x-text="row.catatan"></span>
+                                    <div class="text-[10px] text-slate-400 mt-1 flex gap-2">
+                                        <span x-show="row.qty_loker_l > 0" x-text="'Req Laki-laki: ' + row.qty_loker_l"></span>
+                                        <span x-show="row.qty_loker_p > 0" x-text="'Req Perempuan: ' + row.qty_loker_p"></span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-6">
+                                    <span class="text-xs text-slate-700 font-medium block" x-text="row.tgl_pinjam + ' s/d ' + row.tgl_kembali"></span>
+                                    <span class="text-[11px] text-[#714B67] block mt-0.5" x-text="'Durasi: ' + row.durasi"></span>
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border inline-block"
+                                          :class="{
+                                              'bg-amber-50 text-amber-600 border-amber-200': row.status === 'Request',
+                                              'bg-blue-50 text-blue-600 border-blue-200': row.status === 'Approve/Booking',
+                                              'bg-emerald-50 text-emerald-700 border-emerald-200': row.status === 'Sedang Digunakan',
+                                              'bg-red-50 text-red-600 border-red-200': row.status === 'Ditolak',
+                                              'bg-slate-100 text-slate-500 border-slate-200': row.status === 'Cancel' || row.status === 'Selesai'
+                                          }" x-text="row.status"></span>
+                                </td>
+                                <td class="py-4 px-6 text-center text-xs space-x-1 whitespace-nowrap">
+                                    <template x-if="row.status === 'Request'">
+                                        <div class="inline-flex gap-1">
+                                            <button @click="openAuthModal(row, 'Approve/Booking')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-lg transition font-medium">Setujui & Plot</button>
+                                            <button @click="openAuthModal(row, 'Ditolak')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2 py-1 rounded-lg transition font-medium border border-red-200">Tolak</button>
+                                            <button @click="openAuthModal(row, 'Cancel')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded-lg transition font-medium border border-rose-200">Cancel</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="row.status === 'Approve/Booking'">
+                                        <div class="inline-flex gap-1">
+                                            <button @click="openAuthModal(row, 'Sedang Digunakan')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded-lg transition font-medium">Serahkan Kunci</button>
+                                            <button @click="openAuthModal(row, 'Cancel')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded-lg transition font-medium border border-rose-200">Cancel</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="row.status === 'Sedang Digunakan'">
+                                        <button @click="openAuthModal(row, 'Selesai')" class="bg-slate-800 hover:bg-slate-900 text-white px-2 py-1 rounded-lg transition font-medium">Kembalikan Kunci</button>
+                                    </template>
+                                    <template x-if="['Cancel', 'Ditolak', 'Selesai'].includes(row.status)">
+                                        <span class="text-slate-400 italic text-[11px]">Selesai</span>
+                                    </template>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="modalOpen" x-cloak class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div @click.away="closeModalAdd()" class="bg-white w-full max-w-xl rounded-3xl p-6 md:p-8 shadow-xl border border-slate-100 my-auto max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-100 pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Formulir Pinjam Kunci Loker</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Validasi NIM Anda untuk mengajukan hak akses loker RSUDBK</p>
+                </div>
+                <button type="button" @click="closeModalAdd()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+            </div>
+
+            <form @submit.prevent="submitForm">
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">NIM Peserta Didik *</label>
+                            <div class="relative">
+                                <input type="text" x-model="form.nim" @input="searchIdentitas()" placeholder="Masukkan NIM Anda..." required
+                                       class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700">
+                                <span x-show="loadingIdentitas" class="absolute right-3 top-3.5 animate-spin rounded-full h-4 w-4 border-2 border-[#714B67] border-t-transparent"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1.5">Nama Lengkap</label>
+                            <input type="text" x-model="form.nama_peminjam" readonly required placeholder="Otomatis terisi..."
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50/50 text-slate-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div x-show="identitasDitemukan" x-transition class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100 text-xs">
+                        <div><span class="text-slate-400 block">Institusi:</span><span class="font-bold text-slate-700" x-text="form.institusi"></span></div>
+                        <div><span class="text-slate-400 block">Jurusan:</span><span class="font-bold text-slate-700" x-text="form.jurusan"></span></div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-3">
+    <label class="block text-xs font-semibold text-slate-700 mb-3">Jumlah Kunci yang Di-request:</label>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="border border-slate-200 p-3 rounded-xl flex items-center justify-between bg-pink-50/10">
+            <span class="text-xs text-pink-700 font-medium">👩 Kunci Loker Perempuan</span>
+            <input type="number" 
+                   x-model.number="form.qty_loker_p" 
+                   min="0" 
+                   placeholder="0"
+                   @input="form.qty_loker_p = Math.max(0, parseInt($el.value) || 0)"
+                   class="w-20 border border-slate-200 rounded-lg p-1.5 text-xs outline-none focus:border-pink-400 bg-white text-center font-bold text-slate-700">
+        </div>
+        
+        <div class="border border-slate-200 p-3 rounded-xl flex items-center justify-between bg-blue-50/10">
+            <span class="text-xs text-blue-700 font-medium">👨 Kunci Loker Laki-laki</span>
+            <input type="number" 
+                   x-model.number="form.qty_loker_l" 
+                   min="0" 
+                   placeholder="0"
+                   @input="form.qty_loker_l = Math.max(0, parseInt($el.value) || 0)"
+                   class="w-20 border border-slate-200 rounded-lg p-1.5 text-xs outline-none focus:border-blue-400 bg-white text-center font-bold text-slate-700">
+        </div>
+    </div>
+</div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">Tanggal Mulai Pinjam</label>
+                            <input type="date" x-model="form.tgl_pinjam" :min="todayDate" @change="calculateDurasi()" required
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">Tanggal Estimasi Kembali</label>
+                            <input type="date" x-model="form.tgl_kembali" :min="form.tgl_pinjam || todayDate" @change="calculateDurasi()" required
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-600">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs flex justify-between">
+                        <div><span class="text-slate-400">Estimasi Durasi:</span> <span class="font-semibold text-slate-700" x-text="form.durasi"></span></div>
+                    </div>
+
+                    <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-4 text-xs text-slate-700 space-y-2 shadow-inner">
+                        <h4 class="font-bold text-amber-800">📜 Syarat & Ketentuan Peminjaman Kunci:</h4>
+                        <ul class="list-disc list-inside space-y-1 text-slate-600">
+                            <li>Wajib menjaga kebersihan dan keamanan loker yang dipinjam.</li>
+                            <li>Kunci loker tidak boleh dipindahtangankan secara ilegal.</li>
+                            <li>Apabila kunci **hilang atau rusak**, peminjam menanggung biaya penggantian duplikat kunci.</li>
+                        </ul>
+                        <label class="flex items-start gap-2 pt-2 cursor-pointer select-none font-medium text-[#714B67]">
+                            <input type="checkbox" x-model="form.setuju_snk" required class="mt-0.5 rounded border-amber-300 text-[#714B67] focus:ring-[#714B67]">
+                            <span>Saya membaca, memahami, dan menyetujui seluruh ketentuan di atas.</span>
+                        </label>
+                    </div>
+
+                    <div :class="form.setuju_snk ? 'opacity-100' : 'opacity-40 pointer-events-none transition'">
+                        <label class="block text-xs text-slate-500 mb-1.5 font-semibold">Tanda Tangan Digital:</label>
+                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white relative shadow-inner">
+                            <canvas id="canvasKunci" width="600" height="150" class="w-full h-32 bg-white block touch-none" 
+                                    @mousedown="startDrawing" @mousemove="draw" @mouseup="stopDrawing" @mouseleave="stopDrawing"
+                                    @touchstart="startDrawing" @touchmove="draw" @touchend="stopDrawing"></canvas>
+                            <button type="button" @click="clearCanvas" class="absolute bottom-2 right-2 bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1 rounded-lg text-[10px] transition">Hapus</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 mt-6">
+                    <button type="button" @click="closeModalAdd()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition text-xs">Batal</button>
+                    <button type="submit" :disabled="submitting || !form.setuju_snk" class="bg-[#714B67] text-white px-5 py-2.5 rounded-xl text-xs hover:opacity-95 transition flex items-center gap-2 disabled:opacity-50">
+                        <span x-show="submitting" class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+                        <span x-text="submitting ? 'Mengajukan...' : 'Kirim Request'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<div x-show="authModal.open" x-cloak class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div @click.away="authModal.open = false" class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-100 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        
+        <div class="flex justify-between items-center border-b border-slate-100 p-5 pb-3">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                <span>⚙️</span> Kontrol Petugas (Loker)
+            </h3>
+            <button @click="authModal.open = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">×</button>
+        </div>
+        
+        <form @submit.prevent="submitUbahStatus()" class="flex-1 flex flex-col overflow-hidden">
+            
+            <div class="p-5 pt-2 space-y-4 overflow-y-auto flex-1">
+                <p class="text-xs text-slate-500 mb-2 bg-slate-50 p-2.5 rounded-xl">
+                    Peminjam: <span class="font-bold text-slate-700" x-text="authModal.nama"></span><br>
+                    Target Status: <span class="font-bold text-[#714B67]" x-text="authModal.status"></span>
+                </p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Password Petugas</label>
+                        <input type="password" x-model="authModal.password" required placeholder="Masukkan password petugas..."
+                               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67]">
+                    </div>
+
+                    <template x-if="authModal.status === 'Approve/Booking'">
+                        <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <span class="text-xs font-bold text-slate-700 block">Plot Kunci Loker Terpilih:</span>
+                            
+                            <div x-show="masterKunci.length === 0" class="text-center py-4 text-xs text-amber-600 font-medium bg-amber-50 rounded-lg">
+                                ⏳ Sedang memuat daftar kunci dari spreadsheet Sarpras...
+                            </div>
+
+                            <div x-show="authModal.reqLaki > 0 && masterKunci.length > 0">
+                                <label class="block text-[11px] font-bold text-blue-700 mb-1 flex justify-between">
+                                    <span>👨 Kunci Laki-Laki (Maksimal pilih <span x-text="authModal.reqLaki"></span> kunci):</span>
+                                    <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px]" x-text="'Dipilih: ' + authModal.selectedKunciLaki.length + '/' + authModal.reqLaki"></span>
+                                </label>
+                                <div class="max-h-36 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-white grid grid-cols-3 gap-1">
+                                    <template x-for="kunci in masterKunci.filter(k => k.jenis === 'L')" :key="kunci.nomor">
+                                        <label class="flex items-center gap-1 text-[11px] cursor-pointer p-1 rounded border border-slate-100 transition"
+                                            :class="kunci.status === 'dipinjam' ? 'opacity-40 bg-slate-100' : 'hover:bg-slate-50'">
+                                            
+                                            <input type="checkbox" :value="kunci.nomor" x-model="authModal.selectedKunciLaki" 
+                                                :disabled="kunci.status === 'dipinjam' || (authModal.selectedKunciLaki.length >= authModal.reqLaki && !authModal.selectedKunciLaki.includes(kunci.nomor))"
+                                                class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 scale-90 disabled:opacity-50">
+                                            
+                                            <span :class="kunci.status === 'dipinjam' ? 'line-through text-red-500 font-medium' : 'text-slate-700 font-medium'" x-text="kunci.nomor"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div x-show="authModal.reqPerempuan > 0 && masterKunci.length > 0">
+                                <label class="block text-[11px] font-bold text-pink-700 mb-1 flex justify-between">
+                                    <span>👩 Kunci Perempuan (Maksimal pilih <span x-text="authModal.reqPerempuan"></span> kunci):</span>
+                                    <span class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-800 text-[10px]" x-text="'Dipilih: ' + authModal.selectedKunciPerempuan.length + '/' + authModal.reqPerempuan"></span>
+                                </label>
+                                <div class="max-h-36 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-white grid grid-cols-3 gap-1">
+                                    <template x-for="kunci in masterKunci.filter(k => k.jenis === 'P')" :key="kunci.nomor">
+                                        <label class="flex items-center gap-1 text-[11px] cursor-pointer p-1 rounded border border-slate-100 transition"
+                                            :class="kunci.status === 'dipinjam' ? 'opacity-40 bg-slate-100' : 'hover:bg-slate-50'">
+                                            
+                                            <input type="checkbox" :value="kunci.nomor" x-model="authModal.selectedKunciPerempuan" 
+                                                :disabled="kunci.status === 'dipinjam' || (authModal.selectedKunciPerempuan.length >= authModal.reqPerempuan && !authModal.selectedKunciPerempuan.includes(kunci.nomor))"
+                                                class="rounded border-slate-300 text-pink-600 focus:ring-pink-500 scale-90 disabled:opacity-50">
+                                            
+                                            <span :class="kunci.status === 'dipinjam' ? 'line-through text-red-500 font-medium' : 'text-slate-700 font-medium'" x-text="kunci.nomor"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <div class="text-[10px] text-slate-500 bg-slate-100 p-2 rounded">
+                                <span class="font-semibold">Format Output NAMA_KUNCI:</span> 
+                                <span class="font-mono font-bold text-slate-700 block mt-0.5" x-text="generateFormatOutput() || 'Belum ada kunci dipilih'"></span>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="authModal.status === 'Ditolak'">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Alasan Penolakan</label>
+                            <input type="text" x-model="authModal.alasanPenolakan" required placeholder="Tuliskan alasan penolakan..."
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-600">
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 border-t border-slate-100 p-5 bg-slate-50/50">
+                <button type="button" @click="authModal.open = false" class="px-3 py-2 border border-slate-200 rounded-xl text-slate-500 text-xs">Batal</button>
+                <button type="submit" class="bg-[#714B67] text-white px-4 py-2 rounded-xl text-xs font-medium shadow-sm hover:opacity-90 transition">
+                    Eksekusi Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <script>
+        function kunciLokerApp() {
+            return {
+                scriptUrl: "https://script.google.com/macros/s/AKfycbwz9bdCTlzl1ebmhafJ2BJ2x5tbo2C_QktYoTadOVx7eXMZ2pXYVejH9NlW1isXiwiu/exec",
+                loadingTable: false,
+                loadingIdentitas: false,
+                submitting: false,
+                modalOpen: false,
+                searchQuery: '',
+                todayDate: new Date().toISOString().split('T')[0],
+                identitasDitemukan: false,
+                logKunci: [],
+                masterKunci: [], // Menyimpan data dari sheet D_KUNCI_LOKER
+
+                authModal: {
+                    open: false, id: '', nama: '', status: '', catatanLama: '', password: '',
+                    reqLaki: 0, reqPerempuan: 0,
+                    selectedKunciLaki: [], selectedKunciPerempuan: [], alasanPenolakan: ''
+                },
+
+                form: {
+                    nim: '', nama_peminjam: '', institusi: '', jurusan: '', 
+                    tgl_pinjam: '', tgl_kembali: '', durasi: '0 hari', qty_loker_l: 0, qty_loker_p: 0,
+                    setuju_snk: false, signature: ''
+                },
+
+                isDrawing: false, canvas: null, ctx: null,
+
+                initData() {
+                    this.loadLogKunci();
+                    this.loadMasterKunci();
+                },
+
+                get filteredLog() {
+                    if (!this.searchQuery) return this.logKunci;
+                    return this.logKunci.filter(item => 
+                        (item.nama_peminjam && item.nama_peminjam.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
+                        (item.nim && item.nim.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
+                        (item.catatan && item.catatan.toLowerCase().includes(this.searchQuery.toLowerCase()))
+                    );
+                },
+
+                parseKunci(namaKunciString) {
+                    if (!namaKunciString) return [];
+                    return namaKunciString.split(',').map(k => k.trim()).filter(k => k !== '');
+                },
+
+                generateFormatOutput() {
+    // Tambahkan huruf 'L' di depan setiap nomor kunci laki-laki jika belum ada
+    let formatLaki = this.authModal.selectedKunciLaki.map(no => {
+        let n = no.toString().trim();
+        return n.toUpperCase().startsWith('L') ? n : 'L' + n;
+    });
+
+    // Tambahkan huruf 'P' di depan setiap nomor kunci perempuan jika belum ada
+    let formatPerempuan = this.authModal.selectedKunciPerempuan.map(no => {
+        let n = no.toString().trim();
+        return n.toUpperCase().startsWith('P') ? n : 'P' + n;
+    });
+
+    let gabungan = [...formatLaki, ...formatPerempuan];
+    return gabungan.join(', ');
+},
+
+                async loadMasterKunci() {
+                    try {
+                        const response = await fetch(this.scriptUrl + "?action=getDaftarKunci");
+                        const result = await response.json();
+                        if (result.status === "success") this.masterKunci = result.data;
+                    } catch (e) { console.error("Gagal mengambil master data kunci:", e); }
+                },
+
+                openModalAdd() {
+                    this.modalOpen = true;
+                    this.identitasDitemukan = false;
+                    this.form = { nim: '', nama_peminjam: '', institusi: '', jurusan: '', tgl_pinjam: '', tgl_kembali: '', durasi: '0 hari', qty_loker_l: 0, qty_loker_p: 0, setuju_snk: false, signature: '' };
+                    
+                    setTimeout(() => {
+                        this.canvas = document.getElementById('canvasKunci');
+                        this.ctx = this.canvas.getContext('2d');
+                        this.ctx.strokeStyle = '#1e293b';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.lineCap = 'round';
+                        this.ctx.lineJoin = 'round';
+                        this.clearCanvas();
+                    }, 150);
+                },
+
+                closeModalAdd() { this.modalOpen = false; },
+
+                async searchIdentitas() {
+                    if (this.form.nim.length < 4) {
+                        this.identitasDitemukan = false;
+                        return;
+                    }
+                    this.loadingIdentitas = true;
+                    try {
+                        const response = await fetch(this.scriptUrl + "?action=searchPesertaByNim&nim=" + encodeURIComponent(this.form.nim));
+                        const result = await response.json();
+                        if (result.status === "success" && result.data) {
+                            this.form.nama_peminjam = result.data.nama;
+                            this.form.institusi = result.data.institusi;
+                            this.form.jurusan = result.data.jurusan;
+                            this.identitasDitemukan = true;
+                        } else { this.identitasDitemukan = false; }
+                    } catch (e) { this.identitasDitemukan = false; }
+                    this.loadingIdentitas = false;
+                },
+
+                calculateDurasi() {
+                    if (!this.form.tgl_pinjam || !this.form.tgl_kembali) return;
+                    const p = new Date(this.form.tgl_pinjam);
+                    const k = new Date(this.form.tgl_kembali);
+                    const diff = Math.ceil((k - p) / (1000 * 60 * 60 * 24));
+                    this.form.durasi = diff >= 0 ? diff + " hari" : "0 hari";
+                },
+
+                async loadLogKunci() {
+                    this.loadingTable = true;
+                    try {
+                        const response = await fetch(this.scriptUrl + "?action=readKunciLoker");
+                        const result = await response.json();
+                        this.logKunci = result.status === "success" ? result.data : [];
+                    } catch (e) { console.error("Gagal memuat log kunci:", e); }
+                    this.loadingTable = false;
+                },
+
+                async submitForm() {
+    if (this.form.qty_loker_l === 0 && this.form.qty_loker_p === 0) {
+        alert("Harap masukkan kuantitas kunci request minimal 1 buah!");
+        return;
+    }
+    this.form.signature = this.canvas.toDataURL();
+    this.submitting = true;
+
+    try {
+        const response = await fetch(this.scriptUrl, {
+            method: "POST",
+            body: JSON.stringify({ 
+                action: "submitKunciLoker", 
+                sheetName: "P_KUNCI_LOKER", 
+                ...this.form,
+                // MAP VARIABEL HTML KE VARIABEL YANG DIHARAPKAN OLEH CODE.GS
+                qty_laki: this.form.qty_loker_l,
+                qty_perempuan: this.form.qty_loker_p
+            })
+        });
+        const result = await response.json();
+        if (result.status === "success") {
+            alert(result.message);
+            this.closeModalAdd();
+            this.loadLogKunci(); 
+        } else { alert("Gagal: " + result.message); }
+    } catch (e) { alert("Gagal terhubung ke cloud server."); }
+    this.submitting = false;
+},
+
+                async openAuthModal(row, statusTujuan) {
+    this.authModal.id = row.id;
+    this.authModal.nama = row.nama_peminjam;
+    this.authModal.status = statusTujuan;
+    this.authModal.catatanLama = row.catatan || '';
+    this.authModal.password = '';
+    this.authModal.alasanPenolakan = '';
+    
+    // Default fallback awal sesuai kode Anda
+    this.authModal.reqLaki = 1; 
+    this.authModal.reqPerempuan = 1;
+
+    this.authModal.selectedKunciLaki = [];
+    this.authModal.selectedKunciPerempuan = [];
+    
+    if (statusTujuan === 'Approve/Booking') {
+        this.masterKunci = []; // Trigger text loading di UI
+        
+        // WAJIB menggunakan await agar data master dari cloud selesai diunduh sebelum baris berikutnya dieksekusi
+        await this.loadMasterKunci(); 
+        
+        // 1. Jika sudah ada nomor kunci yang terisi (Proses Edit / Re-plot)
+        if (row.nama_kunci && row.nama_kunci !== "-") {
+            let keys = this.parseKunci(row.nama_kunci);
+
+            this.authModal.selectedKunciLaki = keys
+                .filter(k => k.toUpperCase().startsWith('L'))
+                .map(k => k.toUpperCase().replace('L', '').trim());
+                
+            this.authModal.selectedKunciPerempuan = keys
+                .filter(k => k.toUpperCase().startsWith('P'))
+                .map(k => k.toUpperCase().replace('P', '').trim());
+
+            // Atur visibility box pilihan berdasarkan kunci yang ada
+            this.authModal.reqLaki = this.authModal.selectedKunciLaki.length > 0 ? this.authModal.selectedKunciLaki.length : 0;
+            this.authModal.reqPerempuan = this.authModal.selectedKunciPerempuan.length > 0 ? this.authModal.selectedKunciPerempuan.length : 0;
+            
+        } else {
+            // JIKA KUNCI MASIH KOSONG (Siswa baru request):
+            // Kita ekstrak angka presisi dari teks catatan menggunakan Regex
+            let teksCatatan = (row.catatan || '').toLowerCase();
+            
+            // Cari angka di sekitar kata 'laki'
+            let matchLaki = teksCatatan.match(/laki[-_]laki\s*=\s*(\d+)/) || teksCatatan.match(/(\d+)\s*laki/);
+            // Cari angka di sekitar kata 'perempuan'
+            let matchPerempuan = teksCatatan.match(/perempuan\s*=\s*(\d+)/) || teksCatatan.match(/(\d+)\s*perempuan/);
+
+            // Jika polanya cocok, masukkan angkanya. Jika tidak ada, default ke 0
+            this.authModal.reqLaki = matchLaki ? parseInt(matchLaki[1]) : 0;
+            this.authModal.reqPerempuan = matchPerempuan ? parseInt(matchPerempuan[1]) : 0;
+
+            // Failsafe / Pengaman Cadangan: Jika ekstraksi teks gagal total dan keduanya 0, 
+            // baru gunakan fallback default (munculkan kedua box masing-masing 1)
+            if (this.authModal.reqLaki === 0 && this.authModal.reqPerempuan === 0) {
+                this.authModal.reqLaki = 1;
+                this.authModal.reqPerempuan = 1;
+            }
+        }
+
+        // 3. SEKARANG KITA JALANKAN LOGIKA WARNING SYSTEM (Karena data masterKunci dijamin sudah ter-load)
+        let stokLakiTersedia = this.masterKunci.filter(k => k.jenis === 'L' && k.status === 'tersedia').length;
+        let stokPerempuanTersedia = this.masterKunci.filter(k => k.jenis === 'P' && k.status === 'tersedia').length;
+
+        let pesanPeringatan = "";
+        
+        if (this.authModal.reqLaki > 0 && stokLakiTersedia < this.authModal.reqLaki) {
+            pesanPeringatan += `⚠️ Stok Kunci LAKI-LAKI Kurang!\n- Kebutuhan: ${this.authModal.reqLaki} kunci\n- Tersedia di Sarpras: ${stokLakiTersedia} kunci\n\n`;
+        }
+        
+        if (this.authModal.reqPerempuan > 0 && stokPerempuanTersedia < this.authModal.reqPerempuan) {
+            pesanPeringatan += `⚠️ Stok Kunci PEREMPUAN Kurang!\n- Kebutuhan: ${this.authModal.reqPerempuan} kunci\n- Tersedia di Sarpras: ${stokPerempuanTersedia} kunci\n\n`;
+        }
+
+        // Munculkan alert jika stok tidak mencukupi target request
+        if (pesanPeringatan !== "") {
+            alert(`🚨 PERINGATAN KETERSEDIAAN KUNCI LOKER:\n\n${pesanPeringatan}Silahkan koordinasikan dengan bagian Sarpras sebelum melanjutkan.`);
+        }
+    }
+    
+    // Buka dialog modal kontrol petugas setelah semua data dan validasi siap
+    this.authModal.open = true;
+},
+
+                async submitUbahStatus() {
+    if (this.authModal.password !== "PETUGAS2026") {
+        alert("❌ Password Petugas Salah!");
+        return;
+    }
+
+    let textCatatanBaru = this.authModal.catatanLama;
+    let stringKunciHasilPlot = "";
+
+    if (this.authModal.status === 'Approve/Booking') {
+        stringKunciHasilPlot = this.generateFormatOutput();
+        
+        // VALIDASI KET ketat: Jumlah kunci terpilih WAJIB SAMA dengan jumlah yang diminta
+        if (this.authModal.selectedKunciLaki.length !== this.authModal.reqLaki || 
+            this.authModal.selectedKunciPerempuan.length !== this.authModal.reqPerempuan) {
+            alert(`❌ Gagal Setuju!\nJumlah kunci terpilih belum sesuai ketentuan request.\nHarus memilih tepat: ${this.authModal.reqLaki} Laki-laki & ${this.authModal.reqPerempuan} Perempuan.`);
+            return;
+        }
+        textCatatanBaru = "Approve/Booking Silahkan ambil kunci Anda di Ruang Sarpras.";
+    } else if (this.authModal.status === 'Sedang Digunakan') {
+        textCatatanBaru = "Kunci telah diserahkan dan sedang digunakan.";
+    } else if (this.authModal.status === 'Selesai') {
+        textCatatanBaru = "Selesai. Kunci telah dikembalikan dalam kondisi baik.";
+    } else if (this.authModal.status === 'Ditolak') {
+        if (!this.authModal.alasanPenolakan.trim()) {
+            alert("❌ Mohon isi alasan penolakan!");
+            return;
+        }
+        textCatatanBaru = "Ditolak: " + this.authModal.alasanPenolakan;
+    }
+
+    this.authModal.open = false;
+
+    try {
+        const payload = {
+            action: "updateStatusKunciLoker",
+            id: this.authModal.id,
+            status: this.authModal.status,
+            namaKunci: stringKunciHasilPlot, 
+            catatan: textCatatanBaru
+        };
+
+        const response = await fetch(this.scriptUrl, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.status === "success") {
+            alert(result.message);
+            this.loadLogKunci();
+        } else { alert("Gagal: " + result.message); }
+    } catch (e) { alert("Gagal memperbarui status."); }
+},
+
+
+                // CANVAS SIGNATURE
+                getMousePos(e) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return {
+                        x: (clientX - rect.left) * (this.canvas.width / rect.width),
+                        y: (clientY - rect.top) * (this.canvas.height / rect.height)
+                    };
+                },
+                startDrawing(e) {
+                    if(!this.form.setuju_snk) return;
+                    this.isDrawing = true;
+                    const pos = this.getMousePos(e);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(pos.x, pos.y);
+                },
+                draw(e) {
+                    if (!this.isDrawing) return;
+                    e.preventDefault();
+                    const pos = this.getMousePos(e);
+                    this.ctx.lineTo(pos.x, pos.y);
+                    this.ctx.stroke();
+                },
+                stopDrawing() { this.isDrawing = false; },
+                clearCanvas() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
+            };
+        }
+    </script>
+</body>
+</html>

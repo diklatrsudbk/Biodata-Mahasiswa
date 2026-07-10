@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peminjaman Barang - RSUDBK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f5f7fb; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="peminjamanBarangApp()" x-init="initData()" class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+                <a href="peminjaman_menu.html" class="text-xs font-semibold text-slate-500 hover:text-[#714B67] transition">← Kembali ke Kategori</a>
+                <h1 class="text-2xl font-bold text-slate-800 mt-1">Log Peminjaman Barang / Alat</h1>
+                <p class="text-slate-500 text-xs">Daftar riwayat dan status pengajuan peminjaman barang internal RSUDBK</p>
+            </div>
+            
+            <button @click="openModalAdd()" class="bg-[#714B67] text-white px-5 py-2.5 rounded-xl font-semibold hover:opacity-90 transition text-sm flex items-center gap-2 self-start sm:self-center shadow-sm">
+                <span>+</span> Tambah Peminjaman
+            </button>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 mb-4 border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-3 items-center">
+            <div class="relative flex-1 w-full">
+                <input type="text" x-model="searchQuery" placeholder="Cari Nama Peminjam, NIM/NIK atau Nama Barang..." 
+                       class="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-[#714B67] transition text-sm bg-slate-50/50">
+                <div class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</div>
+            </div>
+            <button @click="loadLogPeminjaman()" class="w-full sm:w-auto bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-semibold hover:bg-slate-200 transition text-sm whitespace-nowrap">
+                ↻ Reload Data
+            </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 text-xs uppercase font-semibold">
+                            <th class="py-3 px-6">ID / Waktu</th>
+                            <th class="py-3 px-6">Peminjam</th>
+                            <th class="py-3 px-6">Barang</th>
+                            <th class="py-3 px-6">Waktu Pinjam</th>
+                            <th class="py-3 px-6 text-center">Status</th>
+                            <th class="py-3 px-6 text-center">Aksi</th> 
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-slate-600 divide-y divide-slate-50">
+                        <template x-if="loadingTable">
+                            <tr>
+                                <td colspan="6" class="text-center py-12 text-slate-400 text-xs">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-2 border-[#714B67] border-t-transparent mx-auto mb-2"></div>
+                                    Memuat riwayat peminjaman...
+                                </td>
+                            </tr>
+                        </template>
+
+                        <template x-if="!loadingTable && filteredLog.length === 0">
+                            <tr>
+                                <td colspan="6" class="text-center py-12 text-slate-400 text-xs">Tidak ada data peminjaman ditemukan.</td>
+                            </tr>
+                        </template>
+
+                        <template x-for="row in filteredLog" :key="row.id">
+                            <tr class="hover:bg-slate-50/80 transition border-b border-slate-100">
+                                <td class="py-4 px-6">
+                                    <span class="font-bold text-slate-800 text-xs block" x-text="row.id"></span>
+                                    <span class="text-[11px] text-slate-400 block mt-0.5" x-text="row.timestamp"></span>
+                                </td>
+
+                                <td class="py-4 px-6">
+                                    <span class="font-semibold text-slate-700 block" x-text="row.nama_peminjam"></span>
+                                    <span class="text-xs text-slate-400 block" x-text="row.nim_nik + ' (' + row.unit_peminjam + ')'"></span>
+                                </td>
+
+                                <td class="py-4 px-6">
+                                    <span class="font-medium text-slate-700 block" x-text="row.nama_barang"></span>
+                                    <span class="text-xs text-slate-400 block" x-text="'Qty: ' + row.qty + ' Unit'"></span>
+                                </td>
+
+                                <td class="py-4 px-6">
+                                    <span class="text-xs text-slate-700 font-medium block" x-text="row.tgl_pinjam + ' s/d ' + row.tgl_kembali"></span>
+                                    <span class="text-[11px] text-[#714B67] block mt-0.5" x-text="'Durasi: ' + row.durasi"></span>
+                                </td>
+                                
+                                <td class="py-4 px-6 text-center">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border inline-block"
+                                          :class="{
+                                              'bg-amber-50 text-amber-600 border-amber-200': row.status === 'Request',
+                                              'bg-blue-50 text-blue-600 border-blue-200': row.status === 'Approve/Booking',
+                                              'bg-emerald-50 text-emerald-700 border-emerald-200': row.status === 'Sedang Digunakan',
+                                              'bg-red-600 text-white border-red-700': row.status === 'Overdue',
+                                              'bg-slate-100 text-slate-500 border-slate-300': row.status === 'Cancel',
+                                              'bg-red-50 text-red-600 border-red-200': row.status === 'Ditolak',
+                                              'bg-slate-50 text-slate-600 border-slate-200': row.status === 'Selesai',
+                                              'bg-purple-50 text-purple-700 border-purple-200': row.status === 'Selesai (Rusak/Hilang)'
+                                          }" x-text="row.status"></span>
+                                </td>
+
+                                <td class="py-4 px-6 text-center text-xs space-x-1 whitespace-nowrap">
+                                    <template x-if="row.status === 'Request'">
+                                        <div class="inline-flex gap-1">
+                                            <button @click="openAuthModal(row.id, 'Approve/Booking')" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-lg transition font-medium">Setujui</button>
+                                            <button @click="openAuthModal(row.id, 'Ditolak')" class="bg-red-50 text-red-600 hover:bg-red-100 px-2 py-1 rounded-lg transition font-medium border border-red-200">Tolak</button>
+                                            <button @click="openAuthModal(row.id, 'Cancel')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded-lg transition font-medium border border-rose-200">Cancel</button>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="row.status === 'Approve/Booking'">
+                                        <div class="inline-flex gap-1">
+                                            <button @click="openAuthModal(row.id, 'Sedang Digunakan')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded-lg transition font-medium">Serahkan Barang</button>
+                                            <button @click="openAuthModal(row.id, 'Cancel')" class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded-lg transition font-medium border border-rose-200">Cancel</button>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="row.status === 'Sedang Digunakan' || row.status === 'Overdue'">
+                                        <div class="inline-flex gap-1">
+                                            <button @click="openAuthModal(row.id, 'Selesai')" class="bg-slate-800 hover:bg-slate-900 text-white px-2 py-1 rounded-lg transition font-medium">Kembalikan (OK)</button>
+                                            <button @click="openAuthModal(row.id, 'Selesai (Rusak/Hilang)')" class="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded-lg transition font-medium">Rusak/Hilang</button>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="['Cancel', 'Ditolak', 'Selesai', 'Selesai (Rusak/Hilang)'].includes(row.status)">
+                                        <span class="text-slate-400 italic text-[11px]">Selesai</span>
+                                    </template>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="modalOpen" x-cloak class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div @click.away="closeModalAdd()" class="bg-white w-full max-w-2xl rounded-3xl p-6 md:p-8 shadow-xl border border-slate-100 my-auto max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-100 pb-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">Formulir Peminjaman Barang</h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Isi detail data logistik penunjang dengan teliti</p>
+                </div>
+                <button type="button" @click="closeModalAdd()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+            </div>
+
+            <form @submit.prevent="submitForm">
+                <div class="space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">Unit Peminjam</label>
+                            <select x-model="form.unit" @change="handleUnitChange()" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-sm outline-none focus:border-[#714B67] text-slate-700">
+                                <option value="Peserta Didik">Peserta Didik</option>
+                                <option value="Karyawan">Karyawan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5" x-text="form.unit === 'Peserta Didik' ? 'NIM Peserta Didik' : 'NIK Karyawan'"></label>
+                            <div class="relative">
+                                <input type="text" x-model="form.nim_nik" @input="searchIdentitas()" placeholder="Ketik nomor identitas..." required
+                                       class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700">
+                                <span x-show="loadingIdentitas" class="absolute right-3 top-3 animate-spin rounded-full h-4 w-4 border-2 border-[#714B67] border-t-transparent"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="form.unit === 'Karyawan' || identitasDitemukan" x-transition class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1.5">Nama Lengkap Peminjam</label>
+                            <input type="text" x-model="form.nama_peminjam" :readonly="form.unit === 'Peserta Didik'" required placeholder="Masukkan nama lengkap..."
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700 read-only:bg-slate-50/50 read-only:text-slate-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1.5" x-text="form.unit === 'Peserta Didik' ? 'Nama Institusi / Kampus' : 'Nama Perusahaan'"></label>
+                            <input type="text" x-model="form.institusi" :readonly="form.unit === 'Peserta Didik' || form.unit === 'Karyawan'" required placeholder="Institusi/Perusahaan asal..."
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700 read-only:bg-slate-50/50 read-only:text-slate-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1.5" x-text="form.unit === 'Peserta Didik' ? 'Jurusan / Prodi' : 'Divisi / Unit Kerja'"></label>
+                            <input type="text" x-model="form.jurusan_divisi" :readonly="form.unit === 'Peserta Didik'" required placeholder="Masukkan jurusan/divisi..."
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700 read-only:bg-slate-50/50 read-only:text-slate-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1.5">No. WhatsApp</label>
+                            <input type="text" x-model="form.no_hp" :readonly="form.unit === 'Peserta Didik'" required placeholder="Contoh: 081234567xxx"
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700 read-only:bg-slate-50/50 read-only:text-slate-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 border-t border-slate-100 pt-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs text-slate-500 mb-1.5">Nama Barang / Aset Sarpras</label>
+                            <select x-model="form.nama_barang" @change="updateMaxQty()" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-sm outline-none focus:border-[#714B67] text-slate-700">
+                                <option value="">-- Pilih Barang --</option>
+                                <template x-for="item in listBarang" :key="item.nama">
+                                    <option :value="item.nama" x-text="item.nama"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">Quantity (Qty)</label>
+                            <select x-model="form.qty" required class="w-full border border-slate-200 rounded-xl px-3 py-2.5 bg-white text-sm outline-none focus:border-[#714B67] text-slate-700">
+                                <template x-for="n in maxQtyAvailable" :key="n">
+                                    <option :value="n" x-text="n"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">Tanggal Mulai Pinjam</label>
+                            <input type="date" x-model="form.tgl_pinjam" :min="todayDate" @change="calculateDurasi()" required
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-600">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">Tanggal Estimasi Kembali</label>
+                            <input type="date" x-model="form.tgl_kembali" :min="form.tgl_pinjam || todayDate" @change="calculateDurasi()" required
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-600">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                        <div><span class="text-slate-400">Estimasi Durasi:</span> <span class="font-semibold text-slate-700" x-text="form.durasi"></span></div>
+                        <div><span class="text-slate-400">Status Sistem:</span> <span class="font-semibold text-amber-600 uppercase" x-text="form.status"></span></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1.5">Keperluan Peminjaman</label>
+                        <textarea x-model="form.keperluan" rows="2" required placeholder="Tuliskan alasan peminjaman barang secara detail..."
+                                  class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-700 resize-none"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1.5">Tanda Tangan Digital</label>
+                        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white relative">
+                            <canvas id="canvasTt" width="600" height="200" class="w-full h-36 bg-white block touch-none" 
+                                    @mousedown="startDrawing" @mousemove="draw" @mouseup="stopDrawing" @mouseleave="stopDrawing"
+                                    @touchstart="startDrawing" @touchmove="draw" @touchend="stopDrawing"></canvas>
+                            <button type="button" @click="clearCanvas" class="absolute bottom-2 right-2 bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1 rounded-lg text-[10px] transition">Hapus Coretan</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 mt-6">
+                    <button type="button" @click="closeModalAdd()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition text-xs">Batal</button>
+                    <button type="submit" :disabled="submitting" class="bg-[#714B67] text-white px-5 py-2.5 rounded-xl text-xs hover:opacity-95 transition flex items-center gap-2">
+                        <span x-show="submitting" class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>
+                        <span x-text="submitting ? 'Menyimpan...' : 'Ajukan Peminjaman'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="authModal.open" x-cloak class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div @click.away="authModal.open = false" class="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl border border-slate-100 transform transition-all">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <span>🔐</span> Otorisasi Status Transaksi
+                </h3>
+                <button @click="authModal.open = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">×</button>
+            </div>
+            
+            <p class="text-xs text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                Mengubah Status ID: <span class="font-bold text-slate-700" x-text="authModal.id"></span> menjadi 
+                <span class="font-bold text-[#714B67]" x-text="authModal.status"></span>.
+            </p>
+
+            <form @submit.prevent="submitUbahStatus()">
+                <div class="space-y-4">
+                    <template x-if="authModal.status !== 'Cancel'">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Password Petugas</label>
+                            <input type="password" x-model="authModal.password" required placeholder="Masukkan password petugas..."
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-700">
+                        </div>
+                    </template>
+
+                    <template x-if="['Cancel', 'Ditolak', 'Selesai (Rusak/Hilang)'].includes(authModal.status)">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Alasan / Keterangan</label>
+                            <textarea x-model="authModal.alasan" required rows="2" placeholder="Tuliskan keterangan/alasan..."
+                                      class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-700 resize-none"></textarea>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 border-t border-slate-100 pt-4 mt-5">
+                    <button type="button" @click="authModal.open = false" class="px-3 py-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 text-xs">Batal</button>
+                    <button type="submit" class="bg-[#714B67] text-white px-4 py-2 rounded-xl text-xs font-medium hover:opacity-95">
+                        Konfirmasi Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+       function peminjamanBarangApp() {
+            return {
+                scriptUrl: "https://script.google.com/macros/s/AKfycbwz9bdCTlzl1ebmhafJ2BJ2x5tbo2C_QktYoTadOVx7eXMZ2pXYVejH9NlW1isXiwiu/exec", 
+                loadingTable: false,
+                loadingIdentitas: false,
+                submitting: false,
+                modalOpen: false,
+                
+                // State Data Modal Dialog Pengganti Prompt
+                authModal: {
+                    open: false,
+                    id: '',
+                    status: '',
+                    password: '',
+                    alasan: ''
+                },
+
+                searchQuery: '',
+                todayDate: new Date().toISOString().split('T')[0],
+                identitasDitemukan: false, 
+                
+                logPeminjaman: [],
+                listBarang: [], 
+                maxQtyAvailable: 1,
+
+                form: {
+                    unit: 'Peserta Didik',
+                    nim_nik: '',
+                    nama_peminjam: '',
+                    institusi: '',
+                    jurusan_divisi: '',
+                    no_hp: '',
+                    nama_barang: '',
+                    qty: 1,
+                    tgl_pinjam: '',
+                    tgl_kembali: '',
+                    durasi: '0 hari',
+                    status: 'Request',
+                    keperluan: '',
+                    signature: ''
+                },
+
+                isDrawing: false,
+                canvas: null,
+                ctx: null,
+
+                initData() {
+                    this.loadLogPeminjaman();
+                    this.loadDropdownBarang();
+                },
+
+                get filteredLog() {
+                    if (!this.searchQuery) return this.logPeminjaman;
+                    return this.logPeminjaman.filter(item => 
+                        item.nama_peminjam.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        item.nim_nik.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        item.nama_barang.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    );
+                },
+
+                async loadLogPeminjaman() {
+                    this.loadingTable = true;
+                    try {
+                        const res = await fetch(`${this.scriptUrl}?action=readPeminjamanBarang`);
+                        const result = await res.json();
+                        if (result.status === "success") this.logPeminjaman = result.data;
+                    } catch (e) { console.error(e); }
+                    this.loadingTable = false;
+                },
+
+                async loadDropdownBarang() {
+                    try {
+                        const res = await fetch(`${this.scriptUrl}?action=getSarprasBarang`);
+                        const result = await res.json();
+                        if (result.status === "success") this.listBarang = result.data; 
+                    } catch (e) { console.error(e); }
+                },
+
+                openModalAdd() {
+                    this.modalOpen = true;
+                    this.identitasDitemukan = false;
+                    this.form = { unit: 'Peserta Didik', nim_nik: '', nama_peminjam: '', institusi: '', jurusan_divisi: '', no_hp: '', nama_barang: '', qty: 1, tgl_pinjam: '', tgl_kembali: '', durasi: '0 hari', status: 'Request', keperluan: '', signature: '' };
+                    this.maxQtyAvailable = 1;
+                    
+                    setTimeout(() => {
+                        this.canvas = document.getElementById('canvasTt');
+                        this.ctx = this.canvas.getContext('2d');
+                        this.ctx.strokeStyle = '#1e293b';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.lineCap = 'round';
+                        this.ctx.lineJoin = 'round';
+                        this.clearCanvas();
+                    }, 150);
+                },
+
+                closeModalAdd() { this.modalOpen = false; },
+
+                handleUnitChange() {
+                    this.form.nim_nik = ''; 
+                    this.form.nama_peminjam = ''; 
+                    this.form.institusi = ''; 
+                    this.form.jurusan_divisi = ''; 
+                    this.form.no_hp = '';
+                    this.identitasDitemukan = false;
+                    
+                    if(this.form.unit === 'Karyawan') {
+                        this.form.nim_nik = "3273"; 
+                        this.form.institusi = "RSUDBK";
+                    }
+                },
+
+                async searchIdentitas() {
+                    if (this.form.unit === "Karyawan") return;
+                    if (this.form.nim_nik.length < 4) {
+                        this.identitasDitemukan = false;
+                        return;
+                    }
+
+                    this.loadingIdentitas = true;
+                    try {
+                        const res = await fetch(`${this.scriptUrl}?action=searchPesertaByNim&nim=${this.form.nim_nik}`);
+                        const result = await res.json();
+                        if (result.status === "success" && result.data) {
+                            this.form.nama_peminjam = result.data.nama;
+                            this.form.institusi = result.data.institusi;
+                            this.form.jurusan_divisi = result.data.jurusan;
+                            this.form.no_hp = result.data.no_hp;
+                            this.identitasDitemukan = true; 
+                        } else {
+                            this.identitasDitemukan = false;
+                        }
+                    } catch (e) { console.error(e); }
+                    this.loadingIdentitas = false;
+                },
+
+                updateMaxQty() {
+                    const selected = this.listBarang.find(b => b.nama === this.form.nama_barang);
+                    this.maxQtyAvailable = selected ? selected.max : 1;
+                    this.form.qty = 1;
+                },
+
+                calculateDurasi() {
+                    if (!this.form.tgl_pinjam || !this.form.tgl_kembali) return;
+                    const p = new Date(this.form.tgl_pinjam);
+                    const k = new Date(this.form.tgl_kembali);
+                    
+                    if (k < p) {
+                        alert("Tanggal kembali tidak boleh kurang dari tanggal pinjam!");
+                        this.form.tgl_kembali = '';
+                        return;
+                    }
+                    
+                    const diffTime = Math.abs(k - p);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+                    
+                    if (diffDays >= 7) {
+                        const weeks = Math.floor(diffDays / 7);
+                        const days = diffDays % 7;
+                        this.form.durasi = days > 0 ? `${weeks} minggu ${days} hari` : `${weeks} minggu`;
+                    } else {
+                        this.form.durasi = `${diffDays} hari`;
+                    }
+                },
+
+                getCanvasPos(e) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    return {
+                        x: (clientX - rect.left) * (this.canvas.width / rect.width),
+                        y: (clientY - rect.top) * (this.canvas.height / rect.height)
+                    };
+                },
+                startDrawing(e) {
+                    this.isDrawing = true;
+                    const pos = this.getCanvasPos(e);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(pos.x, pos.y);
+                },
+                draw(e) {
+                    if (!this.isDrawing) return;
+                    e.preventDefault(); 
+                    const pos = this.getCanvasPos(e);
+                    this.ctx.lineTo(pos.x, pos.y);
+                    this.ctx.stroke();
+                },
+                stopDrawing() { this.isDrawing = false; },
+                clearCanvas() {
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                },
+
+                // 1. Fungsi pemicu saat Tombol Aksi di klik (Membuka dialog pengganti prompt)
+                openAuthModal(idTransaksi, statusTujuan) {
+                    this.authModal.id = idTransaksi;
+                    this.authModal.status = statusTujuan;
+                    this.authModal.password = '';
+                    this.authModal.alasan = statusTujuan === 'Cancel' ? 'Dibatalkan mandiri' : '';
+                    this.authModal.open = true;
+                },
+
+                // 2. Fungsi Eksekutor setelah menekan tombol submit pada dialog kustom
+                async submitUbahStatus() {
+                    const statusTujuan = this.authModal.status;
+                    const inputPassword = this.authModal.password;
+                    let alasanTeks = this.authModal.alasan;
+
+                    // Validasi password petugas jika status bukan Cancel
+                    if (statusTujuan !== 'Cancel') {
+                        if (inputPassword !== "PETUGAS2026") { 
+                            alert("❌ Password Petugas Salah!");
+                            return;
+                        }
+                        if (['Ditolak', 'Selesai (Rusak/Hilang)'].includes(statusTujuan) && !alasanTeks) {
+                            alasanTeks = "Tanpa keterangan petugas";
+                        }
+                    }
+
+                    if (!confirm(`Ubah status transaksi ${this.authModal.id} menjadi "${statusTujuan}"?`)) return;
+
+                    // Tutup modal dahulu saat loading memproses ke server
+                    this.authModal.open = false;
+
+                    try {
+                        const response = await fetch(this.scriptUrl, {
+                            method: "POST",
+                            body: JSON.stringify({
+                                action: "updateStatus",
+                                sheetName: "P_BARANG",
+                                id: this.authModal.id,
+                                status: statusTujuan,
+                                alasan: alasanTeks
+                            })
+                        });
+
+                        const result = await response.json();
+                        if (result.status === "success") {
+                            alert(result.message);
+                            this.loadLogPeminjaman(); 
+                        } else {
+                            alert("Gagal: " + result.message);
+                        }
+                    } catch (e) {
+                        alert("Gagal terhubung ke cloud server.");
+                    }
+                },
+
+                async submitForm() {
+                    this.submitting = true;
+                    this.form.signature = this.canvas.toDataURL();
+
+                    try {
+                        const response = await fetch(this.scriptUrl, {
+                            method: "POST",
+                            body: JSON.stringify({
+                                action: "createPeminjamanBarang",
+                                ...this.form
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.status === "success") {
+                            alert("Data Peminjaman Barang Berhasil Ditambahkan!");
+                            this.closeModalAdd();
+                            this.loadLogPeminjaman();
+                        } else {
+                            alert("Error: " + result.message);
+                        }
+                    } catch (e) {
+                        alert("Terjadi gangguan jaringan cloud server.");
+                    }
+                    this.submitting = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

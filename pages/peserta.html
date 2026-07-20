@@ -141,7 +141,8 @@
         </div>
 
         <div class="xl:col-span-4 w-full grid grid-cols-2 gap-2">
-            <button @click="loadData(true)" class="w-full bg-slate-100 text-slate-700 px-4 py-3 rounded-xl font-semibold hover:bg-slate-200 transition text-sm text-center h-[46px] flex items-center justify-center gap-1">
+            <!-- KODE BARU -->
+            <button @click="sessionStorage.removeItem('peserta_' + selectedGelombang); loadData();" class="w-full bg-slate-100 text-slate-700 px-4 py-3 rounded-xl font-semibold hover:bg-slate-200 transition text-sm text-center h-[46px] flex items-center justify-center gap-1">
                 ↻ Reload
             </button>
             <button @click="printByGelombang()" class="w-full bg-slate-100 text-slate-700 px-4 py-3 rounded-xl font-semibold hover:bg-slate-200 transition text-sm text-center h-[46px] flex items-center justify-center gap-1">
@@ -171,65 +172,233 @@
         </div>
     </div>
 
-                <div class="hidden lg:block overflow-auto rounded-2xl border border-slate-200 max-h-[700px]">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200">
-                            <tr>
-                                <th class="p-4 text-center w-16">No</th>
-                                <th class="px-4 py-4 text-left">Nama</th>
-                                <th class="px-4 py-4 text-left">Institusi</th>
-                                <th class="px-4 py-4 text-left">Jurusan</th>
-                                <th class="px-4 py-4 text-left">Periode</th>
-                                <th class="p-4 text-center w-24">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <template x-for="(item, index) in filteredData" :key="item.nim">
-                                <tr class="hover:bg-slate-50/80 transition">
-                                    <td class="p-4 text-center font-bold text-gray-400" x-text="index + 1"></td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-full bg-[#714B67]/10 text-[#714B67] font-bold flex items-center justify-center flex-shrink-0 text-sm" x-text="item.nama ? item.nama.charAt(0).toUpperCase() : '?'"></div>
-                                            <div class="overflow-hidden">
-                                                <div class="font-semibold text-slate-800 truncate max-w-[200px]" x-text="item.nama"></div>
-                                                <div class="text-xs text-slate-400 mt-0.5" x-text="'NIM: ' + item.nim"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4 font-medium text-slate-700 truncate max-w-[180px]" x-text="item.namaInstitusi"></td>
-                                    <td class="px-4 py-4">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold whitespace-nowrap" x-text="(item.jenjangPendidikan || '') + ' - ' + (item.jurusan || '')"></span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap" x-text="item.startDate"></span>
-                                    </td>
-                                    <td class="p-4 text-center">
-                                        <div class="inline-block" x-data="{ open: false, topPos: 0, leftPos: 0 }">
-                                            <button @click="
-                                                        open = !open; 
-                                                        let rect = $el.getBoundingClientRect(); 
-                                                        topPos = rect.bottom + window.scrollY; 
-                                                        leftPos = rect.right - 208 + window.scrollX;
-                                                    " 
-                                                    class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 mx-auto transition">
-                                                ⋮
-                                            </button>
-                                            
-                                            <template x-teleport="body">
-                                                <div x-show="open" @click.outside="open=false" x-transition class="absolute bg-white border border-slate-200 rounded-2xl shadow-2xl z-[99999] overflow-hidden w-52" :style="`top: ${topPos}px; left: ${leftPos}px;`" x-cloak>
-                                                    <button @click="open = false; window.location.href='index.html?action=edit&nim='+encodeURIComponent(item.nim)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">✏️ Edit Data</button>
-                                                    <button @click="open = false; window.location.href='idcard.html?nim='+encodeURIComponent(item.nim)+'&sheet='+encodeURIComponent(selectedGelombang)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">🪪 Print ID Card</button>
-                                                    <button @click="open = false; detailPeserta(item.nim)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">👁️ Detail Peserta</button>
-                                                    <button @click="open = false; deletePeserta(item.nim, item.nama)" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 block border-t border-slate-100 text-sm font-medium">🗑️ Hapus Data</button>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                <div class="hidden lg:block overflow-auto rounded-2xl border border-slate-200 max-h-[700px]" 
+     x-data="{ selectedNim: null, contextOpen: false, ctxTop: 0, ctxLeft: 0, currentItem: null, showDetailModal: false, detailItem: null }">
+    
+    <table class="min-w-full text-sm">
+        <thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200">
+            <tr>
+                <th class="p-4 text-center w-16">No</th>
+                <th class="px-4 py-4 text-left">Nama</th>
+                <th class="px-4 py-4 text-left">Institusi</th>
+                <th class="px-4 py-4 text-left">Jurusan</th>
+                <th class="px-4 py-4 text-left">Periode</th>
+                <th class="p-4 text-center w-24">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+            <template x-for="(item, index) in filteredData" :key="item.nim">
+                <!-- 
+                  1. Dinamis class :class untuk warna seleksi (bg-purple-50/70 & border kiri ungu murni)
+                  2. @click untuk mengubah baris aktif saat diklik biasa
+                  3. @contextmenu.prevent untuk menangkap klik kanan & memindahkan koordinat menu aksi
+                -->
+                <tr @click="selectedNim = item.nim"
+                    @contextmenu.prevent="
+                        selectedNim = item.nim;
+                        currentItem = item;
+                        ctxTop = $event.pageY;
+                        ctxLeft = $event.pageX;
+                        contextOpen = true;
+                    "
+                    class="cursor-pointer transition border-l-4"
+                    :class="selectedNim === item.nim 
+                        ? 'bg-purple-50/70 border-l-[#714B67] hover:bg-purple-50' 
+                        : 'border-l-transparent hover:bg-slate-50/80'">
+                    
+                    <td class="p-4 text-center font-bold text-gray-400" x-text="index + 1"></td>
+                    <td class="px-4 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-[#714B67]/10 text-[#714B67] font-bold flex items-center justify-center flex-shrink-0 text-sm" x-text="item.nama ? item.nama.charAt(0).toUpperCase() : '?'"></div>
+                            <div class="overflow-hidden">
+                                <div class="font-semibold text-slate-800 truncate max-w-[200px]" x-text="item.nama"></div>
+                                <div class="text-xs text-slate-400 mt-0.5" x-text="'NIM: ' + item.nim"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-4 font-medium text-slate-700 truncate max-w-[180px]" x-text="item.namaInstitusi"></td>
+                    <td class="px-4 py-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold whitespace-nowrap" x-text="(item.jenjangPendidikan || '') + ' - ' + (item.jurusan || '')"></span>
+                    </td>
+                    <td class="px-4 py-4">
+                        <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap" x-text="item.startDate"></span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <!-- Menu Tombol Tiga Titik Biasa (Klik Kiri) -->
+                        <div class="inline-block">
+                            <button @click.stop="
+                                        selectedNim = item.nim;
+                                        currentItem = item;
+                                        let rect = $el.getBoundingClientRect(); 
+                                        ctxTop = rect.bottom + window.scrollY; 
+                                        ctxLeft = rect.right - 208 + window.scrollX;
+                                        contextOpen = true;
+                                    " 
+                                    class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 mx-auto transition">
+                                ⋮
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+
+
+    <!-- MODAL DETAIL PESERTA INTERAKTIF -->
+<template x-teleport="body">
+    <div x-show="showDetailModal" 
+         class="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+         x-transition
+         x-cloak>
+        
+        <!-- Kotak Dialog Modal -->
+        <div @click.outside="showDetailModal = false" 
+             class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- Header Modal -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm">👁️</span>
+                    <h3 class="font-bold text-slate-800 text-base">Profil Lengkap Peserta Didik</h3>
                 </div>
+                <button @click="showDetailModal = false" class="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center font-bold text-slate-400 transition">✕</button>
+            </div>
+
+            <!-- Isi Konten Biodata (Scrollable jika data panjang) -->
+            <div class="p-6 max-h-[75vh] overflow-y-auto" x-if="detailItem">
+                <div class="flex flex-col md:flex-row gap-6">
+                    
+                    <!-- Bagian Kiri: Pasfoto & Status Ringkas -->
+                    <div class="flex flex-col items-center text-center md:w-1/3 border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6">
+                        <div class="w-32 h-40 bg-slate-100 rounded-2xl border-2 border-slate-200 overflow-hidden shadow-md flex items-center justify-center">
+                            <template x-if="detailItem.pasFoto && detailItem.pasFoto !== 'KEEP_OLD_PHOTO'">
+                                <img :src="detailItem.pasFoto" alt="Pasfoto" class="w-full h-full object-cover">
+                            </template>
+                            <template x-if="!detailItem.pasFoto || detailItem.pasFoto === 'KEEP_OLD_PHOTO'">
+                                <div class="text-center p-2">
+                                    <span class="text-2xl text-slate-300 block mb-1">👤</span>
+                                    <span class="text-[10px] text-slate-400 font-medium">Foto disimpan di Drive</span>
+                                </div>
+                            </template>
+                        </div>
+                        <h4 class="font-bold text-slate-800 mt-4 leading-tight text-sm" x-text="detailItem.nama"></h4>
+                        <p class="text-xs text-slate-400 mt-1 font-mono" x-text="'NIM/NIP: ' + (detailItem.nim || '-')"></p>
+                    </div>
+
+                    <!-- Bagian Kanan: Detail Grid Informasi -->
+                    <div class="flex-1 space-y-4">
+                        <!-- Grup Informasi 1: Pendidikan -->
+                        <div>
+                            <h5 class="text-[10px] font-bold text-[#714B67] uppercase tracking-wider mb-2">Asal Pendidikan</h5>
+                            <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Institusi</span>
+                                    <span class="text-xs font-semibold text-slate-700" x-text="detailItem.namaInstitusi || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Jurusan / Prodi</span>
+                                    <span class="text-xs font-semibold text-slate-700" x-text="detailItem.jurusan || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Jenjang</span>
+                                    <span class="text-xs font-semibold text-slate-700" x-text="detailItem.jenjangPendidikan || '-'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grup Informasi 2: Waktu Pelaksanaan -->
+                        <div>
+                            <h5 class="text-[10px] font-bold text-[#714B67] uppercase tracking-wider mb-2">Periode Kegiatan</h5>
+                            <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Tanggal Mulai</span>
+                                    <span class="text-xs font-semibold text-emerald-700" x-text="detailItem.startDate || '-'"></span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Tanggal Selesai</span>
+                                    <span class="text-xs font-semibold text-red-700" x-text="detailItem.endDate || '-'"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grup Informasi 3: Kontak & Berkas Dokumen -->
+                        <div>
+                            <h5 class="text-[10px] font-bold text-[#714B67] uppercase tracking-wider mb-2">Kontak & Berkas</h5>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-100">
+                                    <span class="text-xs text-slate-600 font-medium">No. WhatsApp</span>
+                                    <span class="text-xs font-bold text-slate-700 font-mono" x-text="detailItem.noHp || '-'"></span>
+                                </div>
+                                
+                                <!-- Tombol Buka Link PDF Dokumen dari Google Drive -->
+                                <template x-if="detailItem.uploadDokumen">
+                                    <a :href="detailItem.uploadDokumen" 
+                                       target="_blank" 
+                                       class="flex items-center justify-between bg-indigo-50 hover:bg-indigo-100 px-4 py-2.5 rounded-xl border border-indigo-100 text-indigo-700 transition font-medium text-xs">
+                                        <span>📂 Lihat Dokumen Pendukung (PDF)</span>
+                                        <span>➔</span>
+                                    </a>
+                                </template>
+                                <template x-if="!detailItem.uploadDokumen">
+                                    <div class="bg-amber-50 px-4 py-2.5 rounded-xl border border-amber-100 text-amber-700 text-xs font-medium">
+                                        ⚠️ Dokumen PDF tidak tersedia / belum diunggah.
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+                <button @click="showDetailModal = false" 
+                        class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition">
+                    Tutup
+                </button>
+                <button @click="showDetailModal = false; window.location.href='input_peserta.html?action=edit&nim='+encodeURIComponent(detailItem.nim)" 
+                        class="px-5 py-2 bg-[#714B67] hover:opacity-90 text-white text-xs font-semibold rounded-xl transition">
+                    ✏️ Edit Biodata
+                </button>
+            </div>
+
+        </div>
+    </div>
+</template>
+
+    <!-- TEMPLATE GLOBAL: Satu Menu Aksi Teleport untuk Klik Kanan & Klik Kiri -->
+    <template x-teleport="body">
+        <div x-show="contextOpen" 
+             @click.outside="contextOpen = false" 
+             x-transition 
+             class="absolute bg-white border border-slate-200 rounded-2xl shadow-2xl z-[99999] overflow-hidden w-52" 
+             :style="`top: ${ctxTop}px; left: ${ctxLeft}px;`" 
+             x-cloak>
+            <!-- Bagian isi Template Menu Aksi Global Anda yang tadi -->
+<template x-if="currentItem">
+    <div>
+        <div class="px-4 py-2 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 truncate" x-text="currentItem.nama"></div>
+        
+        <!-- 1. Link Edit mengarah ke input_peserta.html -->
+        <button @click="contextOpen = false; window.open('input_peserta.html?action=edit&nim=' + encodeURIComponent(currentItem.nim), '_blank')" 
+        class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">
+        ✏️ Edit Data
+</button>
+        
+        <!-- 2. Link ID Card mengarah ke print_idcard.html -->
+        <button @click="contextOpen = false; window.location.href='print_idcard.html?nim='+encodeURIComponent(currentItem.nim)+'&sheet='+encodeURIComponent(selectedGelombang)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">🪪 Print ID Card</button>
+        
+        <!-- 3. Membuka Modal Detail (Kita gunakan variabel state Alpine) -->
+        <button @click="contextOpen = false; detailItem = currentItem; showDetailModal = true" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">👁️ Detail Peserta</button>
+        
+        <button @click="contextOpen = false; deletePeserta(currentItem.nim, currentItem.nama)" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 block border-t border-slate-100 text-sm font-medium">🗑️ Hapus Data</button>
+    </div>
+</template>
+        </div>
+    </template>
+</div>
 
                 <div class="lg:hidden space-y-4">
                     <template x-for="(item, index) in filteredData" :key="item.nim">
@@ -253,14 +422,34 @@
                                             class="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center font-bold text-slate-600">
                                         ⋮
                                     </button>
-                                    <template x-teleport="body">
-                                        <div x-show="open" @click.outside="open=false" x-transition class="absolute bg-white border border-slate-200 rounded-2xl shadow-2xl z-[99999] overflow-hidden w-52" :style="`top: ${topPos}px; left: ${leftPos}px;`" x-cloak>
-                                            <button @click="open = false; window.location.href='index.html?action=edit&nim='+encodeURIComponent(item.nim)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">✏️ Edit Data</button>
-                                            <button @click="open = false; window.location.href='idcard.html?nim='+encodeURIComponent(item.nim)+'&sheet='+encodeURIComponent(selectedGelombang)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">🪪 Print ID Card</button>
-                                            <button @click="open = false; detailPeserta(item.nim)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">👁️ Detail Peserta</button>
-                                            <button @click="open = false; deletePeserta(item.nim, item.nama)" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 block border-t border-slate-100 text-sm font-medium">🗑️ Hapus Data</button>
-                                        </div>
-                                    </template>
+                                    <!-- TEMPLATE GLOBAL: Satu Menu Aksi Teleport untuk Klik Kanan & Klik Kiri -->
+    <template x-teleport="body">
+        <div x-show="contextOpen" 
+             @click.outside="contextOpen = false" 
+             x-transition 
+             class="absolute bg-white border border-slate-200 rounded-2xl shadow-2xl z-[99999] overflow-hidden w-52" 
+             :style="`top: ${ctxTop}px; left: ${ctxLeft}px;`" 
+             x-cloak>
+            <!-- Bagian isi Template Menu Aksi Global Anda yang tadi -->
+<!-- Bagian isi Template Menu Aksi Global Anda yang tadi -->
+<template x-if="currentItem">
+    <div>
+        <div class="px-4 py-2 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 truncate" x-text="currentItem.nama"></div>
+        
+        <!-- 1. Link Edit mengarah ke input_peserta.html -->
+        <button @click="contextOpen = false; window.location.href='input_peserta.html?action=edit&nim='+encodeURIComponent(currentItem.nim)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">✏️ Edit Data</button>
+        
+        <!-- 2. Link ID Card mengarah ke print_idcard.html -->
+        <button @click="contextOpen = false; window.location.href='print_idcard.html?nim='+encodeURIComponent(currentItem.nim)+'&sheet='+encodeURIComponent(selectedGelombang)" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">🪪 Print ID Card</button>
+        
+        <!-- 3. Membuka Modal Detail (Kita gunakan variabel state Alpine) -->
+        <button @click="contextOpen = false; detailItem = currentItem; showDetailModal = true" class="w-full text-left px-4 py-3 hover:bg-slate-50 block text-slate-700 text-sm">👁️ Detail Peserta</button>
+        
+        <button @click="contextOpen = false; deletePeserta(currentItem.nim, currentItem.nama)" class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 block border-t border-slate-100 text-sm font-medium">🗑️ Hapus Data</button>
+    </div>
+</template>
+        </div>
+    </template>
                                 </div>
                             </div>
                             
@@ -302,7 +491,7 @@ function pesertaApp(){
         loading: false,
         gelombangSistemAktif: '', 
         selectedGelombang: '',     
-        listGelombangMaster: [], 
+        listGelombangMaster: [], // Diubah menjadi array kosong agar diisi dinamis dari database/settings
 
         allData: [],
         uniqueJurusan: [],
@@ -313,57 +502,67 @@ function pesertaApp(){
             scriptUrl: "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec"
         },
 
-        async init(){
+        async init() {
             this.loading = true;
             
-            // OPTIMASI: Jalankan getSettings dan activeRegistration secara PARALEL agar loading jauh lebih cepat
+            // 1. Ambil semua daftar sheet/gelombang dari pengaturan
             try {
-                const [resSettings, resActive] = await Promise.all([
-                    fetch(`${this.config.scriptUrl}?action=getSettings`).catch(e => null),
-                    fetch(`${this.config.scriptUrl}?action=activeRegistration`).catch(e => null)
-                ]);
+                const resSettings = await fetch(`${this.config.scriptUrl}?action=getSettings`);
+                const dataSettings = await resSettings.json();
 
-                // Proses hasil daftar pilihan sheet / gelombang didapatkan
-                if (resSettings) {
-                    const dataSettings = await resSettings.json();
-                    if (Array.isArray(dataSettings)) {
-                        this.listGelombangMaster = dataSettings.map(item => item.gelombang).filter(Boolean);
-                    }
-                }
-
-                // Proses hasil info sheet aktif
-                if (resActive) {
-                    const dataActive = await resActive.json();
-                    if (dataActive && dataActive.targetSheet) {
-                        this.gelombangSistemAktif = dataActive.targetSheet;
-                    } else if (typeof dataActive === 'string') {
-                        this.gelombangSistemAktif = dataActive;
-                    } else if (dataActive && dataActive.gelombang) {
-                        this.gelombangSistemAktif = dataActive.gelombang;
-                    }
+                if (Array.isArray(dataSettings) && dataSettings.length > 0) {
+                    this.listGelombangMaster = dataSettings.map(item => item.gelombang).filter(Boolean);
+                } else {
+                    this.listGelombangMaster = [];
                 }
             } catch (e) {
-                console.error("Gagal memuat konfigurasi awal:", e);
+                console.error("Gagal memuat settings:", e);
+                this.listGelombangMaster = [];
             }
 
-            // Set fallback jika listGelombangMaster kosong
+            // Validasi Pertama: Jika tidak ada sheet terdaftar sama sekali di master data
             if (this.listGelombangMaster.length === 0) {
-                this.listGelombangMaster = ['GEL8']; 
-            }
-            if (!this.gelombangSistemAktif) {
-                this.gelombangSistemAktif = this.listGelombangMaster[0] || 'GEL8';
+                showToast('Tidak ada sheet terdeteksi. Silakan buat sheet di pengaturan.', 'warning');
+                this.loading = false;
+                return; // Stop proses di sini
             }
 
-            // Set gelombang terpilih di tabel
+            // 2. Ambil informasi Gelombang/Sheet Aktif dari server
+            try {
+                const resActive = await fetch(`${this.config.scriptUrl}?action=activeRegistration`);
+                const dataActive = await resActive.json();
+                
+                if (dataActive && dataActive.targetSheet) {
+                    this.gelombangSistemAktif = dataActive.targetSheet;
+                } else if (typeof dataActive === 'string') {
+                    this.gelombangSistemAktif = dataActive;
+                } else if (dataActive && dataActive.gelombang) {
+                    this.gelombangSistemAktif = dataActive.gelombang;
+                } else {
+                    this.gelombangSistemAktif = '';
+                }
+            } catch (e) {
+                console.error("Gagal mendapatkan gelombang aktif:", e);
+                this.gelombangSistemAktif = ''; 
+            }
+
+            // 3. Tentukan sheet mana yang mau dibuka di tabel (Prioritas: parameter URL -> Sistem Aktif)
             const urlParams = new URLSearchParams(window.location.search);
             this.selectedGelombang = urlParams.get('sheet') || this.gelombangSistemAktif;
 
-            // Tarik data utama peserta untuk tabel (Gunakan cache sessionStorage jika ada)
+            // Validasi Kedua: Jika tidak ada gelombang aktif dan tidak ada parameter URL
+            if (!this.selectedGelombang) {
+                showToast('Tidak ada gelombang/sheet yang aktif saat ini.', 'info');
+                this.loading = false;
+                return; // Stop proses di sini
+            }
+
+            // 4. Tarik data utama peserta untuk tabel jika lolos semua pengecekan
             try {
                 const cacheKey = 'peserta_' + this.selectedGelombang;
                 const cachedData = sessionStorage.getItem(cacheKey);
 
-                if(cachedData){
+                if (cachedData) {
                     this.allData = JSON.parse(cachedData);
                     this.generateUniqueJurusan();
                 } else {
@@ -371,10 +570,12 @@ function pesertaApp(){
                 }
             } catch (errData) {
                 console.error("Gagal memuat data tabel utama:", errData);
+                showToast('Gagal memuat data pendaftar.', 'error');
             }
 
             this.loading = false;
         },
+
 
         get filteredData(){
             return this.allData.filter(item => {
@@ -395,24 +596,17 @@ function pesertaApp(){
 
         async loadData(forceReload = false){
             this.loading = true;
-            
-            // Jika dipaksa reload (seperti klik tombol Reload atau setelah hapus), hapus cache sessionStorage dahulu
-            if (forceReload) {
-                sessionStorage.removeItem('peserta_' + this.selectedGelombang);
-            }
-
             try {
                 const response = await fetch(`${this.config.scriptUrl}?action=read&sheet=${this.selectedGelombang}`);
                 const result = await response.json();
 
                 this.allData = Array.isArray(result) ? result : (result.data || []);
                 
-                // Simpan data terbaru ke cache browser
                 sessionStorage.setItem('peserta_' + this.selectedGelombang, JSON.stringify(this.allData));
                 this.generateUniqueJurusan();
             } catch(err){
                 console.error(err);
-                alert('Gagal mengambil data peserta terbaru');
+                alert('Gagal mengambil data peserta');
             } finally {
                 this.loading = false;
             }
@@ -439,49 +633,61 @@ function pesertaApp(){
             } else {
                 await this.loadData();
             }
-        },
-
-        // Pindahkan fungsi delete ke dalam objek agar memiliki akses penuh ke `this.config.scriptUrl`
-        async deletePeserta(nim, nama) {
-            const konfirmasi = confirm(`⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus "${nama}"?\nTindakan ini akan menghapus data di Spreadsheet dan SELURUH FOLDER BERKAS di Google Drive.`);
-            if (!konfirmasi) return;
-
-            this.loading = true;
-            try {
-                const response = await fetch(this.config.scriptUrl, {
-                    method: "POST",
-                    redirect: "follow", 
-                    body: JSON.stringify({
-                        action: "delete",
-                        nim: nim.toString(),
-                        sheet: this.selectedGelombang // Mengirimkan info sheet yang sedang dibuka ke backend web app
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.status === "deleted" || result.success === true) {
-                    alert(`Sukses! Data pendaftaran ${nama} telah berhasil dihapus.`);
-                    // Paksa load data baru dari Google Sheets dan bersihkan cache browser
-                    await this.loadData(true);
-                } else {
-                    alert("Gagal menghapus data dari server: " + (result.message || "Respon tidak diketahui"));
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Terjadi kesalahan koneksi saat mencoba menghapus data.");
-            } finally {
-                this.loading = false;
-            }
         }
     }
 }
 
-// Untuk menjembatani tombol hapus bawaan HTML jika dipanggil langsung tanpa keyword `this` di element
-function deletePeserta(nim, nama) {
-    const alpineComponent = document.querySelector('[x-data]');
-    if (alpineComponent && alpineComponent.__x) {
-        alpineComponent.__x.$data.deletePeserta(nim, nama);
+async function deletePeserta(nim, nama) {
+    // Mengambil URL API secara aman dari elemen body yang memegang data Alpine
+    const appElement = document.querySelector('[x-data]');
+    const appInstance = appElement ? Alpine.$data(appElement) : null;
+    const urlApi = appInstance && appInstance.config ? appInstance.config.scriptUrl : "https://script.google.com/macros/s/AKfycby2o_XXEpjdh14jRQ3ScFWesbMGtAyN0hDCW00FO1u65EhHLTg-PpXlGXkrv57U4At0/exec";
+
+    const konfirmasi = confirm(`⚠️ PERINGATAN!\n\nApakah Anda yakin ingin menghapus "${nama}"?\nTindakan ini akan menghapus data di Spreadsheet dan SELURUH FOLDER BERKAS di Google Drive.`);
+    if (!konfirmasi) return;
+
+    if (appInstance) appInstance.loading = true; // Tampilkan loading overlay
+
+    try {
+        console.log("Sedang memproses penghapusan ke:", urlApi);
+
+        
+        const response = await fetch(urlApi, {
+            method: "POST",
+            redirect: "follow", 
+            body: JSON.stringify({
+                action: "delete",
+                nim: nim.toString(),
+                targetSheet: (appInstance && appInstance.selectedGelombang) ? appInstance.selectedGelombang : "" // <-- TAMBAHKAN INI
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === "deleted") {
+            alert(`Sukses! Data pendaftaran ${nama} dan folder Drive-nya telah berhasil dihapus.`);
+            
+            // --- KUNCI PERBAIKAN 1: Hapus Cache Session Storage ---
+            if (appInstance && appInstance.selectedGelombang) {
+                const cacheKey = 'peserta_' + appInstance.selectedGelombang;
+                sessionStorage.removeItem(cacheKey); // Hapus cache gelombang ini agar dipaksa ambil data baru
+                
+                // --- KUNCI PERBAIKAN 2: Ambil data fresh dari server melalui instance Alpine ---
+                await appInstance.loadData(true); 
+            } else {
+                // Fallback jika instance Alpine tidak terdeteksi, hapus semua cache lalu reload
+                sessionStorage.clear();
+                window.location.reload();
+            }
+        } else {
+            alert("Gagal menghapus data: " + (result.message || "Ditolak oleh server"));
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan koneksi saat mencoba menghapus data ke server.");
+    } finally {
+        if (appInstance) appInstance.loading = false; // Matikan loading overlay
     }
 }
 

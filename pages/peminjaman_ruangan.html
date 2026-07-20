@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Peminjaman Ruangan</title>
+    <!-- Styling menggunakan Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; padding: 20px; }
+        .card-form { max-width: 700px; margin: auto; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: white; }
+        .card-table { margin: auto; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: white; }
+        #canvas-signature { border: 2px dashed #ccc; border-radius: 5px; width: 100%; height: 150px; background: white; cursor: crosshair; }
+        .hidden-section { display: none; }
+        .table-responsive { 
+    overflow: visible !important; 
+    padding-bottom: 80px; /* Memberikan ruang agar menu baris paling bawah bebas melayang */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- ================= VIEW: TABEL DATA ================= -->
+    <div id="viewTable" class="card-table">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">Data Peminjaman Ruangan</h3>
+            <button class="btn btn-primary fw-bold" id="btnAddBaru">+ Add Baru</button>
+        </div>
+
+        <!-- Pencarian -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control" placeholder="Cari by NIM / Nama Peminjam...">
+            </div>
+        </div>
+
+        <!-- Tabel Data -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>Status</th>
+                        <th>Nama Acara</th>
+                        <th>Jumlah Peserta</th>
+                        <th>Unit Peminjam</th>
+                        <th>Nama Peminjam</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Diisi otomatis lewat Javascript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= MODAL DIALOG UNTUK AKSI DI TABEL ================= -->
+    <div class="modal fade" id="aksiModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAksiTitle">Aksi Peminjaman</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAksiModal">
+                        <!-- Input tersembunyi untuk menyimpan ID baris data -->
+                        <input type="hidden" id="modalRowId">
+                        <input type="hidden" id="modalActionType">
+
+                        <!-- Input Password Admin (Hanya muncul jika tipenya Approved / Rejected) -->
+                        <div class="mb-3 d-none" id="divModalPassword">
+                            <label class="form-label fw-bold">Password Admin</label>
+                            <input type="password" class="form-control" id="modalPassword" placeholder="Masukkan password admin">
+                        </div>
+
+                        <!-- Dropdown Ruangan Sarpras (Hanya muncul jika Approved) -->
+                        <div class="mb-3 d-none" id="divModalRuangan">
+                            <label class="form-label fw-bold">Tentukan Ruangan</label>
+                            <select class="form-select" id="modalSelectRuangan">
+                                <option value="" selected disabled>Memuat daftar ruangan...</option>
+                            </select>
+                        </div>
+
+                        <!-- Catatan Pembatalan / Penolakan (Muncul jika Rejected / Cancel) -->
+                        <div class="mb-3 d-none" id="divModalCatatan">
+                            <label class="form-label fw-bold" id="labelModalCatatan">Catatan</label>
+                            <textarea class="form-control" id="modalCatatan" rows="3" placeholder="Tulis alasan di sini..."></textarea>
+                        </div>
+
+                        <!-- Form Edit Data (Hanya muncul jika Aksi Edit) -->
+                        <div class="d-none" id="divModalEdit">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nama Acara / Kegiatan</label>
+                                <input type="text" class="form-control" id="editNamaAcara">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Jumlah Peserta</label>
+                                <input type="number" class="form-control" id="editJumlahPeserta" min="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Waktu Mulai</label>
+                                <input type="datetime-local" class="form-control" id="editWaktuMulai">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Waktu Selesai</label>
+                                <input type="datetime-local" class="form-control" id="editWaktuSelesai">
+                            </div>
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary" id="btnSubmitAksi">Simpan Perubahan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= VIEW: FORM INPUT ================= -->
+    <div id="viewForm" class="card-form hidden-section">
+        <button class="btn btn-secondary btn-sm mb-3" id="btnKembali">&larr; Kembali ke Data Tabel</button>
+        <h3 class="text-center mb-4">Form Request Ruangan</h3>
+        <form id="formRuangan">
+            
+            <!-- Pilihan Unit -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Unit Peminjam</label>
+                <select class="form-select" id="unitPeminjam" required>
+                    <option value="" selected disabled>Pilih Unit...</option>
+                    <option value="Peserta Didik">Peserta Didik</option>
+                    <option value="Karyawan">Karyawan</option>
+                </select>
+            </div>
+
+            <!-- Section Pencarian NIM (Hanya muncul jika Peserta Didik) -->
+            <div class="mb-3 hidden-section" id="sectionNim">
+                <label class="form-label fw-bold">NIM Peminjam</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="inputNimNik" placeholder="Masukkan NIM">
+                    <button class="btn btn-primary" type="button" id="btnCariNim">Cari Data</button>
+                </div>
+                <small id="notifCari" class="text-danger mt-1"></small>
+            </div>
+
+            <!-- Data Peminjam (Auto-fill atau Manual) -->
+            <div id="sectionDataDiri" class="hidden-section">
+                <div class="mb-3">
+                    <label class="form-label">Nama Lengkap</label>
+                    <input type="text" class="form-control" id="namaPeminjam" required readonly>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Institusi / Instansi</label>
+                        <input type="text" class="form-control" id="institusi" required readonly>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" id="labelJurusanDivisi">Jurusan / Divisi</label>
+                        <input type="text" class="form-control" id="jurusanDivisi" required readonly>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">No. HP / WhatsApp</label>
+                    <input type="text" class="form-control" id="noHp" required readonly>
+                </div>
+                
+                <hr>
+                
+                <!-- Detail Acara -->
+                <h5 class="mt-4 mb-3">Detail Kegiatan</h5>
+                <div class="mb-3">
+                    <label class="form-label">Nama Acara / Kegiatan</label>
+                    <input type="text" class="form-control" id="namaAcara" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Jumlah Peserta</label>
+                    <input type="number" class="form-control" id="jumlahPeserta" required min="1">
+                </div>
+
+                <!-- Tanggal & Jam (Datetime-local) -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Waktu Mulai</label>
+                        <input type="datetime-local" class="form-control" id="waktuMulai" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Waktu Selesai</label>
+                        <input type="datetime-local" class="form-control" id="waktuSelesai" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Total Durasi (Jam)</label>
+                    <input type="text" class="form-control" id="durasi" readonly placeholder="Otomatis dihitung">
+                </div>
+
+                <hr>
+
+                <!-- Syarat & Ketentuan -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="cekSNC">
+                    <label class="form-check-label text-muted" for="cekSNC">
+                        Saya menyetujui syarat dan ketentuan peminjaman ruangan. Ruangan akan dikembalikan tepat waktu dan dalam kondisi bersih tanpa kerusakan.
+                    </label>
+                </div>
+
+                <!-- Section Tanda Tangan -->
+                <div class="mb-4 hidden-section" id="sectionTtd">
+                    <label class="form-label fw-bold">Tanda Tangan Pemohon</label>
+                    <!-- Tambahan atribut style untuk memastikan area canvas terdefinisi -->
+                    <canvas id="canvas-signature" style="border: 2px dashed #ccc; border-radius: 8px; width: 100%; height: 200px; background-color: #f8f9fa; display: block; touch-action: none;"></canvas>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="clearCanvas()">Ulangi Tanda Tangan</button>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold" id="btnSubmit" disabled>Kirim Request Booking</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    // ================= TOGGLE VIEW TABEL & FORM =================
+    const viewTable = document.getElementById("viewTable");
+    const viewForm = document.getElementById("viewForm");
+    
+    document.getElementById("btnAddBaru").addEventListener("click", () => {
+        viewTable.style.display = "none";
+        viewForm.style.display = "block";
+        // Resize canvas ketika form dimunculkan agar kordinat sentuhan akurat
+        canvas.width = canvas.parentElement.offsetWidth; 
+    });
+
+    document.getElementById("btnKembali").addEventListener("click", () => {
+        viewForm.style.display = "none";
+        viewTable.style.display = "block";
+        document.getElementById("formRuangan").reset(); // opsional: mereset form saat kembali
+        sectionDataDiri.style.display = "none";
+        sectionNim.style.display = "none";
+        document.getElementById("sectionTtd").style.display = "none";
+    });
+
+    // ================= FITUR SEARCH TABEL =================
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#tableBody tr");
+        
+        rows.forEach(row => {
+            // Pencarian mencakup semua text di baris tersebut
+            const rowText = row.innerText.toLowerCase();
+            if(rowText.includes(filter)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+
+
+    // ================= SCRIPT ASLI FORM ANDA DI BAWAH INI =================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwz9bdCTlzl1ebmhafJ2BJ2x5tbo2C_QktYoTadOVx7eXMZ2pXYVejH9NlW1isXiwiu/exec";
+
+    const unitSelect = document.getElementById("unitPeminjam");
+    const sectionNim = document.getElementById("sectionNim");
+    const sectionDataDiri = document.getElementById("sectionDataDiri");
+    const inputNimNik = document.getElementById("inputNimNik");
+    const labelJurusanDivisi = document.getElementById("labelJurusanDivisi");
+    
+    // Logika Unit Peminjam
+    unitSelect.addEventListener("change", function() {
+        sectionDataDiri.style.display = "block";
+        if(this.value === "Peserta Didik") {
+            sectionNim.style.display = "block";
+            inputNimNik.value = "";
+            inputNimNik.placeholder = "Masukkan NIM";
+            labelJurusanDivisi.innerText = "Jurusan";
+            
+            document.getElementById("namaPeminjam").readOnly = true;
+            document.getElementById("institusi").readOnly = true;
+            document.getElementById("jurusanDivisi").readOnly = true;
+            document.getElementById("noHp").readOnly = true;
+            resetFormDiri();
+        } else {
+            sectionNim.style.display = "none";
+            inputNimNik.value = "-"; 
+            labelJurusanDivisi.innerText = "Divisi";
+            
+            document.getElementById("namaPeminjam").readOnly = false;
+            document.getElementById("institusi").value = "RSUDBK";
+            document.getElementById("institusi").readOnly = true; 
+            document.getElementById("jurusanDivisi").readOnly = false;
+            document.getElementById("noHp").readOnly = false;
+            
+            document.getElementById("namaPeminjam").value = "";
+            document.getElementById("jurusanDivisi").value = "";
+            document.getElementById("noHp").value = "";
+        }
+    });
+
+    function resetFormDiri() {
+        document.getElementById("namaPeminjam").value = "";
+        document.getElementById("institusi").value = "";
+        document.getElementById("jurusanDivisi").value = "";
+        document.getElementById("noHp").value = "";
+    }
+
+    // Fungsi Cari Data Peserta Didik
+    document.getElementById("btnCariNim").addEventListener("click", async function() {
+        const nim = inputNimNik.value.trim();
+        const notif = document.getElementById("notifCari");
+        if(!nim) return notif.innerText = "NIM tidak boleh kosong!";
+        
+        notif.innerText = "Mencari data...";
+        this.disabled = true;
+
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=searchPesertaByNim&nim=${nim}`);
+            const data = await res.json();
+            
+            if(data.status === "success") {
+                document.getElementById("namaPeminjam").value = data.data.nama;
+                document.getElementById("institusi").value = data.data.institusi;
+                document.getElementById("jurusanDivisi").value = data.data.jurusan;
+                document.getElementById("noHp").value = data.data.no_hp;
+                notif.innerText = "";
+            } else {
+                notif.innerText = "Data tidak ditemukan!";
+                resetFormDiri();
+            }
+        } catch(e) {
+            notif.innerText = "Gagal menghubungi server.";
+        }
+        this.disabled = false;
+    });
+
+    // Kalkulasi Durasi
+    function hitungDurasi() {
+        const mulai = document.getElementById("waktuMulai").value;
+        const selesai = document.getElementById("waktuSelesai").value;
+        if(mulai && selesai) {
+            const m = new Date(mulai);
+            const s = new Date(selesai);
+            const selisihJam = (s - m) / (1000 * 60 * 60);
+            if(selisihJam > 0) {
+                document.getElementById("durasi").value = selisihJam.toFixed(1) + " Jam";
+            } else {
+                document.getElementById("durasi").value = "Waktu Selesai tidak valid!";
+            }
+        }
+    }
+    document.getElementById("waktuMulai").addEventListener("change", hitungDurasi);
+    document.getElementById("waktuSelesai").addEventListener("change", hitungDurasi);
+
+    // Canvas Tanda Tangan Logika
+const canvas = document.getElementById("canvas-signature");
+const ctx = canvas.getContext("2d");
+let drawing = false;
+
+// Fungsi krusial untuk mengatur ukuran koordinat asli canvas sesuai tampilan layar
+function resizeCanvas() {
+    // Hanya atur ulang ukuran jika canvas sedang terlihat di layar
+    if (canvas.offsetWidth > 0) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        // Atur style dasar kuas kembali setelah di-resize
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "#000000";
+    }
+}
+
+// JALANKAN INI pada fungsi bawaan Anda yang membuka/menampilkan sectionTtd!
+// Contoh: saat checkbox T&C di-klik dan memunculkan #sectionTtd, tambahkan baris: setTimeout(resizeCanvas, 100);
+
+// Logika Pendeteksi Posisi Mouse / Sentuhan Jari yang Akurat
+function getCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    // Mendukung sentuhan HP (touches) dan klik Mouse biasa
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+    };
+}
+
+function startDrawing(e) {
+    drawing = true;
+    const coords = getCoordinates(e);
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+    if(e.type === "touchstart") e.preventDefault();
+}
+
+function draw(e) {
+    if (!drawing) return;
+    const coords = getCoordinates(e);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    if(e.type === "touchmove") e.preventDefault();
+}
+
+function stopDrawing() {
+    drawing = false;
+    ctx.beginPath();
+}
+
+// Event Listener untuk PC/Laptop
+canvas.addEventListener("mousedown", startDrawing);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", stopDrawing);
+canvas.addEventListener("mouseleave", stopDrawing);
+
+// Event Listener untuk HP/Tablet (Touch Screen)
+canvas.addEventListener("touchstart", startDrawing, { passive: false });
+canvas.addEventListener("touchmove", draw, { passive: false });
+canvas.addEventListener("touchend", stopDrawing);
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Fungsi tambahan untuk mendeteksi apakah pemohon benar-benar sudah tanda tangan
+function isCanvasEmpty() {
+    const blank = document.createElement('canvas');
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+    return canvas.toDataURL() === blank.toDataURL();
+}
+
+    // T&C Checkbox membuka Signature
+    document.getElementById("cekSNC").addEventListener("change", function() {
+        const sectionTtd = document.getElementById("sectionTtd");
+        const btnSubmit = document.getElementById("btnSubmit");
+        if(this.checked) {
+            sectionTtd.style.display = "block";
+            btnSubmit.disabled = false;
+            canvas.width = canvas.parentElement.offsetWidth; 
+        } else {
+            sectionTtd.style.display = "none";
+            btnSubmit.disabled = true;
+        }
+    });
+
+    // Proses Submit POST Form
+document.getElementById("formRuangan").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    if(document.getElementById("durasi").value.includes("tidak valid")) {
+        alert("Harap perbaiki rentang Waktu Mulai dan Selesai.");
+        return;
+    }
+
+    // Validasi apakah sudah tanda tangan
+    if (isCanvasEmpty()) {
+        alert("Harap isi tanda tangan Anda terlebih dahulu.");
+        return;
+    }
+
+    const btnSubmit = document.getElementById("btnSubmit");
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = "Mengirim...";
+
+    // Mengonversi hasil gambar canvas menjadi format SVG ringkas berbasis teks
+    // Opsi alternatif jika ingin teks yang super pendek & aman masuk satu kolom spreadsheet
+    const TtdBase64Terkompresi = canvas.toDataURL("image/jpeg", 0.3); // Menggunakan JPEG dengan kualitas 30% agar ukuran teks drop drastis
+
+    const payload = {
+        action: "submitRuangan",
+        unit_peminjam: unitSelect.value,
+        nim_nik: inputNimNik.value,
+        nama_peminjam: document.getElementById("namaPeminjam").value,
+        institusi: document.getElementById("institusi").value,
+        jurusan_divisi: document.getElementById("jurusanDivisi").value,
+        no_hp: document.getElementById("noHp").value,
+        nama_acara: document.getElementById("namaAcara").value,
+        jumlah_peserta: document.getElementById("jumlahPeserta").value,
+        tgl_pinjam: document.getElementById("waktuMulai").value,
+        tgl_selesai: document.getElementById("waktuSelesai").value,
+        durasi: document.getElementById("durasi").value,
+        signature: TtdBase64Terkompresi // Karakter teks menjadi sangat pendek & ringan untuk Spreadsheet
+    };
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if(result.status === "success") {
+            alert("Sukses: " + result.message);
+            window.location.reload(); 
+        } else {
+            alert("Gagal: " + result.message);
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "Kirim Request Booking";
+        }
+    } catch(error) {
+        alert("Error koneksi jaringan.");
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "Kirim Request Booking";
+    }
+});
+
+    // ================= FUNGSI MENGAMBIL DATA DARI SPREADSHEET =================
+        // Inisialisasi Instance Modal Bootstrap secara global
+let bootstrapModal;
+document.addEventListener("DOMContentLoaded", () => {
+    bootstrapModal = new bootstrap.Modal(document.getElementById('aksiModal'));
+});
+
+async function loadDataPeminjaman() {
+    const tableBody = document.getElementById("tableBody");
+    tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Memuat data dari spreadsheet...</td></tr>';
+
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=readPeminjamanRuangan`);
+        const result = await response.json();
+        tableBody.innerHTML = ""; 
+        
+        if (result.status === "success" && result.data.length > 0) {
+            result.data.forEach(item => {
+                // Penentuan warna badge berdasarkan status awal
+                let statusBadge = '';
+                const currentStatus = (item.status || 'REQUEST').toUpperCase();
+                
+                if(currentStatus === 'APPROVED') statusBadge = '<span class="badge bg-success">Approved</span>';
+                else if(currentStatus === 'REJECTED') statusBadge = '<span class="badge bg-danger">Rejected</span>';
+                else if(currentStatus === 'CANCEL') statusBadge = '<span class="badge bg-warning text-dark">Cancelled</span>';
+                else statusBadge = '<span class="badge bg-info text-dark">Request</span>';
+
+                // Membuat baris tabel dengan tombol aksi titik tiga (Dropdown Bootstrap)
+                // Cari potongan kode ini di dalam fungsi loadDataPeminjaman() Anda dan sesuaikan tombol dropdown-nya:
+                const row = `
+                    <tr class="align-middle text-center">
+                        <td>${statusBadge} <br> <small class="text-muted">${item.nama_ruangan || ''}</small></td>
+                        <td class="text-start">${item.nama_acara}</td>
+                        <td>${item.jumlah_peserta} Orang</td>
+                        <td><span class="badge bg-secondary">${item.unit_peminjam}</span></td>
+                        <td class="text-start">${item.nama_peminjam} <br><small class="text-muted">(${item.nim_nik})</small></td>
+                        <td>
+                            <div class="dropdown">
+                                <!-- Tambahan data-bs-boundary="viewport" mencegah menu terpotong tabel -->
+                                <button class="btn btn-light btn-sm fw-bold border" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                                    &#8942;
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item text-success fw-bold" href="#" onclick="bukaDialogAksi('approved', '${item.id}')">✓ Approved</a></li>
+                                    <li><a class="dropdown-item text-danger fw-bold" href="#" onclick="bukaDialogAksi('rejected', '${item.id}')">✗ Rejected</a></li>
+                                    <li><a class="dropdown-item text-warning fw-bold" href="#" onclick="bukaDialogAksi('cancel', '${item.id}')">⊘ Cancel</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-primary" href="#" onclick="bukaDialogAksi('edit', '${item.id}', ${JSON.stringify(item).replace(/"/g, '&quot;')})">✎ Edit Data</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        } else {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada data peminjaman di spreadsheet.</td></tr>';
+        }
+    } catch (error) {
+        console.error(error);
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Gagal memuat data.</td></tr>';
+    }
+}
+window.addEventListener("DOMContentLoaded", loadDataPeminjaman);
+
+// Global cache agar tidak fetch data ruangan berkali-kali
+let listRuanganCache = [];
+
+async function bukaDialogAksi(tipe, id, dataItem = null) {
+    // Reset form di dalam modal
+    document.getElementById("formAksiModal").reset();
+    document.getElementById("modalRowId").value = id;
+    document.getElementById("modalActionType").value = tipe;
+
+    // Sembunyikan semua elemen dinamis di awal
+    document.getElementById("divModalPassword").classList.add("d-none");
+    document.getElementById("divModalRuangan").classList.add("d-none");
+    document.getElementById("divModalCatatan").classList.add("d-none");
+    document.getElementById("divModalEdit").classList.add("d-none");
+
+    if (tipe === 'approved') {
+        document.getElementById("modalAksiTitle").innerText = "Persetujuan Peminjaman (Approve)";
+        document.getElementById("divModalPassword").classList.remove("d-none");
+        document.getElementById("divModalRuangan").classList.remove("d-none");
+        // Ambil daftar ruangan sarpras
+        await ambilDataRuanganSarpras();
+    } 
+    else if (tipe === 'rejected') {
+        document.getElementById("modalAksiTitle").innerText = "Tolak Peminjaman (Reject)";
+        document.getElementById("divModalPassword").classList.remove("d-none");
+        document.getElementById("divModalCatatan").classList.remove("d-none");
+        document.getElementById("labelModalCatatan").innerText = "Alasan Penolakan";
+    } 
+    else if (tipe === 'cancel') {
+        document.getElementById("modalAksiTitle").innerText = "Batalkan Peminjaman (Cancel)";
+        document.getElementById("divModalCatatan").classList.remove("d-none");
+        document.getElementById("labelModalCatatan").innerText = "Alasan Pembatalan";
+    } 
+    else if (tipe === 'edit') {
+        document.getElementById("modalAksiTitle").innerText = "Edit Data Peminjaman";
+        document.getElementById("divModalEdit").classList.remove("d-none");
+        
+        // Isi form edit dengan data baris yang dipilih
+        if(dataItem) {
+            document.getElementById("editNamaAcara").value = dataItem.nama_acara;
+            document.getElementById("editJumlahPeserta").value = dataItem.jumlah_peserta;
+            document.getElementById("editWaktuMulai").value = dataItem.tgl_pinjam;
+            document.getElementById("editWaktuSelesai").value = dataItem.tgl_selesai;
+        }
+    }
+
+    // Tampilkan modal dialog ke layar
+    bootstrapModal.show();
+}
+
+// Fungsi mengambil data Ruangan dari spreadsheet SARPRAS D_RUANGAN
+// Mengambil data Ruangan dari spreadsheet SARPRAS sesuai endpoint Anda
+async function ambilDataRuanganSarpras() {
+    const selectRuangan = document.getElementById("modalSelectRuangan");
+    if(listRuanganCache.length > 0) return; // Jika data sudah ada di memori, tidak perlu fetch ulang
+
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getDaftarRuangan`);
+        const result = await response.json();
+        
+        if(result.status === "success" && result.data.length > 0) {
+            listRuanganCache = result.data;
+            selectRuangan.innerHTML = '<option value="" selected disabled>Tentukan Ruangan...</option>';
+            
+            listRuanganCache.forEach(ruang => {
+                // Menghindari eror pembacaan undefined properti
+                const nama = ruang.nama_ruangan || '-';
+                const lokasi = ruang.lokasi || '';
+                
+                selectRuangan.innerHTML += `<option value="${nama}">${nama} ${lokasi ? '(' + lokasi + ')' : ''}</option>`;
+            });
+        } else {
+            selectRuangan.innerHTML = '<option value="" selected disabled>Daftar ruangan kosong di spreadsheet</option>';
+        }
+    } catch(e) {
+        console.error(e);
+        selectRuangan.innerHTML = '<option value="" selected disabled>Gagal memuat data dari server</option>';
+    }
+}
+
+// Memproses Pengiriman Data Aksi Modal (Approved, Rejected, Cancel, Edit)
+document.getElementById("formAksiModal").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById("modalRowId").value;
+    const tipe = document.getElementById("modalActionType").value;
+    const btnSubmit = document.getElementById("btnSubmitAksi");
+    
+    // Siapkan Payload Awal
+    let payload = {
+        action: "updateAksiRuangan",
+        id: id,
+        tipe: tipe
+    };
+
+    // Validasi & Kumpulkan data spesifik berdasarkan tipe aksi
+    if (tipe === 'approved') {
+        const password = document.getElementById("modalPassword").value;
+        const ruangan = document.getElementById("modalSelectRuangan").value;
+        if(!password || !ruangan) return alert("Password admin dan penentuan ruangan wajib diisi!");
+        payload.password = password;
+        payload.ruangan = ruangan;
+    } 
+    else if (tipe === 'rejected') {
+        const password = document.getElementById("modalPassword").value;
+        const catatan = document.getElementById("modalCatatan").value;
+        if(!password || !catatan) return alert("Password admin dan alasan penolakan wajib diisi!");
+        payload.password = password;
+        payload.catatan = catatan;
+    } 
+    else if (tipe === 'cancel') {
+        const catatan = document.getElementById("modalCatatan").value;
+        if(!catatan) return alert("Alasan pembatalan wajib diisi!");
+        payload.catatan = catatan;
+    } 
+    else if (tipe === 'edit') {
+        const namaAcara = document.getElementById("editNamaAcara").value;
+        const jumlahPeserta = document.getElementById("editJumlahPeserta").value;
+        const mulai = document.getElementById("editWaktuMulai").value;
+        const selesai = document.getElementById("editWaktuSelesai").value;
+        
+        if(!namaAcara || !jumlahPeserta || !mulai || !selesai) return alert("Semua form edit wajib diisi!");
+        
+        // Hitung durasi edit secara lokal
+        const m = new Date(mulai);
+        const s = new Date(selesai);
+        const selisihJam = (s - m) / (1000 * 60 * 60);
+        if(selisihJam <= 0) return alert("Rentang waktu mulai & selesai tidak valid!");
+
+        payload.nama_acara = namaAcara;
+        payload.jumlah_peserta = jumlahPeserta;
+        payload.tgl_pinjam = mulai;
+        payload.tgl_selesai = selesai;
+        payload.durasi = selisihJam.toFixed(1) + " Jam";
+    }
+
+    // Kirim Data ke Apps Script menggunakan metode POST
+    btnSubmit.disabled = true;
+    btnSubmit.innerText = "Memproses...";
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        if(result.status === "success") {
+            alert(result.message);
+            bootstrapModal.hide();
+            loadDataPeminjaman(); // Refresh tabel data secara realtime
+        } else {
+            alert("Gagal: " + result.message);
+        }
+    } catch(err) {
+        alert("Terjadi kesalahan jaringan.");
+    }
+    
+    btnSubmit.disabled = false;
+    btnSubmit.innerText = "Simpan Perubahan";
+});
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -287,49 +287,61 @@
           }
         },
 
-        async searchIdentitas() {
-          const cleanNim = this.formData.nim.trim();
-          if (cleanNim.length < 3) {
-            this.identitasDitemukan = false;
-            this.formData.nama = '';
-            this.formData.institusi = '';
-            this.formData.jurusan = '';
-            this.formData.noTelp = '';
-            return;
-          }
-          
-          this.loadingIdentitas = true;
-          try {
-            const currentSheet = this.activeEvent.targetSheet || 'ALL_SHEETS';
-            const url = `${WEB_APP_URL}?action=getByNim&nim=${encodeURIComponent(cleanNim)}&sheet=${encodeURIComponent(currentSheet)}`;
-            
-            const response = await fetch(url);
-            const result = await response.json();
-            
-            if (result && result.nama) {
-              this.formData.nama = result.nama || '';
-              this.formData.institusi = result.namaInstitusi || ''; 
-              this.formData.jurusan = result.jurusan || '';         
-              this.formData.noTelp = result.hp ? String(result.hp) : ''; 
-              
-              if(result.bagian) this.formData.bagian = result.bagian;
-              
-              this.identitasDitemukan = true;
-            } else {
-              // Reset data jika NIM tidak valid agar diisi ulang secara manual
-              this.identitasDitemukan = false;
-              this.formData.nama = '';
-              this.formData.institusi = '';
-              this.formData.jurusan = '';
-              this.formData.noTelp = '';
-            }
-          } catch (e) {
-            console.error("Gagal getByNim:", e);
-            this.identitasDitemukan = false;
-          } finally {
-            this.loadingIdentitas = false;
-          }
-        },
+       async searchIdentitas() {
+  const cleanNim = this.formData.nim ? this.formData.nim.trim() : '';
+
+  // 1. Reset & batasi pencarian jika NIM < 3 karakter
+  if (cleanNim.length < 3) {
+    this.resetFormIdentitas();
+    return;
+  }
+
+  this.loadingIdentitas = true;
+  try {
+    const currentSheet = this.activeEvent?.targetSheet || 'ALL_SHEETS';
+    const url = `${WEB_APP_URL}?action=getByNim&nim=${encodeURIComponent(cleanNim)}&sheet=${encodeURIComponent(currentSheet)}`;
+
+    const response = await fetch(url);
+    const result = await response.json();
+
+    // 2. Cek status "SUCCESS" dan ketersediaan result.data
+    if (result && result.status === 'SUCCESS' && result.data) {
+      const d = result.data;
+
+      // Pemetaan data dari backend ke formData
+      this.formData.nama = d.nama || '';
+      this.formData.institusi = d.namaInstitusi || d.institusi || ''; 
+      this.formData.jurusan = d.jurusan || ''; 
+      this.formData.noTelp = d.hp ? String(d.hp) : ''; 
+      
+      if (d.bagian) this.formData.bagian = d.bagian;
+      if (d.catatanRiwayat) this.formData.catatanRiwayat = d.catatanRiwayat;
+
+      // Simpan mode jika butuh membedakan antara EDIT atau BARU_RIWAYAT
+      this.formMode = result.mode; 
+
+      this.identitasDitemukan = true;
+    } else {
+      // NIM tidak ditemukan / error dari server
+      this.resetFormIdentitas();
+    }
+  } catch (e) {
+    console.error("Gagal melakukan searchIdentitas:", e);
+    this.resetFormIdentitas();
+  } finally {
+    this.loadingIdentitas = false;
+  }
+},
+
+// Helper untuk membersihkan form agar DRY (Don't Repeat Yourself)
+resetFormIdentitas() {
+  this.identitasDitemukan = false;
+  this.formData.nama = '';
+  this.formData.institusi = '';
+  this.formData.jurusan = '';
+  this.formData.noTelp = '';
+  this.formMode = 'BARU'; // opsional
+},
 
         formatDateString(isoString) {
           if (!isoString) return "-";

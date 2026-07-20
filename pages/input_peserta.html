@@ -31,7 +31,9 @@
         <!-- Header -->
         <div class="text-center mb-6 md:mb-10">
             <img src="../assets/img/rsudbk.png" alt="Logo RSUD BK" class="h-16 md:h-24 w-auto mx-auto mb-3 object-contain"> 
-            <h1 class="text-xl md:text-3xl font-extrabold text-[#212529]">Data Peserta Didik 2026</h1>
+            <!-- Perubahan 1: Mengubah judul utama secara dinamis tergantung isEdit -->
+            <h1 class="text-xl md:text-3xl font-extrabold text-[#212529]" 
+                x-text="isEdit ? '✏️ Edit Data Peserta Didik' : '📝 Data Peserta Didik 2026'"></h1>
             <div class="h-1 w-16 bg-[#714B67] mx-auto mt-2 rounded-full"></div>
         </div>
 
@@ -53,19 +55,50 @@
         <template x-if="typeof registrationClosed !== 'undefined' ? !registrationClosed : true">
             <div>
                 <div class="flex flex-row items-center justify-between mb-5 gap-4">
-                    <button type="button" onclick="window.location.href='../index.html'" class="flex items-center text-[#714B67] font-bold hover:underline text-xs md:text-sm">
+                    <!-- Perubahan 2: Menyesuaikan tujuan tombol kembali jika diakses oleh admin dari file peserta.html -->
+                    <button type="button" 
+                            @click="window.location.href = isEdit ? 'peserta.html' : '../index.html'" 
+                            class="flex items-center text-[#714B67] font-bold hover:underline text-xs md:text-sm">
                         ← Kembali
                     </button>
                     <div>
-                        <span class="bg-[#714B67]/10 text-[#714B67] px-3 py-1.5 rounded-lg text-[11px] font-bold" x-text="'Target: ' + config.targetSheet"></span>
+                        <!-- Perubahan 3: Jika dalam mode edit, ubah teks label target agar admin tahu data ini disimpan di gelombang mana -->
+                        <span class="bg-[#714B67]/10 text-[#714B67] px-3 py-1.5 rounded-lg text-[11px] font-bold" 
+                              x-text="isEdit ? 'Sheet: ' + config.targetSheet : 'Target: ' + config.targetSheet"></span>
                     </div>
                 </div>
 
                 <form @submit.prevent="handleSubmit" :class="loading ? 'opacity-50 pointer-events-none' : ''" class="space-y-5">
                     
-                    <!-- SECTION I: DATA INSTITUSI -->
                     <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                        <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-[11px] border-b pb-2">I. Data Institusi & Kegiatan</h2>
+    <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-[11px] border-b pb-2">I. Verifikasi Nomor Induk</h2>
+    
+    <div>
+        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">NIM / NISN</label>
+        <input 
+            type="text" 
+            x-model="formData.nim" 
+            @blur="!isEdit && checkNimOtomatis()"
+            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" 
+            :class="isEdit ? 'bg-slate-100 cursor-not-allowed opacity-75' : ''" 
+            :disabled="isEdit" 
+            placeholder="Masukkan Nomor Induk Siswa/Mahasiswa Anda" 
+            required>
+        
+        <template x-if="isEdit">
+            <div class="mt-2 flex items-center justify-between bg-amber-50 p-2 rounded-lg border border-amber-200">
+                <span class="text-[11px] text-amber-700 font-semibold">✨ Mode: Mengubah Data Lama Anda</span>
+                <!-- Perubahan 4: Arahkan fungsi reset agar membersihkan parameter URL juga jika diinginkan -->
+                <button type="button" @click="resetFormData" class="text-[11px] text-red-500 hover:underline font-bold">Ganti/Reset NIM</button>
+            </div>
+        </template>
+    </div>
+    
+    <input type="hidden" x-model="formData.catatanRiwayat">
+</div>
+
+                    <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-[11px] border-b pb-2">II. Data Institusi & Kegiatan</h2>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="sm:col-span-2">
@@ -117,7 +150,6 @@
                                 </select>
                             </div>
                             
-                            <!-- Searchable Select Universitas -->
                             <div x-data="searchableSelect(options.universitas, () => formData.namaInstitusi, value => formData.namaInstitusi = value)" class="relative">
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Institusi / Universitas</label>
                                 <input type="text" x-model="search" @focus="open = true" @input="filterOptions()" @click.away="open = false" autocomplete="off" placeholder="Cari atau ketik institusi..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" required>
@@ -128,7 +160,6 @@
                                 </div>
                             </div>
 
-                            <!-- Searchable Select Jurusan -->
                             <div x-data="searchableSelect(options.jurusan, () => formData.jurusan, value => formData.jurusan = value)" class="relative">
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Jurusan</label>
                                 <input type="text" x-model="search" @focus="open = true" @input="filterOptions()" @click.away="open = false" autocomplete="off" placeholder="Cari atau ketik jurusan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" required>
@@ -155,9 +186,8 @@
                         </div>
                     </div>
 
-                    <!-- SECTION II: BIODATA PERORANGAN -->
                     <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-[11px] mb-5 border-b pb-2">II. Biodata & Berkas</h2>
+                        <h2 class="text-[#714B67] font-bold uppercase tracking-wider text-[11px] mb-5 border-b pb-2">III. Biodata & Berkas Perorangan</h2>
                         
                         <div class="flex flex-col items-center justify-center mb-6 pb-5 border-b border-slate-100">
                             <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2 text-center">Pas Foto 2x3 Resmi (JPG/JPEG)</label>
@@ -171,21 +201,17 @@
                                 <template x-if="photoPreview">
                                     <img :src="photoPreview" class="w-full h-full object-cover">
                                 </template>
-                                <input type="file" @change="uploadPhoto($event)" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer" required>
+                                <input type="file" @change="uploadPhoto($event)" accept=".jpg,.jpeg" class="absolute inset-0 opacity-0 cursor-pointer">
                             </div>
-                            <button x-show="photoPreview" @click="photoPreview = null" type="button" class="text-xs text-red-500 font-semibold mt-2 hover:underline">Hapus Foto</button>
+                            <button x-show="photoPreview" @click="photoPreview = null; formData.pasFotoData = null;" type="button" class="text-xs text-red-500 font-semibold mt-2 hover:underline">Hapus Foto</button>
                         </div>
                         
-                        <!-- Form Inputs Utama -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="sm:col-span-2">
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Lengkap</label>
                                 <input type="text" x-model="formData.nama" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" placeholder="Sesuai ijazah tanpa gelar" required>
                             </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">NIM / NISN</label>
-                                <input type="text" x-model="formData.nim" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" :class="isEdit ? 'bg-slate-100 cursor-not-allowed opacity-75' : ''" :disabled="isEdit" placeholder="Nomor Induk Siswa/Mahasiswa" required>
-                            </div>
+                            
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">No. KTP (NIK)</label>
                                 <input type="text" x-model="formData.ktp" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" placeholder="16 Digit NIK" inputmode="numeric" maxlength="16" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
@@ -213,8 +239,24 @@
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">No. WhatsApp</label>
-                                <input type="text" x-model="formData.hp" @blur="validatePhoneNumber" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" placeholder="Contoh: 08123456789 atau +628123456789" required>
-                                <span class="text-[10px] text-slate-400 mt-1 block">Wajib diawali angka 0 atau +62 (Minimal 10 digit)</span>
+                                <input 
+                                    type="text" 
+                                    x-model="formData.hp" 
+                                    @blur="validatePhoneNumber" 
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" 
+                                    :class="formData.hp && !/^(0|\\+62)8/.test(formData.hp) ? 'border-red-500 bg-red-50' : ''"
+                                    placeholder="Contoh: 08123456789 atau +628123456789" 
+                                    required>
+                                
+                                <template x-if="formData.hp && !/^(0|\\+62)8/.test(formData.hp)">
+                                    <span class="text-[11px] text-red-600 font-medium mt-1 block">
+                                        ⚠️ Format salah! Nomor harus diawali dengan angka 0 atau +62 (Contoh: 0812...)
+                                    </span>
+                                </template>
+                                
+                                <span x-show="!formData.hp || /^(0|\\+62)8/.test(formData.hp)" class="text-[10px] text-slate-400 mt-1 block">
+                                    Wajib diawali angka 0 atau +62 (Minimal 10 digit)
+                                </span>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Tempat Lahir</label>
@@ -234,7 +276,7 @@
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Dokumen Pendukung (PDF)</label>
-                                <input type="file" multiple @change="uploadPdf($event)" accept="application/pdf" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-none" required>
+                                <input type="file" multiple @change="uploadPdf($event)" accept="application/pdf" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:outline-none">
                                 <div class="mt-2 p-3 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl">
                                     <p class="text-[11px] text-amber-900 leading-relaxed">
                                         <strong>Persyaratan Berkas:</strong><br>
@@ -246,7 +288,6 @@
                         </div>
                     </div>
 
-                    <!-- Tombol Utama Kirim Form -->
                     <button type="submit" class="w-full bg-[#714B67] hover:bg-[#5a3b52] text-white py-3.5 px-6 rounded-xl font-bold text-base shadow-md hover:shadow-lg transition disabled:bg-slate-400 disabled:cursor-not-allowed mb-6" :disabled="loading">
                         <span x-show="!loading">SUBMIT DATA PENDAFTARAN</span>
                         <span x-show="loading" x-text="progressText || 'SEDANG MENGIRIM DATA...'"></span>

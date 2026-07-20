@@ -74,7 +74,15 @@
                                     <span class="text-[11px] text-slate-400 block mt-0.5" x-text="row.timestamp"></span>
                                 </td>
                                 <td class="py-4 px-6">
-                                    <span class="font-semibold text-slate-700 block" x-text="row.nama_peminjam"></span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-slate-700" x-text="row.nama_peminjam"></span>
+                                        
+                                        <template x-if="row.catatan && row.catatan.includes('Entri Manual')">
+                                            <span class="text-[11px] font-bold text-red-500 bg-red-50 px-1 rounded border border-red-200" title="Peserta tidak terdaftar di database">
+                                                (Manual)
+                                            </span>
+                                        </template>
+                                    </div>
                                     <span class="text-xs text-slate-400 block" x-text="row.nim + ' (' + row.jurusan + ')'"></span>
                                 </td>
                                 <td class="py-4 px-6">
@@ -84,8 +92,8 @@
                                         </template>
                                         <template x-if="row.nama_kunci" x-for="kunci in parseKunci(row.nama_kunci)">
                                             <span class="px-2 py-0.5 rounded text-[11px] font-bold shadow-sm border"
-          :class="kunci.toUpperCase().trim().startsWith('L') ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-pink-100 text-pink-700 border-pink-200'"
-          x-text="kunci"></span>
+                                                  :class="kunci.toUpperCase().trim().startsWith('L') ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-pink-100 text-pink-700 border-pink-200'"
+                                                  x-text="kunci"></span>
                                         </template>
                                     </div>
                                     <span class="text-[11px] text-slate-500 block mt-1 bg-slate-50 p-1.5 rounded border border-slate-100" x-text="row.catatan"></span>
@@ -149,62 +157,81 @@
 
             <form @submit.prevent="submitForm">
                 <div class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs text-slate-500 mb-1.5">NIM Peserta Didik *</label>
-                            <div class="relative">
-                                <input type="text" x-model="form.nim" @input="searchIdentitas()" placeholder="Masukkan NIM Anda..." required
-                                       class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700">
-                                <span x-show="loadingIdentitas" class="absolute right-3 top-3.5 animate-spin rounded-full h-4 w-4 border-2 border-[#714B67] border-t-transparent"></span>
-                            </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">NIM Peserta Didik *</label>
+                        <div class="relative">
+                            <input type="text" x-model="form.nim" @input.debounce.500ms="searchIdentitas()" placeholder="Masukkan NIM Anda untuk memvalidasi..." required
+                                class="w-full border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#714B67] text-slate-700 font-semibold tracking-wider">
+                            <span x-show="loadingIdentitas" class="absolute right-3 top-3.5 animate-spin rounded-full h-4 w-4 border-2 border-[#714B67] border-t-transparent"></span>
                         </div>
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1.5">Nama Lengkap</label>
-                            <input type="text" x-model="form.nama_peminjam" readonly required placeholder="Otomatis terisi..."
-                                   class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50/50 text-slate-500 outline-none">
+                        <div class="mt-1.5 text-[11px]">
+                            <span x-show="identitasDitemukan" class="text-emerald-600 font-medium flex items-center gap-1">✓ Data terverifikasi di Database Peserta Didik</span>
+                            <span x-show="form.nim.length >= 4 && !identitasDitemukan && !loadingIdentitas" class="text-amber-600 font-medium flex items-center gap-1">⚠️ NIM tidak terdaftar. Silakan lengkapi data manual di bawah ini.</span>
                         </div>
                     </div>
 
-                    <div x-show="identitasDitemukan" x-transition class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 bg-slate-50/50 p-3 rounded-xl border border-slate-100 text-xs">
-                        <div><span class="text-slate-400 block">Institusi:</span><span class="font-bold text-slate-700" x-text="form.institusi"></span></div>
-                        <div><span class="text-slate-400 block">Jurusan:</span><span class="font-bold text-slate-700" x-text="form.jurusan"></span></div>
+                    <div x-show="identitasDitemukan || (form.nim.length >= 4 && !loadingIdentitas)" 
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform -translate-y-2"
+                        x-transition:enter-end="opacity-100 transform translate-y-0"
+                        class="space-y-4 pt-2">
+                        
+                        <div>
+                            <label class="block text-xs text-slate-500 mb-1.5">Nama Lengkap *</label>
+                            <input type="text" x-model="form.nama_peminjam" :readonly="identitasDitemukan" :required="identitasDitemukan || form.nim.length >= 4" placeholder="Isi nama lengkap Anda..."
+                                :class="identitasDitemukan ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed font-medium' : 'bg-white text-slate-700 border-slate-200 focus:border-[#714B67]'"
+                                class="w-full border rounded-xl px-3 py-2.5 text-sm outline-none transition">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl border border-slate-200"
+                            :class="identitasDitemukan ? 'bg-slate-50/80' : 'bg-white'">
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Institusi *</label>
+                                <input type="text" x-model="form.institusi" :readonly="identitasDitemukan" :required="identitasDitemukan || form.nim.length >= 4" placeholder="Nama Sekolah/Kampus..."
+                                    :class="identitasDitemukan ? 'bg-transparent border-transparent font-bold text-slate-700 p-0' : 'bg-white border-slate-200 text-slate-700 rounded-lg p-2 focus:border-[#714B67] border'"
+                                    class="w-full text-xs outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Jurusan *</label>
+                                <input type="text" x-model="form.jurusan" :readonly="identitasDitemukan" :required="identitasDitemukan || form.nim.length >= 4" placeholder="Nama Jurusan/Prodi..."
+                                    :class="identitasDitemukan ? 'bg-transparent border-transparent font-bold text-slate-700 p-0' : 'bg-white border-slate-200 text-slate-700 rounded-lg p-2 focus:border-[#714B67] border'"
+                                    class="w-full text-xs outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">No. HP / WhatsApp *</label>
+                                <input type="text" x-model="form.no_hp" :readonly="identitasDitemukan" :required="identitasDitemukan || form.nim.length >= 4" placeholder="Contoh: 081234..."
+                                    :class="identitasDitemukan ? 'bg-transparent border-transparent font-bold text-slate-700 p-0' : 'bg-white border-slate-200 text-slate-700 rounded-lg p-2 focus:border-[#714B67] border'"
+                                    class="w-full text-xs outline-none transition">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="border-t border-slate-100 pt-3">
-    <label class="block text-xs font-semibold text-slate-700 mb-3">Jumlah Kunci yang Di-request:</label>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="border border-slate-200 p-3 rounded-xl flex items-center justify-between bg-pink-50/10">
-            <span class="text-xs text-pink-700 font-medium">👩 Kunci Loker Perempuan</span>
-            <input type="number" 
-                   x-model.number="form.qty_loker_p" 
-                   min="0" 
-                   placeholder="0"
-                   @input="form.qty_loker_p = Math.max(0, parseInt($el.value) || 0)"
-                   class="w-20 border border-slate-200 rounded-lg p-1.5 text-xs outline-none focus:border-pink-400 bg-white text-center font-bold text-slate-700">
-        </div>
-        
-        <div class="border border-slate-200 p-3 rounded-xl flex items-center justify-between bg-blue-50/10">
-            <span class="text-xs text-blue-700 font-medium">👨 Kunci Loker Laki-laki</span>
-            <input type="number" 
-                   x-model.number="form.qty_loker_l" 
-                   min="0" 
-                   placeholder="0"
-                   @input="form.qty_loker_l = Math.max(0, parseInt($el.value) || 0)"
-                   class="w-20 border border-slate-200 rounded-lg p-1.5 text-xs outline-none focus:border-blue-400 bg-white text-center font-bold text-slate-700">
-        </div>
-    </div>
-</div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-3">Jumlah Kunci yang Di-request:</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="border border-slate-200 p-3 rounded-xl flex items-center justify-between bg-pink-50/10">
+                                <span class="text-xs text-pink-700 font-medium">👩 Kunci Loker Perempuan</span>
+                                <input type="number" x-model.number="form.qty_loker_p" min="0" placeholder="0" @input="form.qty_loker_p = Math.max(0, parseInt($el.value) || 0)"
+                                    class="w-20 border border-slate-200 rounded-lg p-1.5 text-xs outline-none focus:border-pink-400 bg-white text-center font-bold text-slate-700">
+                            </div>
+                            <div class="border border-slate-200 p-3 rounded-xl flex items-center justify-between bg-blue-50/10">
+                                <span class="text-xs text-blue-700 font-medium">👨 Kunci Loker Laki-laki</span>
+                                <input type="number" x-model.number="form.qty_loker_l" min="0" placeholder="0" @input="form.qty_loker_l = Math.max(0, parseInt($el.value) || 0)"
+                                    class="w-20 border border-slate-200 rounded-lg p-1.5 text-xs outline-none focus:border-blue-400 bg-white text-center font-bold text-slate-700">
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs text-slate-500 mb-1.5">Tanggal Mulai Pinjam</label>
                             <input type="date" x-model="form.tgl_pinjam" :min="todayDate" @change="calculateDurasi()" required
-                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-600">
+                                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-600">
                         </div>
                         <div>
                             <label class="block text-xs text-slate-500 mb-1.5">Tanggal Estimasi Kembali</label>
                             <input type="date" x-model="form.tgl_kembali" :min="form.tgl_pinjam || todayDate" @change="calculateDurasi()" required
-                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-600">
+                                class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67] text-slate-600">
                         </div>
                     </div>
 
@@ -244,432 +271,468 @@
                     </button>
                 </div>
             </form>
+
         </div>
     </div>
 
-<div x-show="authModal.open" x-cloak class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div @click.away="authModal.open = false" class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-100 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        
-        <div class="flex justify-between items-center border-b border-slate-100 p-5 pb-3">
-            <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                <span>⚙️</span> Kontrol Petugas (Loker)
-            </h3>
-            <button @click="authModal.open = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">×</button>
-        </div>
-        
-        <form @submit.prevent="submitUbahStatus()" class="flex-1 flex flex-col overflow-hidden">
+    <div x-show="authModal.open" x-cloak class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div @click.away="authModal.open = false" class="bg-white w-full max-w-md rounded-2xl shadow-xl border border-slate-100 max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             
-            <div class="p-5 pt-2 space-y-4 overflow-y-auto flex-1">
-                <p class="text-xs text-slate-500 mb-2 bg-slate-50 p-2.5 rounded-xl">
-                    Peminjam: <span class="font-bold text-slate-700" x-text="authModal.nama"></span><br>
-                    Target Status: <span class="font-bold text-[#714B67]" x-text="authModal.status"></span>
-                </p>
+            <div class="flex justify-between items-center border-b border-slate-100 p-5 pb-3">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <span>⚙️</span> Kontrol Petugas (Loker)
+                </h3>
+                <button @click="authModal.open = false" class="text-slate-400 hover:text-slate-600 text-lg font-bold">×</button>
+            </div>
+            
+            <form @submit.prevent="submitUbahStatus()" class="flex-1 flex flex-col overflow-hidden">
+                <div class="p-5 pt-2 space-y-4 overflow-y-auto flex-1">
+                    <p class="text-xs text-slate-500 mb-2 bg-slate-50 p-2.5 rounded-xl">
+                        Peminjam: <span class="font-bold text-slate-700" x-text="authModal.nama"></span><br>
+                        Target Status: <span class="font-bold text-[#714B67]" x-text="authModal.status"></span>
+                    </p>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Password Petugas</label>
-                        <input type="password" x-model="authModal.password" required placeholder="Masukkan password petugas..."
-                               class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67]">
-                    </div>
-
-                    <template x-if="authModal.status === 'Approve/Booking'">
-                        <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <span class="text-xs font-bold text-slate-700 block">Plot Kunci Loker Terpilih:</span>
-                            
-                            <div x-show="masterKunci.length === 0" class="text-center py-4 text-xs text-amber-600 font-medium bg-amber-50 rounded-lg">
-                                ⏳ Sedang memuat daftar kunci dari spreadsheet Sarpras...
-                            </div>
-
-                            <div x-show="authModal.reqLaki > 0 && masterKunci.length > 0">
-                                <label class="block text-[11px] font-bold text-blue-700 mb-1 flex justify-between">
-                                    <span>👨 Kunci Laki-Laki (Maksimal pilih <span x-text="authModal.reqLaki"></span> kunci):</span>
-                                    <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px]" x-text="'Dipilih: ' + authModal.selectedKunciLaki.length + '/' + authModal.reqLaki"></span>
-                                </label>
-                                <div class="max-h-36 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-white grid grid-cols-3 gap-1">
-                                    <template x-for="kunci in masterKunci.filter(k => k.jenis === 'L')" :key="kunci.nomor">
-                                        <label class="flex items-center gap-1 text-[11px] cursor-pointer p-1 rounded border border-slate-100 transition"
-                                            :class="kunci.status === 'dipinjam' ? 'opacity-40 bg-slate-100' : 'hover:bg-slate-50'">
-                                            
-                                            <input type="checkbox" :value="kunci.nomor" x-model="authModal.selectedKunciLaki" 
-                                                :disabled="kunci.status === 'dipinjam' || (authModal.selectedKunciLaki.length >= authModal.reqLaki && !authModal.selectedKunciLaki.includes(kunci.nomor))"
-                                                class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 scale-90 disabled:opacity-50">
-                                            
-                                            <span :class="kunci.status === 'dipinjam' ? 'line-through text-red-500 font-medium' : 'text-slate-700 font-medium'" x-text="kunci.nomor"></span>
-                                        </label>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <div x-show="authModal.reqPerempuan > 0 && masterKunci.length > 0">
-                                <label class="block text-[11px] font-bold text-pink-700 mb-1 flex justify-between">
-                                    <span>👩 Kunci Perempuan (Maksimal pilih <span x-text="authModal.reqPerempuan"></span> kunci):</span>
-                                    <span class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-800 text-[10px]" x-text="'Dipilih: ' + authModal.selectedKunciPerempuan.length + '/' + authModal.reqPerempuan"></span>
-                                </label>
-                                <div class="max-h-36 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-white grid grid-cols-3 gap-1">
-                                    <template x-for="kunci in masterKunci.filter(k => k.jenis === 'P')" :key="kunci.nomor">
-                                        <label class="flex items-center gap-1 text-[11px] cursor-pointer p-1 rounded border border-slate-100 transition"
-                                            :class="kunci.status === 'dipinjam' ? 'opacity-40 bg-slate-100' : 'hover:bg-slate-50'">
-                                            
-                                            <input type="checkbox" :value="kunci.nomor" x-model="authModal.selectedKunciPerempuan" 
-                                                :disabled="kunci.status === 'dipinjam' || (authModal.selectedKunciPerempuan.length >= authModal.reqPerempuan && !authModal.selectedKunciPerempuan.includes(kunci.nomor))"
-                                                class="rounded border-slate-300 text-pink-600 focus:ring-pink-500 scale-90 disabled:opacity-50">
-                                            
-                                            <span :class="kunci.status === 'dipinjam' ? 'line-through text-red-500 font-medium' : 'text-slate-700 font-medium'" x-text="kunci.nomor"></span>
-                                        </label>
-                                    </template>
-                                </div>
-                            </div>
-                            
-                            <div class="text-[10px] text-slate-500 bg-slate-100 p-2 rounded">
-                                <span class="font-semibold">Format Output NAMA_KUNCI:</span> 
-                                <span class="font-mono font-bold text-slate-700 block mt-0.5" x-text="generateFormatOutput() || 'Belum ada kunci dipilih'"></span>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template x-if="authModal.status === 'Ditolak'">
+                    <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Alasan Penolakan</label>
-                            <input type="text" x-model="authModal.alasanPenolakan" required placeholder="Tuliskan alasan penolakan..."
-                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-600">
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Password Petugas</label>
+                            <input type="password" x-model="authModal.password" required placeholder="Masukkan password petugas..."
+                                   class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#714B67]">
                         </div>
-                    </template>
+
+                        <template x-if="authModal.status === 'Approve/Booking'">
+                            <div class="space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <span class="text-xs font-bold text-slate-700 block">Plot Kunci Loker Terpilih:</span>
+                                
+                                <div x-show="masterKunci.length === 0" class="text-center py-4 text-xs text-amber-600 font-medium bg-amber-50 rounded-lg">
+                                    ⏳ Sedang memuat daftar kunci dari spreadsheet Sarpras...
+                                </div>
+
+                                <div x-show="authModal.reqLaki > 0 && masterKunci.length > 0">
+                                    <label class="block text-[11px] font-bold text-blue-700 mb-1 flex justify-between">
+                                        <span>👨 Kunci Laki-Laki (Maksimal pilih <span x-text="authModal.reqLaki"></span> kunci):</span>
+                                        <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px]" x-text="'Dipilih: ' + authModal.selectedKunciLaki.length + '/' + authModal.reqLaki"></span>
+                                    </label>
+                                    <div class="max-h-36 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-white grid grid-cols-3 gap-1">
+                                        <template x-for="kunci in masterKunci.filter(k => k.jenis === 'L')" :key="kunci.nomor">
+                                            <label class="flex items-center gap-1 text-[11px] cursor-pointer p-1 rounded border border-slate-100 transition"
+                                                :class="kunci.status === 'dipinjam' ? 'opacity-40 bg-slate-100' : 'hover:bg-slate-50'">
+                                                <input type="checkbox" :value="kunci.nomor" x-model="authModal.selectedKunciLaki" 
+                                                    :disabled="kunci.status === 'dipinjam' || (authModal.selectedKunciLaki.length >= authModal.reqLaki && !authModal.selectedKunciLaki.includes(kunci.nomor))"
+                                                    class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 scale-90 disabled:opacity-50">
+                                                <span :class="kunci.status === 'dipinjam' ? 'line-through text-red-500 font-medium' : 'text-slate-700 font-medium'" x-text="kunci.nomor"></span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <div x-show="authModal.reqPerempuan > 0 && masterKunci.length > 0">
+                                    <label class="block text-[11px] font-bold text-pink-700 mb-1 flex justify-between">
+                                        <span>👩 Kunci Perempuan (Maksimal pilih <span x-text="authModal.reqPerempuan"></span> kunci):</span>
+                                        <span class="px-1.5 py-0.5 rounded bg-pink-100 text-pink-800 text-[10px]" x-text="'Dipilih: ' + authModal.selectedKunciPerempuan.length + '/' + authModal.reqPerempuan"></span>
+                                    </label>
+                                    <div class="max-h-36 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-white grid grid-cols-3 gap-1">
+                                        <template x-for="kunci in masterKunci.filter(k => k.jenis === 'P')" :key="kunci.nomor">
+                                            <label class="flex items-center gap-1 text-[11px] cursor-pointer p-1 rounded border border-slate-100 transition"
+                                                :class="kunci.status === 'dipinjam' ? 'opacity-40 bg-slate-100' : 'hover:bg-slate-50'">
+                                                <input type="checkbox" :value="kunci.nomor" x-model="authModal.selectedKunciPerempuan" 
+                                                    :disabled="kunci.status === 'dipinjam' || (authModal.selectedKunciPerempuan.length >= authModal.reqPerempuan && !authModal.selectedKunciPerempuan.includes(kunci.nomor))"
+                                                    class="rounded border-slate-300 text-pink-600 focus:ring-pink-500 scale-90 disabled:opacity-50">
+                                                <span :class="kunci.status === 'dipinjam' ? 'line-through text-red-500 font-medium' : 'text-slate-700 font-medium'" x-text="kunci.nomor"></span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-[10px] text-slate-500 bg-slate-100 p-2 rounded">
+                                    <span class="font-semibold">Format Output NAMA_KUNCI:</span> 
+                                    <span class="font-mono font-bold text-slate-700 block mt-0.5" x-text="generateFormatOutput() || 'Belum ada kunci dipilih'"></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="authModal.status === 'Ditolak'">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Alasan Penolakan</label>
+                                <input type="text" x-model="authModal.alasanPenolakan" required placeholder="Tuliskan alasan penolakan..."
+                                       class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-red-600">
+                            </div>
+                        </template>
+                    </div>
                 </div>
-            </div>
 
-            <div class="flex items-center justify-end gap-2 border-t border-slate-100 p-5 bg-slate-50/50">
-                <button type="button" @click="authModal.open = false" class="px-3 py-2 border border-slate-200 rounded-xl text-slate-500 text-xs">Batal</button>
-                <button type="submit" class="bg-[#714B67] text-white px-4 py-2 rounded-xl text-xs font-medium shadow-sm hover:opacity-90 transition">
-                    Eksekusi Perubahan
-                </button>
-            </div>
-        </form>
+                <div class="flex items-center justify-end gap-2 border-t border-slate-100 p-5 bg-slate-50/50">
+                    <button type="button" @click="authModal.open = false" class="px-3 py-2 border border-slate-200 rounded-xl text-slate-500 text-xs">Batal</button>
+                    <button type="submit" class="bg-[#714B67] text-white px-4 py-2 rounded-xl text-xs font-medium shadow-sm hover:opacity-90 transition">
+                        Eksekusi Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-    <script>
-        function kunciLokerApp() {
-            return {
-                scriptUrl: "https://script.google.com/macros/s/AKfycbwz9bdCTlzl1ebmhafJ2BJ2x5tbo2C_QktYoTadOVx7eXMZ2pXYVejH9NlW1isXiwiu/exec",
-                loadingTable: false,
-                loadingIdentitas: false,
-                submitting: false,
-                modalOpen: false,
-                searchQuery: '',
-                todayDate: new Date().toISOString().split('T')[0],
-                identitasDitemukan: false,
-                logKunci: [],
-                masterKunci: [], // Menyimpan data dari sheet D_KUNCI_LOKER
+   <script>
+    function kunciLokerApp() {
+        return {
+            scriptUrl: "https://script.google.com/macros/s/AKfycbwz9bdCTlzl1ebmhafJ2BJ2x5tbo2C_QktYoTadOVx7eXMZ2pXYVejH9NlW1isXiwiu/exec",
+            loadingTable: false,
+            loadingIdentitas: false,
+            submitting: false,
+            modalOpen: false,
+            searchQuery: '',
+            todayDate: new Date().toISOString().split('T')[0],
+            identitasDitemukan: false,
+            isManualInput: false,
+            logKunci: [],
+            masterKunci: [],
 
-                authModal: {
-                    open: false, id: '', nama: '', status: '', catatanLama: '', password: '',
-                    reqLaki: 0, reqPerempuan: 0,
-                    selectedKunciLaki: [], selectedKunciPerempuan: [], alasanPenolakan: ''
-                },
+            authModal: {
+                open: false, id: '', nama: '', status: '', catatanLama: '', password: '',
+                reqLaki: 0, reqPerempuan: 0,
+                selectedKunciLaki: [], selectedKunciPerempuan: [], alasanPenolakan: ''
+            },
 
-                form: {
-                    nim: '', nama_peminjam: '', institusi: '', jurusan: '', 
-                    tgl_pinjam: '', tgl_kembali: '', durasi: '0 hari', qty_loker_l: 0, qty_loker_p: 0,
-                    setuju_snk: false, signature: ''
-                },
+            form: {
+                nim: '',
+                nama: '',       
+                institusi: '',  
+                jurusan: '',    
+                no_hp: '',      
+                tgl_pinjam: '',
+                tgl_kembali: '',
+                durasi: '0 hari',
+                qty_loker_l: 0,
+                qty_loker_p: 0,
+                setuju_snk: false,
+                signature: ''
+            },
 
-                isDrawing: false, canvas: null, ctx: null,
+            isDrawing: false, canvas: null, ctx: null,
 
-                initData() {
-                    this.loadLogKunci();
-                    this.loadMasterKunci();
-                },
+            initData() {
+                this.loadLogKunci();
+            },
 
-                get filteredLog() {
-                    if (!this.searchQuery) return this.logKunci;
-                    return this.logKunci.filter(item => 
-                        (item.nama_peminjam && item.nama_peminjam.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
-                        (item.nim && item.nim.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
-                        (item.catatan && item.catatan.toLowerCase().includes(this.searchQuery.toLowerCase()))
-                    );
-                },
+            get filteredLog() {
+                if (!this.searchQuery) return this.logKunci;
+                return this.logKunci.filter(item => 
+                    (item.nama_peminjam && item.nama_peminjam.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
+                    (item.nim && item.nim.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
+                    (item.catatan && item.catatan.toLowerCase().includes(this.searchQuery.toLowerCase()))
+                );
+            },
 
-                parseKunci(namaKunciString) {
-                    if (!namaKunciString) return [];
-                    return namaKunciString.split(',').map(k => k.trim()).filter(k => k !== '');
-                },
+            parseKunci(namaKunciString) {
+                if (!namaKunciString) return [];
+                return namaKunciString.split(',').map(k => k.trim()).filter(k => k !== '');
+            },
 
-                generateFormatOutput() {
-    // Tambahkan huruf 'L' di depan setiap nomor kunci laki-laki jika belum ada
-    let formatLaki = this.authModal.selectedKunciLaki.map(no => {
-        let n = no.toString().trim();
-        return n.toUpperCase().startsWith('L') ? n : 'L' + n;
-    });
+            generateFormatOutput() {
+                let formatLaki = this.authModal.selectedKunciLaki.map(no => {
+                    let n = no.toString().trim();
+                    return n.toUpperCase().startsWith('L') ? n : 'L' + n;
+                });
+                let formatPerempuan = this.authModal.selectedKunciPerempuan.map(no => {
+                    let n = no.toString().trim();
+                    return n.toUpperCase().startsWith('P') ? n : 'P' + n;
+                });
+                let gabungan = [...formatLaki, ...formatPerempuan];
+                return gabungan.join(', ');
+            },
 
-    // Tambahkan huruf 'P' di depan setiap nomor kunci perempuan jika belum ada
-    let formatPerempuan = this.authModal.selectedKunciPerempuan.map(no => {
-        let n = no.toString().trim();
-        return n.toUpperCase().startsWith('P') ? n : 'P' + n;
-    });
+            async loadMasterKunci() {
+                try {
+                    const response = await fetch(this.scriptUrl + "?action=getDaftarKunci");
+                    const result = await response.json();
+                    if (result.status === "success") this.masterKunci = result.data;
+                } catch (e) { console.error("Gagal mengambil master data kunci:", e); }
+            },
 
-    let gabungan = [...formatLaki, ...formatPerempuan];
-    return gabungan.join(', ');
+            openModalAdd() {
+                this.modalOpen = true;
+                this.identitasDitemukan = false;
+                this.isManualInput = false; 
+                
+                this.form = { 
+                    nim: '', 
+                    nama: '', 
+                    institusi: '', 
+                    jurusan: '', 
+                    no_hp: '', 
+                    tgl_pinjam: '', 
+                    tgl_kembali: '', 
+                    durasi: '0 hari', 
+                    qty_loker_l: 0, 
+                    qty_loker_p: 0, 
+                    setuju_snk: false, 
+                    signature: '' 
+                };
+                
+                setTimeout(() => {
+                    this.canvas = document.getElementById('canvasKunci');
+                    this.ctx = this.canvas.getContext('2d');
+                    this.ctx.strokeStyle = '#1e293b';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineJoin = 'round';
+                    this.clearCanvas();
+                }, 150);
+            },
+
+            closeModalAdd() { this.modalOpen = false; },
+
+            async searchIdentitas() {
+    if (this.form.nim.length < 4) {
+        this.identitasDitemukan = false;
+        this.isManualInput = false;
+        return;
+    }
+    this.loadingIdentitas = true;
+    try {
+        const response = await fetch(this.scriptUrl + "?action=searchPesertaByNim&nim=" + encodeURIComponent(this.form.nim));
+        const result = await response.json();
+        
+        if ((result.status === "success" || result.status === "SUCCESS") && result.data) {
+            const d = result.data;
+            // Diambil dari Google Apps Script (d.nama & d.no_hp) 
+            // dimasukkan ke properti form Anda (nama_peminjam & no_hp)
+            this.form.nama_peminjam = d.nama || "";
+            this.form.institusi = d.institusi || ""; 
+            this.form.jurusan = d.jurusan || "";
+            this.form.no_hp = d.no_hp || ""; 
+
+            this.identitasDitemukan = true; 
+            this.isManualInput = false; 
+        } else {
+            this.identitasDitemukan = false; 
+            this.isManualInput = true; 
+            
+            // PERBAIKAN DI SINI: Samakan nama propertinya agar form ter-reset dengan benar
+            this.form.nama_peminjam = ""; // Sebelumnya: this.form.nama
+            this.form.institusi = "";
+            this.form.jurusan = "";
+            this.form.no_hp = "";         // Sebelumnya: tidak ada / salah ketik
+        }
+    } catch (e) {
+        console.error("Gagal verifikasi data:", e);
+        this.identitasDitemukan = false;
+        this.isManualInput = true;
+    }
+    this.loadingIdentitas = false;
 },
 
-                async loadMasterKunci() {
-                    try {
-                        const response = await fetch(this.scriptUrl + "?action=getDaftarKunci");
-                        const result = await response.json();
-                        if (result.status === "success") this.masterKunci = result.data;
-                    } catch (e) { console.error("Gagal mengambil master data kunci:", e); }
-                },
+            calculateDurasi() {
+                if (!this.form.tgl_pinjam || !this.form.tgl_kembali) return;
+                const p = new Date(this.form.tgl_pinjam);
+                const k = new Date(this.form.tgl_kembali);
+                const diff = Math.ceil((k - p) / (1000 * 60 * 60 * 24));
+                this.form.durasi = diff >= 0 ? diff + " hari" : "0 hari";
+            },
 
-                openModalAdd() {
-                    this.modalOpen = true;
-                    this.identitasDitemukan = false;
-                    this.form = { nim: '', nama_peminjam: '', institusi: '', jurusan: '', tgl_pinjam: '', tgl_kembali: '', durasi: '0 hari', qty_loker_l: 0, qty_loker_p: 0, setuju_snk: false, signature: '' };
+            async loadLogKunci() {
+                this.loadingTable = true;
+                try {
+                    const response = await fetch(this.scriptUrl + "?action=readKunciLoker");
+                    const result = await response.json();
+                    this.logKunci = result.status === "success" ? result.data : [];
+                } catch (e) { console.error("Gagal memuat log kunci:", e); }
+                this.loadingTable = false;
+            },
+
+            async submitForm() {
+                if (this.form.qty_loker_l === 0 && this.form.qty_loker_p === 0) {
+                    alert("Harap masukkan jumlah kuantitas loker minimal 1 buah.");
+                    return;
+                }
+                
+                this.submitting = true;
+                
+                const canvasEl = document.getElementById('canvasKunci');
+                if (canvasEl) {
+                    this.form.signature = canvasEl.toDataURL();
+                }
+
+                let catatanAwal = "Request kunci loker laki-laki = " + this.form.qty_loker_l + " buah, perempuan = " + this.form.qty_loker_p + " buah";
+
+                if (!this.identitasDitemukan) {
+                    catatanAwal += " | (Entri Manual)";
+                }
+
+                const payload = {
+                    action: "submitKunciLoker",
+                    nim: this.form.nim,
+                    nama_peminjam: this.form.nama_peminjam,
+                    institusi: this.form.institusi,
+                    jurusan: this.form.jurusan,
+                    no_hp: this.form.no_hp,
+                    qty_laki: this.form.qty_loker_l,
+                    qty_perempuan: this.form.qty_loker_p,
+                    tgl_pinjam: this.form.tgl_pinjam,
+                    tgl_kembali: this.form.tgl_kembali,
+                    durasi: this.form.durasi,
+                    signature: this.form.signature,
+                    catatan: catatanAwal 
+                };
+
+                try {
+                    const response = await fetch(this.scriptUrl, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    if (result.status === "success" || result.status === "SUCCESS") {
+                        alert(result.message);
+                        this.closeModalAdd();
+                        this.loadLogKunci(); 
+                    } else {
+                        alert("Gagal menyimpan data: " + result.message);
+                    }
+                } catch (error) {
+                    console.error("Gagal mengirim data:", error);
+                    alert("Terjadi kesalahan koneksi server.");
+                }
+                this.submitting = false;
+            },
+
+            async openAuthModal(row, statusTujuan) {
+                this.authModal.id = row.id;
+                this.authModal.nama = row.nama;
+                this.authModal.status = statusTujuan;
+                this.authModal.catatanLama = row.catatan || '';
+                this.authModal.password = '';
+                this.authModal.alasanPenolakan = '';
+                
+                this.authModal.reqLaki = 1; 
+                this.authModal.reqPerempuan = 1;
+                this.authModal.selectedKunciLaki = [];
+                this.authModal.selectedKunciPerempuan = [];
+                
+                if (statusTujuan === 'Approve/Booking') {
+                    this.masterKunci = [];
+                    await this.loadMasterKunci(); 
                     
-                    setTimeout(() => {
-                        this.canvas = document.getElementById('canvasKunci');
-                        this.ctx = this.canvas.getContext('2d');
-                        this.ctx.strokeStyle = '#1e293b';
-                        this.ctx.lineWidth = 3;
-                        this.ctx.lineCap = 'round';
-                        this.ctx.lineJoin = 'round';
-                        this.clearCanvas();
-                    }, 150);
-                },
+                    if (row.nama_kunci && row.nama_kunci !== "-") {
+                        let keys = this.parseKunci(row.nama_kunci);
+                        this.authModal.selectedKunciLaki = keys.filter(k => k.toUpperCase().startsWith('L')).map(k => k.toUpperCase().replace('L', '').trim());
+                        this.authModal.selectedKunciPerempuan = keys.filter(k => k.toUpperCase().startsWith('P')).map(k => k.toUpperCase().replace('P', '').trim());
+                        this.authModal.reqLaki = this.authModal.selectedKunciLaki.length > 0 ? this.authModal.selectedKunciLaki.length : 0;
+                        this.authModal.reqPerempuan = this.authModal.selectedKunciPerempuan.length > 0 ? this.authModal.selectedKunciPerempuan.length : 0;
+                    } else {
+                        let teksCatatan = (row.catatan || '').toLowerCase();
+                        let matchLaki = teksCatatan.match(/laki[-_]laki\s*=\s*(\d+)/) || teksCatatan.match(/(\d+)\s*laki/);
+                        let matchPerempuan = teksCatatan.match(/perempuan\s*=\s*(\d+)/) || teksCatatan.match(/(\d+)\s*perempuan/);
 
-                closeModalAdd() { this.modalOpen = false; },
+                        this.authModal.reqLaki = matchLaki ? parseInt(matchLaki[1]) : 0;
+                        this.authModal.reqPerempuan = matchPerempuan ? parseInt(matchPerempuan[1]) : 0;
 
-                async searchIdentitas() {
-                    if (this.form.nim.length < 4) {
-                        this.identitasDitemukan = false;
+                        if (this.authModal.reqLaki === 0 && this.authModal.reqPerempuan === 0) {
+                            this.authModal.reqLaki = 1;
+                            this.authModal.reqPerempuan = 1;
+                        }
+                    }
+
+                    let stokLakiTersedia = this.masterKunci.filter(k => k.jenis === 'L' && k.status === 'tersedia').length;
+                    let stokPerempuanTersedia = this.masterKunci.filter(k => k.jenis === 'P' && k.status === 'tersedia').length;
+                    let pesanPeringatan = "";
+                    
+                    if (this.authModal.reqLaki > 0 && stokLakiTersedia < this.authModal.reqLaki) {
+                        pesanPeringatan += `⚠️ Stok Kunci LAKI-LAKI Kurang!\n- Kebutuhan: ${this.authModal.reqLaki} kunci\n- Tersedia di Sarpras: ${stokLakiTersedia} kunci\n\n`;
+                    }
+                    if (this.authModal.reqPerempuan > 0 && stokPerempuanTersedia < this.authModal.reqPerempuan) {
+                        pesanPeringatan += `⚠️ Stok Kunci PEREMPUAN Kurang!\n- Kebutuhan: ${this.authModal.reqPerempuan} kunci\n- Tersedia di Sarpras: ${stokPerempuanTersedia} kunci\n\n`;
+                    }
+                    if (pesanPeringatan !== "") {
+                        alert(`🚨 PERINGATAN KETERSEDIAAN KUNCI LOKER:\n\n${pesanPeringatan}Silahkan koordinasikan dengan bagian Sarpras sebelum melanjutkan.`);
+                    }
+                }
+                this.authModal.open = true;
+            },
+
+            async submitUbahStatus() {
+                if (this.authModal.password !== "PETUGAS2026") {
+                    alert("❌ Password Petugas Salah!");
+                    return;
+                }
+
+                let catatanLama = this.authModal.catatanLama || "";
+                let textCatatanBaru = catatanLama;
+                let stringKunciHasilPlot = "";
+
+                let statusTeks = "";
+                if (this.authModal.status === 'Approve/Booking') {
+                    stringKunciHasilPlot = this.generateFormatOutput();
+                    if (this.authModal.selectedKunciLaki.length !== this.authModal.reqLaki || 
+                        this.authModal.selectedKunciPerempuan.length !== this.authModal.reqPerempuan) {
+                        alert(`❌ Gagal Setuju!\nJumlah kunci terpilih belum sesuai ketentuan request.\nHarus memilih tepat: ${this.authModal.reqLaki} Laki-laki & ${this.authModal.reqPerempuan} Perempuan.`);
                         return;
                     }
-                    this.loadingIdentitas = true;
-                    try {
-                        const response = await fetch(this.scriptUrl + "?action=searchPesertaByNim&nim=" + encodeURIComponent(this.form.nim));
-                        const result = await response.json();
-                        if (result.status === "success" && result.data) {
-                            this.form.nama_peminjam = result.data.nama;
-                            this.form.institusi = result.data.institusi;
-                            this.form.jurusan = result.data.jurusan;
-                            this.identitasDitemukan = true;
-                        } else { this.identitasDitemukan = false; }
-                    } catch (e) { this.identitasDitemukan = false; }
-                    this.loadingIdentitas = false;
-                },
+                    statusTeks = "Approve/Booking Silahkan ambil kunci Anda di Ruang Sarpras.";
+                } else if (this.authModal.status === 'Sedang Digunakan') {
+                    statusTeks = "Kunci telah diserahkan dan sedang digunakan.";
+                } else if (this.authModal.status === 'Selesai') {
+                    statusTeks = "Selesai. Kunci telah dikembalikan dalam kondisi baik.";
+                } else if (this.authModal.status === 'Ditolak') {
+                    if (!this.authModal.alasanPenolakan.trim()) {
+                        alert("❌ Mohon isi alasan penolakan!");
+                        return;
+                    }
+                    statusTeks = "Ditolak: " + this.authModal.alasanPenolakan;
+                }
 
-                calculateDurasi() {
-                    if (!this.form.tgl_pinjam || !this.form.tgl_kembali) return;
-                    const p = new Date(this.form.tgl_pinjam);
-                    const k = new Date(this.form.tgl_kembali);
-                    const diff = Math.ceil((k - p) / (1000 * 60 * 60 * 24));
-                    this.form.durasi = diff >= 0 ? diff + " hari" : "0 hari";
-                },
+                if (catatanLama.includes("⚠️ Catatan: Peserta ini tidak terdaftar di database (Entri Manual)")) {
+                    textCatatanBaru = "Request kunci | ⚠️ Catatan: Peserta ini tidak terdaftar di database (Entri Manual) | Status: " + statusTeks;
+                } else {
+                    textCatatanBaru = statusTeks;
+                }
 
-                async loadLogKunci() {
-                    this.loadingTable = true;
-                    try {
-                        const response = await fetch(this.scriptUrl + "?action=readKunciLoker");
-                        const result = await response.json();
-                        this.logKunci = result.status === "success" ? result.data : [];
-                    } catch (e) { console.error("Gagal memuat log kunci:", e); }
-                    this.loadingTable = false;
-                },
+                this.authModal.open = false;
 
-                async submitForm() {
-    if (this.form.qty_loker_l === 0 && this.form.qty_loker_p === 0) {
-        alert("Harap masukkan kuantitas kunci request minimal 1 buah!");
-        return;
-    }
-    this.form.signature = this.canvas.toDataURL();
-    this.submitting = true;
-
-    try {
-        const response = await fetch(this.scriptUrl, {
-            method: "POST",
-            body: JSON.stringify({ 
-                action: "submitKunciLoker", 
-                sheetName: "P_KUNCI_LOKER", 
-                ...this.form,
-                // MAP VARIABEL HTML KE VARIABEL YANG DIHARAPKAN OLEH CODE.GS
-                qty_laki: this.form.qty_loker_l,
-                qty_perempuan: this.form.qty_loker_p
-            })
-        });
-        const result = await response.json();
-        if (result.status === "success") {
-            alert(result.message);
-            this.closeModalAdd();
-            this.loadLogKunci(); 
-        } else { alert("Gagal: " + result.message); }
-    } catch (e) { alert("Gagal terhubung ke cloud server."); }
-    this.submitting = false;
-},
-
-                async openAuthModal(row, statusTujuan) {
-    this.authModal.id = row.id;
-    this.authModal.nama = row.nama_peminjam;
-    this.authModal.status = statusTujuan;
-    this.authModal.catatanLama = row.catatan || '';
-    this.authModal.password = '';
-    this.authModal.alasanPenolakan = '';
-    
-    // Default fallback awal sesuai kode Anda
-    this.authModal.reqLaki = 1; 
-    this.authModal.reqPerempuan = 1;
-
-    this.authModal.selectedKunciLaki = [];
-    this.authModal.selectedKunciPerempuan = [];
-    
-    if (statusTujuan === 'Approve/Booking') {
-        this.masterKunci = []; // Trigger text loading di UI
-        
-        // WAJIB menggunakan await agar data master dari cloud selesai diunduh sebelum baris berikutnya dieksekusi
-        await this.loadMasterKunci(); 
-        
-        // 1. Jika sudah ada nomor kunci yang terisi (Proses Edit / Re-plot)
-        if (row.nama_kunci && row.nama_kunci !== "-") {
-            let keys = this.parseKunci(row.nama_kunci);
-
-            this.authModal.selectedKunciLaki = keys
-                .filter(k => k.toUpperCase().startsWith('L'))
-                .map(k => k.toUpperCase().replace('L', '').trim());
-                
-            this.authModal.selectedKunciPerempuan = keys
-                .filter(k => k.toUpperCase().startsWith('P'))
-                .map(k => k.toUpperCase().replace('P', '').trim());
-
-            // Atur visibility box pilihan berdasarkan kunci yang ada
-            this.authModal.reqLaki = this.authModal.selectedKunciLaki.length > 0 ? this.authModal.selectedKunciLaki.length : 0;
-            this.authModal.reqPerempuan = this.authModal.selectedKunciPerempuan.length > 0 ? this.authModal.selectedKunciPerempuan.length : 0;
-            
-        } else {
-            // JIKA KUNCI MASIH KOSONG (Siswa baru request):
-            // Kita ekstrak angka presisi dari teks catatan menggunakan Regex
-            let teksCatatan = (row.catatan || '').toLowerCase();
-            
-            // Cari angka di sekitar kata 'laki'
-            let matchLaki = teksCatatan.match(/laki[-_]laki\s*=\s*(\d+)/) || teksCatatan.match(/(\d+)\s*laki/);
-            // Cari angka di sekitar kata 'perempuan'
-            let matchPerempuan = teksCatatan.match(/perempuan\s*=\s*(\d+)/) || teksCatatan.match(/(\d+)\s*perempuan/);
-
-            // Jika polanya cocok, masukkan angkanya. Jika tidak ada, default ke 0
-            this.authModal.reqLaki = matchLaki ? parseInt(matchLaki[1]) : 0;
-            this.authModal.reqPerempuan = matchPerempuan ? parseInt(matchPerempuan[1]) : 0;
-
-            // Failsafe / Pengaman Cadangan: Jika ekstraksi teks gagal total dan keduanya 0, 
-            // baru gunakan fallback default (munculkan kedua box masing-masing 1)
-            if (this.authModal.reqLaki === 0 && this.authModal.reqPerempuan === 0) {
-                this.authModal.reqLaki = 1;
-                this.authModal.reqPerempuan = 1;
-            }
-        }
-
-        // 3. SEKARANG KITA JALANKAN LOGIKA WARNING SYSTEM (Karena data masterKunci dijamin sudah ter-load)
-        let stokLakiTersedia = this.masterKunci.filter(k => k.jenis === 'L' && k.status === 'tersedia').length;
-        let stokPerempuanTersedia = this.masterKunci.filter(k => k.jenis === 'P' && k.status === 'tersedia').length;
-
-        let pesanPeringatan = "";
-        
-        if (this.authModal.reqLaki > 0 && stokLakiTersedia < this.authModal.reqLaki) {
-            pesanPeringatan += `⚠️ Stok Kunci LAKI-LAKI Kurang!\n- Kebutuhan: ${this.authModal.reqLaki} kunci\n- Tersedia di Sarpras: ${stokLakiTersedia} kunci\n\n`;
-        }
-        
-        if (this.authModal.reqPerempuan > 0 && stokPerempuanTersedia < this.authModal.reqPerempuan) {
-            pesanPeringatan += `⚠️ Stok Kunci PEREMPUAN Kurang!\n- Kebutuhan: ${this.authModal.reqPerempuan} kunci\n- Tersedia di Sarpras: ${stokPerempuanTersedia} kunci\n\n`;
-        }
-
-        // Munculkan alert jika stok tidak mencukupi target request
-        if (pesanPeringatan !== "") {
-            alert(`🚨 PERINGATAN KETERSEDIAAN KUNCI LOKER:\n\n${pesanPeringatan}Silahkan koordinasikan dengan bagian Sarpras sebelum melanjutkan.`);
-        }
-    }
-    
-    // Buka dialog modal kontrol petugas setelah semua data dan validasi siap
-    this.authModal.open = true;
-},
-
-                async submitUbahStatus() {
-    if (this.authModal.password !== "PETUGAS2026") {
-        alert("❌ Password Petugas Salah!");
-        return;
-    }
-
-    let textCatatanBaru = this.authModal.catatanLama;
-    let stringKunciHasilPlot = "";
-
-    if (this.authModal.status === 'Approve/Booking') {
-        stringKunciHasilPlot = this.generateFormatOutput();
-        
-        // VALIDASI KET ketat: Jumlah kunci terpilih WAJIB SAMA dengan jumlah yang diminta
-        if (this.authModal.selectedKunciLaki.length !== this.authModal.reqLaki || 
-            this.authModal.selectedKunciPerempuan.length !== this.authModal.reqPerempuan) {
-            alert(`❌ Gagal Setuju!\nJumlah kunci terpilih belum sesuai ketentuan request.\nHarus memilih tepat: ${this.authModal.reqLaki} Laki-laki & ${this.authModal.reqPerempuan} Perempuan.`);
-            return;
-        }
-        textCatatanBaru = "Approve/Booking Silahkan ambil kunci Anda di Ruang Sarpras.";
-    } else if (this.authModal.status === 'Sedang Digunakan') {
-        textCatatanBaru = "Kunci telah diserahkan dan sedang digunakan.";
-    } else if (this.authModal.status === 'Selesai') {
-        textCatatanBaru = "Selesai. Kunci telah dikembalikan dalam kondisi baik.";
-    } else if (this.authModal.status === 'Ditolak') {
-        if (!this.authModal.alasanPenolakan.trim()) {
-            alert("❌ Mohon isi alasan penolakan!");
-            return;
-        }
-        textCatatanBaru = "Ditolak: " + this.authModal.alasanPenolakan;
-    }
-
-    this.authModal.open = false;
-
-    try {
-        const payload = {
-            action: "updateStatusKunciLoker",
-            id: this.authModal.id,
-            status: this.authModal.status,
-            namaKunci: stringKunciHasilPlot, 
-            catatan: textCatatanBaru
-        };
-
-        const response = await fetch(this.scriptUrl, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        });
-        const result = await response.json();
-        if (result.status === "success") {
-            alert(result.message);
-            this.loadLogKunci();
-        } else { alert("Gagal: " + result.message); }
-    } catch (e) { alert("Gagal memperbarui status."); }
-},
-
-
-                // CANVAS SIGNATURE
-                getMousePos(e) {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    return {
-                        x: (clientX - rect.left) * (this.canvas.width / rect.width),
-                        y: (clientY - rect.top) * (this.canvas.height / rect.height)
+                try {
+                    const payload = {
+                        action: "updateStatusKunciLoker",
+                        id: this.authModal.id,
+                        status: this.authModal.status,
+                        namaKunci: stringKunciHasilPlot, 
+                        catatan: textCatatanBaru 
                     };
-                },
-                startDrawing(e) {
-                    if(!this.form.setuju_snk) return;
-                    this.isDrawing = true;
-                    const pos = this.getMousePos(e);
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(pos.x, pos.y);
-                },
-                draw(e) {
-                    if (!this.isDrawing) return;
-                    e.preventDefault();
-                    const pos = this.getMousePos(e);
-                    this.ctx.lineTo(pos.x, pos.y);
-                    this.ctx.stroke();
-                },
-                stopDrawing() { this.isDrawing = false; },
-                clearCanvas() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
-            };
-        }
-    </script>
+                    const response = await fetch(this.scriptUrl, {
+                        method: "POST",
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    if (result.status === "success") {
+                        alert(result.message);
+                        this.loadLogKunci();
+                    } else { alert("Gagal: " + result.message); }
+                } catch (e) { alert("Gagal memperbarui status."); }
+            },
+
+            getMousePos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: (clientX - rect.left) * (this.canvas.width / rect.width),
+                    y: (clientY - rect.top) * (this.canvas.height / rect.height)
+                };
+            },
+            startDrawing(e) {
+                if(!this.form.setuju_snk) return;
+                this.isDrawing = true;
+                const pos = this.getMousePos(e);
+                this.ctx.beginPath();
+                this.ctx.moveTo(pos.x, pos.y);
+            },
+            draw(e) {
+                if (!this.isDrawing) return;
+                e.preventDefault();
+                const pos = this.getMousePos(e);
+                this.ctx.lineTo(pos.x, pos.y);
+                this.ctx.stroke();
+            },
+            stopDrawing() { this.isDrawing = false; },
+            clearCanvas() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }
+        };
+    }
+</script>
 </body>
 </html>

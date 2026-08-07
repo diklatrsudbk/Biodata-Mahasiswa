@@ -160,7 +160,8 @@
                                 </div>
                             </div>
 
-                            <div x-data="searchableSelect(options.jurusan, () => formData.jurusan, value => formData.jurusan = value)" class="relative">
+                            <!-- KODE JURUSAN (Kode asli Anda) -->
+                            <div x-data="searchableSelect(options.jurusan, () => formData.jurusan, value => formData.jurusan = value)" class="relative sm:col-span-1">
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Jurusan</label>
                                 <input type="text" x-model="search" @focus="open = true" @input="filterOptions()" @click.away="open = false" autocomplete="off" placeholder="Cari atau ketik jurusan..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" required>
                                 <div x-show="open" x-transition x-cloak class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
@@ -170,6 +171,15 @@
                                 </div>
                             </div>
 
+                            <!-- KODE SEMESTER (Baru) -->
+                            <div class="sm:col-span-1">
+                                <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Semester</label>
+                                <!-- type="number" membatasi agar hanya bisa diisi angka -->
+                                <input type="number" x-model="formData.semester" min="1" max="14" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" placeholder="Contoh: 5" required>
+                            </div>
+
+                            <!-- KODE KOTA INSTITUSI (Kode asli Anda) -->
+                            <!-- Saya biarkan sm:col-span-2 agar memanjang di baris berikutnya, atau ubah jadi sm:col-span-1 jika ingin ketiganya sejajar menyamping -->
                             <div class="sm:col-span-2">
                                 <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">Kota Institusi</label>
                                 <input type="text" x-model="formData.kotaInstitusi" list="list-kota" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#714B67] focus:bg-white transition" placeholder="Ketik nama kota..." required>
@@ -280,7 +290,7 @@
                                 <div class="mt-2 p-3 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl">
                                     <p class="text-[11px] text-amber-900 leading-relaxed">
                                         <strong>Persyaratan Berkas:</strong><br>
-                                        Silakan unggah dokumen wajib seperti <b>STR, Ijazah, atau Sertifikat</b> ke dalam format PDF.<br>
+                                        Silakan unggah dokumen wajib seperti <b>Surat pengantar, SIP, STR, Ijazah, KTP atau Sertifikat Level Kompetensi(bagi yang memiliki)</b> ke dalam format PDF.<br>
                                         <span class="text-red-600 font-bold">* Batas maksimal total ukuran berkas: 2MB.</span>
                                     </p>
                                 </div>

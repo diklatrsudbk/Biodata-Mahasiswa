@@ -24,7 +24,7 @@ const OPTIONS = {
         "Keperawatan Regular","Keperawatan Non-Regular","Keperawatan RPL","Profesi Ners","Profesi Ners Non-Regular","Kebidanan Regular","Kebidanan Non-regular","Kebidanan RPL","Profesi Bidan Regular", "Teknik Elektromedik","Teknik Informatika",
         "Profesi Bidan Non-Regular","Kedokteran","Kedokteran / PSPD","Kedokteran PIDI","Kedokteran PIDGI","PPDS Anak","PPDS Anaestesi","PPDS Bedah","PPDS Obgyn","PPDS KFR","PPDS THT-KL","PPDS Neurologi","PPDS IPD","PPDS DVE","Kedokteran Gigi","Anestesi Regular",
         "Anestesi RPL","Laboratorium Medis","Gizi","Psikologi","Fisioterapi","Analis Kesehatan","Rekam Medik","Terapi Wicara","Terapi Okupasi","Fisika","Biologi","Radiologi","Farmasi","Computer Science","Apoteker", "Ilmu Komunikasi",
-        "Kesehatan Lingkungan (KESLING)", "Kesehatan Masyarakat", "Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer dan Telekomunikasi", "Management Informatika","Akuntansi"
+        "Kesehatan Lingkungan (KESLING)", "Kesehatan Masyarakat", "Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer dan Telekomunikasi", "Management Informatika","Akuntansi","Administrasi Rumah Sakit"
     ]
 
 };
